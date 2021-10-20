@@ -19,6 +19,9 @@ class Popup:
 
 # TODO: buttons need to do something
 #  perhaps the buttons should have predefined setups
+#  all button, left, right center toggles of some sort
+#  need to talk to some operators about how long until it makes sense to popup
+#  doing it too soon they wouldn't have a chance and could be disruptive
 #  respond (send it to a database?)
 #  cbeck that this will work over ssl (opening in the normal session) otherwise probably flask
 
