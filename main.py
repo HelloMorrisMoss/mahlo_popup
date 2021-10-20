@@ -46,17 +46,30 @@ class Popup:
     def button_command(self):
         pass
 
-    def add_toggle(me, button):
+    def add_toggle(me, button, side):
+        # add a state tracker on the button, a side metadata-label, and add a side state tracker to the message frame
         setattr(button, 'active', True)
-        def toggle_me(me, event):
+        setattr(button, 'side', side)
+        setattr(button.master.master, side, True)
+
+        def toggle_me(*args, **kwargs):
+            print('args', args)
+            print('kwargs', kwargs)
             # button = button
+            button = args[0].widget
+            print(f'button background was {button.cget("background")}')
             if button.active:
+                print(f'{button.side} button was active, now setting to inactive')
                 button.active = False
-                button.config(background='grey')
+                setattr(button.master.master, button.side, False)
+                button.config(background='SystemButtonFace')
             else:
+                print(f'{button.side} button was inactive, now setting to active')
                 button.active = True
+                setattr(button.master.master, button.side, True)
                 button.config(background='blue')
         button.bind("<Button-1>", toggle_me)
+        # return toggle_me
 
     def add_buttons(me, parent, message):
         # for btn in self._definition_dict['buttons']:
@@ -70,9 +83,10 @@ class Popup:
                                                    'command': lambda: print('You press my buttons!')},
                                               'grid_params': {'column': 0, 'row': 0}
                                               }}
+
         side_button_dict = {side: {'params':
-                                       {'text': f'{side} of this length was removed.',
-                                        'command': lambda: print('You press my buttons!')},
+                                       {'text': f'{side} of this length was removed.'},
+                                   'command': me.add_toggle,
                                    'grid_params': {'column': n, 'row': 1}
                                    } for n, side in enumerate(('Left', 'Center', 'Right'))}
 
@@ -80,6 +94,9 @@ class Popup:
         for bnum, (btn, btndef) in enumerate(button_dict.items()):
             btn_wgt = tk.Button(btn_frame, **btndef['params'])
             btn_wgt.grid(**btndef['grid_params'])
+            my_command = btndef.get('command')
+            if my_command:
+                btn_wgt.config(command=my_command(btn_wgt, btn))
             me._wgts[btn] = btn_wgt
 
 
