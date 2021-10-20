@@ -17,6 +17,11 @@ class Popup:
 
         self._root.mainloop()
 
+# TODO: buttons need to do something
+#  perhaps the buttons should have predefined setups
+#  respond (send it to a database?)
+#  cbeck that this will work over ssl (opening in the normal session) otherwise probably flask
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
