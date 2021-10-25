@@ -22,6 +22,9 @@ class Popup:
         me._wgts = {}
         me.styling()
 
+        me._removed_state_vars = {msg['msg_id']: {'all': tk.IntVar(), 'left': tk.IntVar(), 'center': tk.IntVar(), 'right': tk.IntVar()}
+                                           for msg in me._defdic['messages']}
+
         # dev_frame = tk.ttk.LabelFrame(me.root, text='Test frame')
         # dev_frame.grid(row=0, column=0)
         # dev_label = tk.ttk.Label(dev_frame, text='for dev')
@@ -31,7 +34,7 @@ class Popup:
 
         me.main_frm = tk.ttk.Frame(me.root)
         me.main_frm.grid(row=1, column=0, sticky='nesw', columnspan=3)
-        setattr(me.main_frm, 'wgts', {})
+        me.wigify(me.main_frm)
         # me.hover_enter_factory(me.main_frm)
         me._wgts['main_frame'] = me.main_frm
 
@@ -40,13 +43,20 @@ class Popup:
             message['msg_txt']['timestamp'] = datetime.fromisoformat(message['msg_txt']['timestamp'])
             mlf = tk.ttk.LabelFrame(me.main_frm, text=message['title'])  #, style='Card.TFrame')
             me.main_frm.wgts[message['msg_id']] = mlf
-            setattr(mlf, 'wgts', {})
+            me.wigify(mlf)
             me.add_message_display(mlf, message)
             mlf.grid(column=0, row=mnum, padx=me.pad['x'], pady=me.pad['y'], sticky="nesw")
             me.add_buttons(mlf, message)
         me.recurse_hover(me._wgts['main_frame'].wgts)
 
         me.root.mainloop()
+
+    def wigify(self, obj):
+        """Add a property 'wgts' that is an empty dictionary to the obj. (Intended for keeping track of tkinter widgets.)
+
+        :param obj: the
+        """
+        setattr(obj, 'wgts', {})
 
     def recurse_hover(me, wgts_dict):
         for wname, wgt in wgts_dict.items():
@@ -63,6 +73,10 @@ class Popup:
                 pass
 
     def hover_enter_factory(self, this_widget):
+        """Bind a mouse-hover function to a tkinter widget to display information when hovered.
+
+        :param this_widget: a tkinter widget.
+        """
         print(this_widget)
         this_widget = this_widget
         winfo = this_widget.grid_info()
@@ -134,25 +148,31 @@ class Popup:
     def add_buttons(me, parent, message):
         btn_frame = tk.ttk.Frame(parent, style='Card.TFrame')
         btn_frame.grid(column=1, row=0, padx=me.pad['x'], pady=me.pad['y'], sticky="nesw")
-        button_dict = {'all_removed_button': {'params':
+        me.wigify(btn_frame)
+        button_def_dict = {}
+        button_def_dict = {'all_removed_button': {'params':
                                                   {'text': 'All of this length was removed.',
-                                                   'command': lambda: print('You press my buttons!')},
-                                              'grid_params': {'column': 0, 'row': 0, 'columnspan': 3}
+                                                   'command': lambda: print('You press my buttons!'),
+                                                   'variable': me._removed_state_vars[message['msg_id']]['all']},
+                                              'grid_params': {'column': 0, 'row': 0, 'columnspan': 3, 'rowspan': 2,
+                                                              'sticky': 'nesw'}
                                               }}
 
         side_button_dict = {side: {'params':
                                        {'text': f'{side} was removed.'},
                                    'command': me.add_toggle,
-                                   'grid_params': {'column': n, 'row': 1}
+                                   'grid_params': {'column': 2*(n+1), 'columnspan': 2, 'rowspan': 2,
+                                                   'row': 2, 'padx': me.pad['x'], 'pady': me.pad['y']},
                                    } for n, side in enumerate(('Operator\nSide', 'Center\n', 'Foamline\nSide'))}
 
-        button_dict.update(side_button_dict)
-        for bnum, (btn, btndef) in enumerate(button_dict.items()):
-            btn_frm = tk.ttk.Frame(parent)
+        button_def_dict.update(side_button_dict)
+        for bnum, (btn, btndef) in enumerate(button_def_dict.items()):
+            btn_frm = tk.ttk.Frame(btn_frame)
             btn_frm.grid(**btndef['grid_params'])
+            btn_frame.wgts[f'sub_frame{bnum}'] = btn_frm
             # btn_wgt = tk.Button(btn_frame, **btndef['params'])
-            btn_wgt = ttk.Checkbutton(parent, style='Toggle.TButton', **btndef['params'])
-            # btn_wgt = ttk.Checkbutton(parent, style='Switch.TCheckbutton', **btndef['params'])
+            # btn_wgt = ttk.Checkbutton(btn_frm, style='Toggle.TButton', **btndef['params'])
+            btn_wgt = ttk.Checkbutton(btn_frm, style='Switch.TCheckbutton', **btndef['params'])
             # btn_wgt.grid(row=0, column=0)
             # switch = ttk.Checkbutton(root, text='Switch', style='Switch.TCheckbutton', variable=var)
             btn_wgt.grid(**btndef['grid_params'])
