@@ -3,6 +3,7 @@
 import argparse
 import json
 import tkinter as tk
+from tkinter import ttk
 from datetime import datetime
 
 
@@ -18,6 +19,10 @@ class Popup:
         me.root.title(me._defdic['main_win']['title'])
         me.root.geometry('800x500')
         me._wgts = {}
+        # me.style = ttk.Style(me.root)
+        # me.style.theme_use('alt')
+        me.root.tk.call("source", "Azure-ttk-theme-main/Azure-ttk-theme-main/azure.tcl")
+        me.root.tk.call("set_theme", "dark")
 
         # frame padding
         me.pad = dict(
@@ -27,13 +32,11 @@ class Popup:
         # add the frames for the messages and the widgets therein
         for mnum, message in enumerate(me._defdic['messages']):
             message['msg_txt']['timestamp'] = datetime.fromisoformat(message['msg_txt']['timestamp'])
-            mlf = tk.LabelFrame(me.root, text=message['title'])
+            mlf = tk.LabelFrame(me.root, text=message['title'])  #, background='black')
             setattr(mlf, 'wgts', {})
             me.add_message_display(mlf, message)
             mlf.grid(column=0, row=mnum, padx=me.pad['x'], pady=me.pad['y'], sticky="w")
-            # me._wgts['msg_box'].pack()
             me.add_buttons(mlf, message)
-        # me.root.pack()
         me.root.mainloop()
 
     def add_message_display(me, parent, message):
@@ -72,23 +75,19 @@ class Popup:
         # return toggle_me
 
     def add_buttons(me, parent, message):
-        # for btn in self._definition_dict['buttons']:
-        #     btn_wgt = tk.Button(self._root, text=btn)
-        #     btn_wgt.pack()
-        #     self._wgts[btn] = btn_wgt
         btn_frame = tk.Frame(parent)
         btn_frame.grid(column=1, row=0, padx=me.pad['x'], pady=me.pad['y'], sticky="w")
         button_dict = {'all_removed_button': {'params':
                                                   {'text': 'All of this length was removed.',
                                                    'command': lambda: print('You press my buttons!')},
-                                              'grid_params': {'column': 0, 'row': 0}
+                                              'grid_params': {'column': 0, 'row': 0, 'columnspan': 3}
                                               }}
 
         side_button_dict = {side: {'params':
-                                       {'text': f'{side} of this length was removed.'},
+                                       {'text': f'{side} was removed.'},
                                    'command': me.add_toggle,
                                    'grid_params': {'column': n, 'row': 1}
-                                   } for n, side in enumerate(('Left', 'Center', 'Right'))}
+                                   } for n, side in enumerate(('Operator\nSide', 'Center\n', 'Foamline\nSide'))}
 
         button_dict.update(side_button_dict)
         for bnum, (btn, btndef) in enumerate(button_dict.items()):
