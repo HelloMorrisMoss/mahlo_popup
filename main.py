@@ -22,8 +22,11 @@ class Popup:
         me._wgts = {}
         me.styling()
 
-        me._removed_state_vars = {msg['msg_id']: {'all': tk.IntVar(), 'left': tk.IntVar(), 'center': tk.IntVar(), 'right': tk.IntVar()}
-                                           for msg in me._defdic['messages']}
+        me._removed_state_vars = {
+            msg['msg_id']: {'all': tk.IntVar(), 'left': tk.IntVar(), 'center': tk.IntVar(), 'right': tk.IntVar()}
+            for msg in me._defdic['messages']}
+        for mid, state_dict in me._removed_state_vars.items():
+            state_dict['all'].set(True)
 
         # dev_frame = tk.ttk.LabelFrame(me.root, text='Test frame')
         # dev_frame.grid(row=0, column=0)
@@ -41,12 +44,13 @@ class Popup:
         # add the frames for the messages and the widgets therein
         for mnum, message in enumerate(me._defdic['messages']):
             message['msg_txt']['timestamp'] = datetime.fromisoformat(message['msg_txt']['timestamp'])
-            mlf = tk.ttk.LabelFrame(me.main_frm, text=message['title'])  #, style='Card.TFrame')
+            mlf = tk.ttk.LabelFrame(me.main_frm, text=message['title'])  # , style='Card.TFrame')
             me.main_frm.wgts[message['msg_id']] = mlf
             me.wigify(mlf)
             me.add_message_display(mlf, message)
             mlf.grid(column=0, row=mnum, padx=me.pad['x'], pady=me.pad['y'], sticky="nesw")
             me.add_buttons(mlf, message)
+
         me.recurse_hover(me._wgts['main_frame'].wgts)
 
         me.root.mainloop()
@@ -85,6 +89,7 @@ class Popup:
             event_widget = event.widget
             # self._wgts['dev_label'].config(text=f'{winfo}')
             print(this_widget, event_widget, winfo)
+
         import functools
 
         this_fn = functools.partial(set_loc_label, this_widget=this_widget)
@@ -142,44 +147,121 @@ class Popup:
                 button.active = True
                 setattr(button.master.master, button.side, True)
                 button.config(background='blue')
+
         button.bind("<Button-1>", toggle_me)
         # return toggle_me
+
+    def show_me_the_event(me, event):
+        # event.widget.side  # string side
+        # event.widget.state_var.get()  # value showing what the variable ** was before the event **
+        side = event.widget.side
+        # new_val = not event.widget.state_var.get()
+        new_val = 'selected' not in event.widget.state()
+        msg_id = event.widget.msg_id
+        print(event, event.widget.msg_id, event.widget.side, event.widget.state_var.get(), event.widget.state(),
+              f'new {new_val}')
+
+        not_all = 'left', 'center', 'right'
+        # pprint(me._removed_state_vars)
+        # for mid, val in me._removed_state_vars.items():
+        #     print(mid)
+        #     for side, tkint in val.items():
+        #         print(f'\t{side}: {tkint.get()}')
+
+        if side == 'all':
+            if new_val:
+                print('set sides true')
+                for val in not_all:
+
+                    me.main_frm.wgts[msg_id].wgts[val].state_var.set(True)
+            else:
+                print('set sides false')
+                for val in not_all:
+                    me.main_frm.wgts[msg_id].wgts[val].state_var.set(False)
+                # me.main_frm.wgts[msg_id].wgts['all'].state_var.set(False)
+        else:
+            print('a side was changed')
+            if not new_val:
+                print('set all toggle-button false since this is not true')
+                if me.main_frm.wgts[msg_id].wgts['all'].state_var.get():
+                    me.main_frm.wgts[msg_id].wgts['all'].state_var.set(False)
+            else:
+                print('a side was set to true')
+                sides_count = 0
+
+                for iter_side in not_all:
+                    if side == iter_side:
+                        sides_count += 1
+                        side_val = 1
+                    else:
+                        side_val = me.main_frm.wgts[msg_id].wgts[iter_side].state_var.get()
+                        sides_count += side_val
+                    print(iter_side, side_val, sides_count)
+
+                if sides_count == 3:
+                    me.main_frm.wgts[msg_id].wgts['all'].state_var.set(True)
+
+                # if all(me.main_frm.wgts[msg_id].wgts[side].state_var.get() for side in not_all):
+                #     print('all sides selected, set all to true')
+                #     me.main_frm.wgts[msg_id].wgts['all'].state_var.set(True)
 
     def add_buttons(me, parent, message):
         btn_frame = tk.ttk.Frame(parent, style='Card.TFrame')
         btn_frame.grid(column=1, row=0, padx=me.pad['x'], pady=me.pad['y'], sticky="nesw")
         me.wigify(btn_frame)
-        button_def_dict = {}
-        button_def_dict = {'all_removed_button': {'params':
-                                                  {'text': 'All of this length was removed.',
-                                                   'command': lambda: print('You press my buttons!'),
-                                                   'variable': me._removed_state_vars[message['msg_id']]['all']},
-                                              'grid_params': {'column': 0, 'row': 0, 'columnspan': 3, 'rowspan': 2,
-                                                              'sticky': 'nesw'}
-                                              }}
+        # button_def_dict = {}
+        # button_def_dict = {'all': {'params':
+        #                                {'text': 'All of this length was removed.',
+        #                                 'command': lambda: print('You press my buttons!'),
+        #                                 'variable': me._removed_state_vars[message['msg_id']]['all']},
+        #                            'grid_params': {'column': 0, 'row': 0, 'columnspan': 3, 'rowspan': 2,
+        #                                            'sticky': 'nesw'},
+        #                            'state_var': me._removed_state_vars[message['msg_id']]['all']
+        #                            }}
+        # side_button_text = {'left': 'Operator\nSide', 'center': 'Center\n', 'right': 'Foamline\nSide'}
+        # side_button_dict = {side: {'params':
+        #                                {'text': f'{side_button_text[side]} was removed.',
+        #                                 'variable': me._removed_state_vars[message['msg_id']][side]},
+        #                            'grid_params': {'column': 2 * (n + 1), 'columnspan': 2, 'rowspan': 2,
+        #                                            'row': 2, 'padx': me.pad['x'], 'pady': me.pad['y']},
+        #                            'state_var': me._removed_state_vars[message['msg_id']][side]
+        #                            } for n, side in enumerate(('left', 'center', 'right'))}
 
+        button_def_dict = {'all': {'params':
+                                       {'text': 'All of this length was removed.',
+                                        'command': lambda: print('You press my buttons!'),
+                                        'variable': tk.IntVar()},
+                                   'grid_params': {'column': 0, 'row': 0, 'columnspan': 3, 'rowspan': 2,
+                                                   'sticky': 'nesw'}
+                                   }}
+        side_button_text = {'left': 'Operator\nSide', 'center': 'Center\n', 'right': 'Foamline\nSide'}
         side_button_dict = {side: {'params':
-                                       {'text': f'{side} was removed.'},
-                                   'command': me.add_toggle,
-                                   'grid_params': {'column': 2*(n+1), 'columnspan': 2, 'rowspan': 2,
-                                                   'row': 2, 'padx': me.pad['x'], 'pady': me.pad['y']},
-                                   } for n, side in enumerate(('Operator\nSide', 'Center\n', 'Foamline\nSide'))}
+                                       {'text': f'{side_button_text[side]} was removed.',
+                                        'variable': tk.IntVar()},
+                                   'grid_params': {'column': 2 * (n + 1), 'columnspan': 2, 'rowspan': 2,
+                                                   'row': 2, 'padx': me.pad['x'], 'pady': me.pad['y']}
+                                   } for n, side in enumerate(('left', 'center', 'right'))}
 
         button_def_dict.update(side_button_dict)
         for bnum, (btn, btndef) in enumerate(button_def_dict.items()):
+            # add an outline frame to the button_frame for this message
             btn_frm = tk.ttk.Frame(btn_frame)
             btn_frm.grid(**btndef['grid_params'])
             btn_frame.wgts[f'sub_frame{bnum}'] = btn_frm
-            # btn_wgt = tk.Button(btn_frame, **btndef['params'])
-            # btn_wgt = ttk.Checkbutton(btn_frm, style='Toggle.TButton', **btndef['params'])
+
+            # add a toggle switch
             btn_wgt = ttk.Checkbutton(btn_frm, style='Switch.TCheckbutton', **btndef['params'])
-            # btn_wgt.grid(row=0, column=0)
-            # switch = ttk.Checkbutton(root, text='Switch', style='Switch.TCheckbutton', variable=var)
+            setattr(btn_wgt, 'state_var', btndef['params']['variable'])
+            setattr(btn_wgt, 'side', btn)
+            setattr(btn_wgt, 'msg_id', message['msg_id'])
+            btn_wgt.bind('<Button-1>', me.show_me_the_event)
+
             btn_wgt.grid(**btndef['grid_params'])
             # my_command = btndef.get('command')
             # if my_command:
             #     btn_wgt.config(command=my_command(btn_wgt, btn))
             parent.wgts[btn] = btn_wgt
+
 
 # TODO: buttons need to do something
 #  perhaps the buttons should have predefined setups
