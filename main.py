@@ -21,28 +21,35 @@ class Popup:
         me._wgts = {}
         # me.style = ttk.Style(me.root)
         # me.style.theme_use('alt')
-        me.root.tk.call("source", "Azure-ttk-theme-main/Azure-ttk-theme-main/azure.tcl")
-        me.root.tk.call("set_theme", "dark")
 
-        # frame padding
-        me.pad = dict(
-            x=5,
-            y=3
-        )
+        me.styling()
         # add the frames for the messages and the widgets therein
         for mnum, message in enumerate(me._defdic['messages']):
             message['msg_txt']['timestamp'] = datetime.fromisoformat(message['msg_txt']['timestamp'])
-            mlf = tk.LabelFrame(me.root, text=message['title'])  #, background='black')
+            mlf = tk.ttk.LabelFrame(me.root, text=message['title'], style='Card.TFrame')  #, background='black')
             setattr(mlf, 'wgts', {})
             me.add_message_display(mlf, message)
             mlf.grid(column=0, row=mnum, padx=me.pad['x'], pady=me.pad['y'], sticky="w")
             me.add_buttons(mlf, message)
         me.root.mainloop()
 
+    def styling(me):
+        """Set the styling elements of the window.
+
+        """
+        me.root.tk.call("source", "Azure-ttk-theme-main/Azure-ttk-theme-main/azure.tcl")
+        me.root.tk.call("set_theme", "dark")
+        # frame padding
+        me.pad = dict(
+            x=5,
+            y=3
+        )
+        me._wgt_styles = {'toggle': 'Switch.TCheckbutton', 'labelframe': ''}
+
     def add_message_display(me, parent, message):
         msg = message['msg_txt']
         message_text = msg['template'].format(timestamp=msg['timestamp'], len_meters=msg['length_in_meters'])
-        label = tk.Label(parent, text=message_text)
+        label = tk.ttk.Label(parent, text=message_text)
         label.grid(column=0, row=0, padx=me.pad['x'], pady=me.pad['y'], sticky="w")
         parent.wgts['msg_box'] = label
 
@@ -91,13 +98,18 @@ class Popup:
 
         button_dict.update(side_button_dict)
         for bnum, (btn, btndef) in enumerate(button_dict.items()):
-            btn_wgt = tk.Button(btn_frame, **btndef['params'])
+            # btn_wgt = tk.Button(btn_frame, **btndef['params'])
+            # btn_wgt = ttk.Checkbutton(parent, style='Toggle.TButton', **btndef['params'])
+            btn_wgt = ttk.Checkbutton(parent, style='Switch.TCheckbutton', **btndef['params'])
+            # switch = ttk.Checkbutton(root, text='Switch', style='Switch.TCheckbutton', variable=var)
             btn_wgt.grid(**btndef['grid_params'])
             my_command = btndef.get('command')
-            if my_command:
-                btn_wgt.config(command=my_command(btn_wgt, btn))
+            # if my_command:
+            #     btn_wgt.config(command=my_command(btn_wgt, btn))
             me._wgts[btn] = btn_wgt
 
+        togglebutton = ttk.Checkbutton(parent, text='Toggle button', style='Toggle.TButton')
+        togglebutton.grid(row=2, column=0)
 
 # TODO: buttons need to do something
 #  perhaps the buttons should have predefined setups
