@@ -5,6 +5,7 @@ import json
 import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
+from pprint import pprint  # for dev
 
 
 class Popup:
@@ -19,19 +20,62 @@ class Popup:
         me.root.title(me._defdic['main_win']['title'])
         me.root.geometry('800x500')
         me._wgts = {}
-        # me.style = ttk.Style(me.root)
-        # me.style.theme_use('alt')
-
         me.styling()
+
+        # dev_frame = tk.ttk.LabelFrame(me.root, text='Test frame')
+        # dev_frame.grid(row=0, column=0)
+        # dev_label = tk.ttk.Label(dev_frame, text='for dev')
+        # dev_label.grid(row=0, column=0)
+        #
+        # me._wgts['dev_label'] = dev_label
+
+        me.main_frm = tk.ttk.Frame(me.root)
+        me.main_frm.grid(row=1, column=0, sticky='nesw', columnspan=3)
+        setattr(me.main_frm, 'wgts', {})
+        # me.hover_enter_factory(me.main_frm)
+        me._wgts['main_frame'] = me.main_frm
+
         # add the frames for the messages and the widgets therein
         for mnum, message in enumerate(me._defdic['messages']):
             message['msg_txt']['timestamp'] = datetime.fromisoformat(message['msg_txt']['timestamp'])
-            mlf = tk.ttk.LabelFrame(me.root, text=message['title'], style='Card.TFrame')  #, background='black')
+            mlf = tk.ttk.LabelFrame(me.main_frm, text=message['title'])  #, style='Card.TFrame')
+            me.main_frm.wgts[message['msg_id']] = mlf
             setattr(mlf, 'wgts', {})
             me.add_message_display(mlf, message)
-            mlf.grid(column=0, row=mnum, padx=me.pad['x'], pady=me.pad['y'], sticky="w")
+            mlf.grid(column=0, row=mnum, padx=me.pad['x'], pady=me.pad['y'], sticky="nesw")
             me.add_buttons(mlf, message)
+        me.recurse_hover(me._wgts['main_frame'].wgts)
+
         me.root.mainloop()
+
+    def recurse_hover(me, wgts_dict):
+        for wname, wgt in wgts_dict.items():
+            if 'frame' not in wname:
+                print(f'I am not a frame {wname}!')
+                me.hover_enter_factory(wgt)
+            else:
+                print(f'I am a frame {wname}!')
+            try:
+                sub_wgts = getattr(wgt, 'wgts')
+                if sub_wgts is not None:
+                    me.recurse_hover(sub_wgts)
+            except AttributeError:
+                pass
+
+    def hover_enter_factory(self, this_widget):
+        print(this_widget)
+        this_widget = this_widget
+        winfo = this_widget.grid_info()
+
+        def set_loc_label(event, this_widget):
+            event_widget = event.widget
+            # self._wgts['dev_label'].config(text=f'{winfo}')
+            print(this_widget, event_widget, winfo)
+        import functools
+
+        this_fn = functools.partial(set_loc_label, this_widget=this_widget)
+
+        this_widget.bind("<Enter>", this_fn)
 
     def styling(me):
         """Set the styling elements of the window.
@@ -45,6 +89,12 @@ class Popup:
             y=3
         )
         me._wgt_styles = {'toggle': 'Switch.TCheckbutton', 'labelframe': ''}
+
+        # looking at hiding the titlebar, no luck
+        # me.root.wm_attributes('-fullscreen', 'True')  # fullscreen no titlebar
+        # me.root.attributes('-fullscreen', 'True')  # same as with wm_
+        # me.root.wm_attributes('-type', 'splash')  # linux specific
+        # me.root.overrideredirect(1)  # this hides the titlebar, but it's placing the window in the corner
 
     def add_message_display(me, parent, message):
         msg = message['msg_txt']
@@ -82,8 +132,8 @@ class Popup:
         # return toggle_me
 
     def add_buttons(me, parent, message):
-        btn_frame = tk.Frame(parent)
-        btn_frame.grid(column=1, row=0, padx=me.pad['x'], pady=me.pad['y'], sticky="w")
+        btn_frame = tk.ttk.Frame(parent, style='Card.TFrame')
+        btn_frame.grid(column=1, row=0, padx=me.pad['x'], pady=me.pad['y'], sticky="nesw")
         button_dict = {'all_removed_button': {'params':
                                                   {'text': 'All of this length was removed.',
                                                    'command': lambda: print('You press my buttons!')},
@@ -98,18 +148,18 @@ class Popup:
 
         button_dict.update(side_button_dict)
         for bnum, (btn, btndef) in enumerate(button_dict.items()):
+            btn_frm = tk.ttk.Frame(parent)
+            btn_frm.grid(**btndef['grid_params'])
             # btn_wgt = tk.Button(btn_frame, **btndef['params'])
-            # btn_wgt = ttk.Checkbutton(parent, style='Toggle.TButton', **btndef['params'])
-            btn_wgt = ttk.Checkbutton(parent, style='Switch.TCheckbutton', **btndef['params'])
+            btn_wgt = ttk.Checkbutton(parent, style='Toggle.TButton', **btndef['params'])
+            # btn_wgt = ttk.Checkbutton(parent, style='Switch.TCheckbutton', **btndef['params'])
+            # btn_wgt.grid(row=0, column=0)
             # switch = ttk.Checkbutton(root, text='Switch', style='Switch.TCheckbutton', variable=var)
             btn_wgt.grid(**btndef['grid_params'])
-            my_command = btndef.get('command')
+            # my_command = btndef.get('command')
             # if my_command:
             #     btn_wgt.config(command=my_command(btn_wgt, btn))
-            me._wgts[btn] = btn_wgt
-
-        togglebutton = ttk.Checkbutton(parent, text='Toggle button', style='Toggle.TButton')
-        togglebutton.grid(row=2, column=0)
+            parent.wgts[btn] = btn_wgt
 
 # TODO: buttons need to do something
 #  perhaps the buttons should have predefined setups
@@ -133,9 +183,9 @@ if __name__ == '__main__':
                                                     'timestamp': datetime.now().isoformat(),
                                                     'length_in_meters': oospec_len_meters},
                                         'buttons': ['removed!', 'oops!'],
-                                        'msg_id': 'abcdef123'
+                                        'msg_id': msg_id
                                         }
-                                       ] * 3,
+                                       for msg_id in ('msg123', 'msg456', 'msg789')],
                           'main_win': {'title': 'Messages received!'}
                           }
         json_str = json.dumps(test_json_dict)
