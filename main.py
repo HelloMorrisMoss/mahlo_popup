@@ -18,7 +18,7 @@ class Popup:
         self._defdic = input_dict
         self.root = tk.Tk()
         self.root.title(self._defdic['main_win']['title'])
-        self.root.geometry('800x500')
+        # self.root.geometry('1000x500')
         self.wgts = {}
         self.styling()
 
@@ -28,13 +28,7 @@ class Popup:
         for mid, state_dict in self._removed_state_vars.items():
             state_dict['all'].set(True)
 
-        # dev_frame = tk.ttk.LabelFrame(me.root, text='Test frame')
-        # dev_frame.grid(row=0, column=0)
-        # dev_label = tk.ttk.Label(dev_frame, text='for dev')
-        # dev_label.grid(row=0, column=0)
-        #
-        # me.wgts['dev_label'] = dev_label
-
+        # the main frame
         self.main_frm = tk.ttk.Frame(self.root)
         self.main_frm.grid(row=1, column=0, sticky='nesw', columnspan=3)
         self.wigify(self.main_frm)
@@ -237,9 +231,15 @@ class Popup:
         :param event: tkinter.Event, the button press event.
         :return: tuple, of the info.
         """
-        side = event.widget.side  # left, right, center, all
-        now_on = 'selected' not in event.widget.state()  # whether the toggle is turning on or off; was selected -> off
         msg_id = event.widget.msg_id  # the custom id attribute, used to track which message this relates to
+        try:
+            side = event.widget.side  # left, right, center, all
+            now_on = 'selected' not in event.widget.state()  # whether the toggle is turning on or off; was selected -> off
+        except AttributeError:
+            # TODO: make this function better
+            # it must have been the send button
+           return msg_id
+
         return msg_id, now_on, side
 
     def add_buttons(self, parent, message):
@@ -249,6 +249,29 @@ class Popup:
         :param parent: tkinter.Frame, or LabelFrame or similar.
         """
         self._add_removed_toggle_selectors(message, parent)
+
+        # add the save button
+        send_button_frame = tk.ttk.Frame(parent, style=self._wgt_styles['labelframe'])  # is this style hiding the frame?
+
+        send_grid_params = {'column': 12, 'row': 0, 'padx': self.pad['x'],
+                                                   'pady': self.pad['y'],
+                                                   'sticky': 'nesw',
+                            'rowspan': 2}
+        send_button_frame.grid(**send_grid_params)
+        self.wigify(send_button_frame)
+        parent.wgts[f'send_button_frame'] = send_button_frame
+        send_btn = tk.ttk.Button(send_button_frame, style='Accent.TButton', text='Save')
+        send_btn.grid(**send_grid_params)
+        setattr(send_btn, 'msg_id', message['msg_id'])
+        setattr(send_btn, 'side', 'send')
+
+
+    def send_response(self, event):
+        msg_id = self._get_event_info(event)
+        # removed_results_dict = {side: self.main_frm.wgts[msg_id].wgts[side].state_var.get() for side in ('left', 'center', 'right')}
+        removed_results_dict = self._removed_state_vars[msg_id]
+        # TODO: save to sqlite database, then try to send all items unsent in the db
+
 
     def _add_removed_toggle_selectors(self, message, parent):
         """Add the toggle buttons frame to the parent frame.
