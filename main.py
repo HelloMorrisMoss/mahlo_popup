@@ -175,25 +175,27 @@ class Popup:
         button.bind("<Button-1>", toggle_me)
         # return toggle_me
 
-    def show_me_the_event(self, event):
-        # event.widget.side  # string side
-        # event.widget.state_var.get()  # value showing what the variable ** was before the event **
-        side = event.widget.side
-        # new_val = not event.widget.state_var.get()
-        new_val = 'selected' not in event.widget.state()
-        msg_id = event.widget.msg_id
+    def toggle_changes_event_handler(self, event):
+        """Handle the toggle button being changed with regard to its designation and the state of the other toggles.
+
+        If the 'all' button is turned on or off set the 'sides' to the same.
+        If all of the 'sides' are turned on set the 'all' to the same.
+        If any of the 'sides' are turned off, turn off the 'all'.
+
+        :param event: tkinter.Event, for the toggle button being pressed.
+        """
+        side = event.widget.side  # left, right, center, all
+        now_on = 'selected' not in event.widget.state()  # whether the toggle is turning on or off; was selected -> off
+        msg_id = event.widget.msg_id  # the custom id attribute, used to track which message this relates to
         print(event, event.widget.msg_id, event.widget.side, event.widget.state_var.get(), event.widget.state(),
-              f'new {new_val}')
+              f'new {now_on}')
 
+        # the sides that are not all
         not_all = 'left', 'center', 'right'
-        # pprint(me._removed_state_vars)
-        # for mid, val in me._removed_state_vars.items():
-        #     print(mid)
-        #     for side, tkint in val.items():
-        #         print(f'\t{side}: {tkint.get()}')
 
+        # evaluate and set the toggles if needed
         if side == 'all':
-            if new_val:
+            if now_on:
                 print('set sides true')
                 for val in not_all:
                     self.main_frm.wgts[msg_id].wgts[val].state_var.set(True)
@@ -204,7 +206,7 @@ class Popup:
                 # me.main_frm.wgts[msg_id].wgts['all'].state_var.set(False)
         else:
             print('a side was changed')
-            if not new_val:
+            if not now_on:
                 print('set all toggle-button false since this is not true')
                 if self.main_frm.wgts[msg_id].wgts['all'].state_var.get():
                     self.main_frm.wgts[msg_id].wgts['all'].state_var.set(False)
@@ -224,31 +226,36 @@ class Popup:
                 if sides_count == 3:
                     self.main_frm.wgts[msg_id].wgts['all'].state_var.set(True)
 
-                # if all(me.main_frm.wgts[msg_id].wgts[side].state_var.get() for side in not_all):
-                #     print('all sides selected, set all to true')
-                #     me.main_frm.wgts[msg_id].wgts['all'].state_var.set(True)
-
     def add_buttons(self, parent, message):
+        """Add the button frames and their widgets to the parent frame.
+
+        :param message: dict, the message dictionary
+        :param parent: tkinter.Frame, or LabelFrame or similar.
+        """
         self._add_removed_toggle_selectors(message, parent)
 
     def _add_removed_toggle_selectors(self, message, parent):
+        """Add the toggle buttons frame to the parent frame.
+
+        :param message: dict, the message dictionary
+        :param parent: tkinter.Frame, or LabelFrame or similar.
+        """
+        # the toggle button frame
         btn_frame = tk.ttk.Frame(parent, style=self._wgt_styles['labelframe'])  # is this style hiding the frame?
         btn_frame.grid(column=1, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw")
         self.wigify(btn_frame)
         parent.wgts[f'btn_frame_main'] = btn_frame
-        # define the all of the section removed button
-        button_def_dict = {'all': {'params':
-                                       {'text': 'All of this length was removed.',
-                                        'command': lambda: print('You press my buttons!'),
-                                        'variable': tk.IntVar()},
+
+        # define the 'all of the section removed' button
+        button_def_dict = {'all': {'params': {'text': 'All of this length was removed.',
+                                              'command': lambda: print('You press my buttons!'),
+                                              'variable': tk.IntVar()},
                                    'grid_params': {'column': 4,
                                                    'row': 0,
                                                    # 'columnspan': 8,
                                                    'padx': self.pad['x'],
                                                    'pady': self.pad['y'],
-                                                   'sticky': 'nesw'}
-                                   }
-                           }
+                                                   'sticky': 'nesw'}}}
         # define the sides buttons
         side_button_text = {'left': 'Operator\nSide', 'center': 'Center\n', 'right': 'Foamline\nSide'}
         side_button_dict = {side: {'params':
@@ -258,20 +265,28 @@ class Popup:
                                                    'row': 2, 'padx': self.pad['x'], 'pady': self.pad['y']}
                                    } for n, side in enumerate(('left', 'center', 'right'))}
         button_def_dict.update(side_button_dict)
+
+        # add them to the button frame
         for bnum, (btn, btndef) in enumerate(button_def_dict.items()):
             # add a toggle switch
             btn_wgt = ttk.Checkbutton(btn_frame, style=self._wgt_styles['toggle'], **btndef['params'])
+            btn_wgt.grid(**btndef['grid_params'])
+
+            # add some custom attributes to use elsewhere, to keep track of which button is which
             setattr(btn_wgt, 'state_var', btndef['params']['variable'])
             setattr(btn_wgt, 'side', btn)
             setattr(btn_wgt, 'msg_id', message['msg_id'])
-            btn_wgt.bind('<Button-1>', self.show_me_the_event)
 
-            btn_wgt.grid(**btndef['grid_params'])
+            # add the event handler method
+            btn_wgt.bind('<Button-1>', self.toggle_changes_event_handler)
 
             # TODO: only the sections that should have been removed to default on (from the 'message')
             # default to all toggles on
             btndef['params']['variable'].set(True)
+
+            # add it to the wgts dict
             btn_frame.wgts[btn] = btn_wgt
+
         # add a line separator to make the all button stand out from the side buttons
         sep = ttk.Separator(btn_frame, orient='horizontal')
         sep_grid_dict = {'column': 0,
@@ -283,22 +298,23 @@ class Popup:
         sep.grid(**sep_grid_dict)
 
 
-# TODO: buttons need to do something
-#  perhaps the buttons should have predefined setups
-#  all button, left, right center toggles of some sort
+# TODO:
 #  need to talk to some operators about how long until it makes sense to popup
 #  doing it too soon they wouldn't have a chance and could be disruptive
 #  respond (send it to a database?)
-#  cbeck that this will work over ssl (opening in the normal session) otherwise probably flask
+#  check that this will work over ssl (opening in the normal session) otherwise probably flask
 
 
 if __name__ == '__main__':
+    # if called from the command line (over ssl) parse the json to a dictionary
     parser = argparse.ArgumentParser()
     parser.add_argument('--pup_json', help='A json string defining the popups to display.')
     args = parser.parse_args()
     json_str = args.pup_json
+
+    # for development, a dummy dict
     if json_str is None:
-        oospec_len_meters = 4
+        oospec_len_meters = 4.3
         template_str = 'At {timestamp}\n there were {len_meters} meters oospec!'
         test_json_dict = {'messages': [{'title': 'Out of spec!',
                                         'msg_txt': {'template': template_str,
