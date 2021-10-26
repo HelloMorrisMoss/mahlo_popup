@@ -13,19 +13,19 @@ class Popup:
 
     """
 
-    def __init__(me, input_dict):
+    def __init__(self, input_dict):
         # set things up for the main window
-        me._defdic = input_dict
-        me.root = tk.Tk()
-        me.root.title(me._defdic['main_win']['title'])
-        me.root.geometry('800x500')
-        me.wgts = {}
-        me.styling()
+        self._defdic = input_dict
+        self.root = tk.Tk()
+        self.root.title(self._defdic['main_win']['title'])
+        self.root.geometry('800x500')
+        self.wgts = {}
+        self.styling()
 
-        me._removed_state_vars = {
+        self._removed_state_vars = {
             msg['msg_id']: {'all': tk.IntVar(), 'left': tk.IntVar(), 'center': tk.IntVar(), 'right': tk.IntVar()}
-            for msg in me._defdic['messages']}
-        for mid, state_dict in me._removed_state_vars.items():
+            for msg in self._defdic['messages']}
+        for mid, state_dict in self._removed_state_vars.items():
             state_dict['all'].set(True)
 
         # dev_frame = tk.ttk.LabelFrame(me.root, text='Test frame')
@@ -35,26 +35,26 @@ class Popup:
         #
         # me.wgts['dev_label'] = dev_label
 
-        me.main_frm = tk.ttk.Frame(me.root)
-        me.main_frm.grid(row=1, column=0, sticky='nesw', columnspan=3)
-        me.wigify(me.main_frm)
+        self.main_frm = tk.ttk.Frame(self.root)
+        self.main_frm.grid(row=1, column=0, sticky='nesw', columnspan=3)
+        self.wigify(self.main_frm)
         # me.hover_enter_factory(me.main_frm)
-        me.wgts['main_frame'] = me.main_frm
+        self.wgts['main_frame'] = self.main_frm
 
         # add the frames for the messages and the widgets therein
-        for mnum, message in enumerate(me._defdic['messages']):
+        for mnum, message in enumerate(self._defdic['messages']):
             message['msg_txt']['timestamp'] = datetime.fromisoformat(message['msg_txt']['timestamp'])
-            mlf = tk.ttk.LabelFrame(me.main_frm, text=message['title'])  # , style='Card.TFrame')
-            me.main_frm.wgts[message['msg_id']] = mlf
-            me.wigify(mlf)
-            me.add_message_display(mlf, message)
-            mlf.grid(column=0, row=mnum, padx=me.pad['x'], pady=me.pad['y'], sticky="nesw")
-            me.add_buttons(mlf, message)
+            mlf = tk.ttk.LabelFrame(self.main_frm, text=message['title'])  # , style='Card.TFrame')
+            self.main_frm.wgts[message['msg_id']] = mlf
+            self.wigify(mlf)
+            self.add_message_display(mlf, message)
+            mlf.grid(column=0, row=mnum, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw")
+            self.add_buttons(mlf, message)
 
         # me.recurse_hover(me.wgts)
-        me.recurse_tk_structure(me.root)
+        self.recurse_tk_structure(self.root)
 
-        me.root.mainloop()
+        self.root.mainloop()
 
     def recurse_tk_structure(self, obj, name='starting_level', indent=0):
         """Recursively move down the nested tkinter objects by their 'children' attribute, printing the structure.
@@ -79,7 +79,7 @@ class Popup:
         """
         setattr(obj, 'wgts', {})
 
-    def recurse_hover(me, wgts_dict, indent=0):
+    def recurse_hover(self, wgts_dict, indent=0):
         """Recursively move down the nested tk objects by their 'custom' .wgt dict items adding a mouse-over function.
 
         :param wgts_dict:
@@ -92,11 +92,11 @@ class Popup:
             #     me.hover_enter_factory(wgt)
             # else:
             #     print(f'I am a frame {wname}!')
-            me.hover_enter_factory(wgt)
+            self.hover_enter_factory(wgt)
             try:
                 sub_wgts = getattr(wgt, 'wgts')
                 if sub_wgts is not None:
-                    me.recurse_hover(sub_wgts, indent=indent + 4)
+                    self.recurse_hover(sub_wgts, indent=indent + 4)
             except AttributeError:
                 pass
 
@@ -120,18 +120,18 @@ class Popup:
 
         this_widget.bind("<Enter>", this_fn)
 
-    def styling(me):
+    def styling(self):
         """Set the styling elements of the window.
 
         """
-        me.root.tk.call("source", "Azure-ttk-theme-main/Azure-ttk-theme-main/azure.tcl")
-        me.root.tk.call("set_theme", "dark")
+        self.root.tk.call("source", "Azure-ttk-theme-main/Azure-ttk-theme-main/azure.tcl")
+        self.root.tk.call("set_theme", "dark")
         # frame padding
-        me.pad = dict(
+        self.pad = dict(
             x=5,
             y=3
         )
-        me._wgt_styles = {'toggle': 'Switch.TCheckbutton', 'labelframe': 'Card.TFrame'}
+        self._wgt_styles = {'toggle': 'Switch.TCheckbutton', 'labelframe': 'Card.TFrame'}
 
         # looking at hiding the titlebar, no luck
         # me.root.wm_attributes('-fullscreen', 'True')  # fullscreen no titlebar
@@ -139,17 +139,17 @@ class Popup:
         # me.root.wm_attributes('-type', 'splash')  # linux specific
         # me.root.overrideredirect(1)  # this hides the titlebar, but it's placing the window in the corner
 
-    def add_message_display(me, parent, message):
+    def add_message_display(self, parent, message):
         msg = message['msg_txt']
         message_text = msg['template'].format(timestamp=msg['timestamp'], len_meters=msg['length_in_meters'])
         label = tk.ttk.Label(parent, text=message_text)
-        label.grid(column=0, row=0, padx=me.pad['x'], pady=me.pad['y'], sticky="w")
+        label.grid(column=0, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="w")
         parent.wgts['msg_box'] = label
 
     def button_command(self):
         pass
 
-    def add_toggle(me, button, side):
+    def add_toggle(self, button, side):
         # add a state tracker on the button, a side metadata-label, and add a side state tracker to the message frame
         setattr(button, 'active', True)
         setattr(button, 'side', side)
@@ -175,7 +175,7 @@ class Popup:
         button.bind("<Button-1>", toggle_me)
         # return toggle_me
 
-    def show_me_the_event(me, event):
+    def show_me_the_event(self, event):
         # event.widget.side  # string side
         # event.widget.state_var.get()  # value showing what the variable ** was before the event **
         side = event.widget.side
@@ -196,18 +196,18 @@ class Popup:
             if new_val:
                 print('set sides true')
                 for val in not_all:
-                    me.main_frm.wgts[msg_id].wgts[val].state_var.set(True)
+                    self.main_frm.wgts[msg_id].wgts[val].state_var.set(True)
             else:
                 print('set sides false')
                 for val in not_all:
-                    me.main_frm.wgts[msg_id].wgts[val].state_var.set(False)
+                    self.main_frm.wgts[msg_id].wgts[val].state_var.set(False)
                 # me.main_frm.wgts[msg_id].wgts['all'].state_var.set(False)
         else:
             print('a side was changed')
             if not new_val:
                 print('set all toggle-button false since this is not true')
-                if me.main_frm.wgts[msg_id].wgts['all'].state_var.get():
-                    me.main_frm.wgts[msg_id].wgts['all'].state_var.set(False)
+                if self.main_frm.wgts[msg_id].wgts['all'].state_var.get():
+                    self.main_frm.wgts[msg_id].wgts['all'].state_var.set(False)
             else:
                 print('a side was set to true')
                 sides_count = 0
@@ -217,40 +217,25 @@ class Popup:
                         sides_count += 1
                         side_val = 1
                     else:
-                        side_val = me.main_frm.wgts[msg_id].wgts[iter_side].state_var.get()
+                        side_val = self.main_frm.wgts[msg_id].wgts[iter_side].state_var.get()
                         sides_count += side_val
                     print(iter_side, side_val, sides_count)
 
                 if sides_count == 3:
-                    me.main_frm.wgts[msg_id].wgts['all'].state_var.set(True)
+                    self.main_frm.wgts[msg_id].wgts['all'].state_var.set(True)
 
                 # if all(me.main_frm.wgts[msg_id].wgts[side].state_var.get() for side in not_all):
                 #     print('all sides selected, set all to true')
                 #     me.main_frm.wgts[msg_id].wgts['all'].state_var.set(True)
 
-    def add_buttons(me, parent, message):
-        btn_frame = tk.ttk.Frame(parent, style=me._wgt_styles['labelframe'])  # is this style hiding the frame?
-        btn_frame.grid(column=1, row=0, padx=me.pad['x'], pady=me.pad['y'], sticky="nesw")
-        me.wigify(btn_frame)
-        parent.wgts[f'btn_frame_main'] = btn_frame
-        # button_def_dict = {}
-        # button_def_dict = {'all': {'params':
-        #                                {'text': 'All of this length was removed.',
-        #                                 'command': lambda: print('You press my buttons!'),
-        #                                 'variable': me._removed_state_vars[message['msg_id']]['all']},
-        #                            'grid_params': {'column': 0, 'row': 0, 'columnspan': 3, 'rowspan': 2,
-        #                                            'sticky': 'nesw'},
-        #                            'state_var': me._removed_state_vars[message['msg_id']]['all']
-        #                            }}
-        # side_button_text = {'left': 'Operator\nSide', 'center': 'Center\n', 'right': 'Foamline\nSide'}
-        # side_button_dict = {side: {'params':
-        #                                {'text': f'{side_button_text[side]} was removed.',
-        #                                 'variable': me._removed_state_vars[message['msg_id']][side]},
-        #                            'grid_params': {'column': 2 * (n + 1), 'columnspan': 2, 'rowspan': 2,
-        #                                            'row': 2, 'padx': me.pad['x'], 'pady': me.pad['y']},
-        #                            'state_var': me._removed_state_vars[message['msg_id']][side]
-        #                            } for n, side in enumerate(('left', 'center', 'right'))}
+    def add_buttons(self, parent, message):
+        self._add_removed_toggle_selectors(message, parent)
 
+    def _add_removed_toggle_selectors(self, message, parent):
+        btn_frame = tk.ttk.Frame(parent, style=self._wgt_styles['labelframe'])  # is this style hiding the frame?
+        btn_frame.grid(column=1, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw")
+        self.wigify(btn_frame)
+        parent.wgts[f'btn_frame_main'] = btn_frame
         # define the all of the section removed button
         button_def_dict = {'all': {'params':
                                        {'text': 'All of this length was removed.',
@@ -259,51 +244,41 @@ class Popup:
                                    'grid_params': {'column': 4,
                                                    'row': 0,
                                                    # 'columnspan': 8,
-                                                   'padx': me.pad['x'],
-                                                   'pady': me.pad['y'],
+                                                   'padx': self.pad['x'],
+                                                   'pady': self.pad['y'],
                                                    'sticky': 'nesw'}
                                    }
                            }
-
         # define the sides buttons
         side_button_text = {'left': 'Operator\nSide', 'center': 'Center\n', 'right': 'Foamline\nSide'}
         side_button_dict = {side: {'params':
                                        {'text': f'{side_button_text[side]} was removed.',
                                         'variable': tk.IntVar()},
                                    'grid_params': {'column': 2 * (n + 1), 'columnspan': 2, 'rowspan': 2,
-                                                   'row': 2, 'padx': me.pad['x'], 'pady': me.pad['y']}
+                                                   'row': 2, 'padx': self.pad['x'], 'pady': self.pad['y']}
                                    } for n, side in enumerate(('left', 'center', 'right'))}
-
         button_def_dict.update(side_button_dict)
         for bnum, (btn, btndef) in enumerate(button_def_dict.items()):
-            # add an outline frame to the button_frame for this message
-            # btn_frm = tk.ttk.Frame(btn_frame)
-            # btn_frm.grid(**btndef['grid_params'])
-            # btn_frame.wgts[f'sub_frame{bnum}'] = btn_frm
-
             # add a toggle switch
-            btn_wgt = ttk.Checkbutton(btn_frame, style=me._wgt_styles['toggle'], **btndef['params'])
+            btn_wgt = ttk.Checkbutton(btn_frame, style=self._wgt_styles['toggle'], **btndef['params'])
             setattr(btn_wgt, 'state_var', btndef['params']['variable'])
             setattr(btn_wgt, 'side', btn)
             setattr(btn_wgt, 'msg_id', message['msg_id'])
-            btn_wgt.bind('<Button-1>', me.show_me_the_event)
+            btn_wgt.bind('<Button-1>', self.show_me_the_event)
 
             btn_wgt.grid(**btndef['grid_params'])
 
             # TODO: only the sections that should have been removed to default on (from the 'message')
+            # default to all toggles on
             btndef['params']['variable'].set(True)
-            # my_command = btndef.get('command')
-            # if my_command:
-            #     btn_wgt.config(command=my_command(btn_wgt, btn))
-            parent.wgts[btn] = btn_wgt
-
+            btn_frame.wgts[btn] = btn_wgt
         # add a line separator to make the all button stand out from the side buttons
         sep = ttk.Separator(btn_frame, orient='horizontal')
         sep_grid_dict = {'column': 0,
                          'row': 1,
                          'columnspan': 8,
-                         'padx': me.pad['x'],
-                         'pady': me.pad['y'],
+                         'padx': self.pad['x'],
+                         'pady': self.pad['y'],
                          'sticky': 'nesw'}
         sep.grid(**sep_grid_dict)
 
