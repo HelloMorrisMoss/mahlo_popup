@@ -19,7 +19,7 @@ class Popup:
         me.root = tk.Tk()
         me.root.title(me._defdic['main_win']['title'])
         me.root.geometry('800x500')
-        me._wgts = {}
+        me.wgts = {}
         me.styling()
 
         me._removed_state_vars = {
@@ -33,13 +33,13 @@ class Popup:
         # dev_label = tk.ttk.Label(dev_frame, text='for dev')
         # dev_label.grid(row=0, column=0)
         #
-        # me._wgts['dev_label'] = dev_label
+        # me.wgts['dev_label'] = dev_label
 
         me.main_frm = tk.ttk.Frame(me.root)
         me.main_frm.grid(row=1, column=0, sticky='nesw', columnspan=3)
         me.wigify(me.main_frm)
         # me.hover_enter_factory(me.main_frm)
-        me._wgts['main_frame'] = me.main_frm
+        me.wgts['main_frame'] = me.main_frm
 
         # add the frames for the messages and the widgets therein
         for mnum, message in enumerate(me._defdic['messages']):
@@ -51,28 +51,52 @@ class Popup:
             mlf.grid(column=0, row=mnum, padx=me.pad['x'], pady=me.pad['y'], sticky="nesw")
             me.add_buttons(mlf, message)
 
-        me.recurse_hover(me._wgts['main_frame'].wgts)
+        # me.recurse_hover(me.wgts)
+        me.recurse_tk_structure(me.root)
 
         me.root.mainloop()
+
+    def recurse_tk_structure(self, obj, name='starting_level', indent=0):
+        """Recursively move down the nested tkinter objects by their 'children' attribute, printing the structure.
+
+        :param obj: tkinter object.
+        :param name: the 'key' from the next level up dict for this object.
+        :param indent: how far to indent the print statement.
+        """
+        ind_space = ' ' * indent
+        print(f'{ind_space}{name} - {obj}')
+
+        try:
+            for name, kid in obj.children.items():
+                self.recurse_tk_structure(kid, name, indent + 4)
+        except AttributeError:
+            print(f'{ind_space}leaf - end')
 
     def wigify(self, obj):
         """Add a property 'wgts' that is an empty dictionary to the obj. (Intended for keeping track of tkinter widgets.)
 
-        :param obj: the
+        :param obj: any, the object to add the property.
         """
         setattr(obj, 'wgts', {})
 
-    def recurse_hover(me, wgts_dict):
+    def recurse_hover(me, wgts_dict, indent=0):
+        """Recursively move down the nested tk objects by their 'custom' .wgt dict items adding a mouse-over function.
+
+        :param wgts_dict:
+        :param indent:
+        """
         for wname, wgt in wgts_dict.items():
-            if 'frame' not in wname:
-                print(f'I am not a frame {wname}!')
-                me.hover_enter_factory(wgt)
-            else:
-                print(f'I am a frame {wname}!')
+            print('wd' + '\t' * indent, wgt, wgt.grid_info())
+            # if 'frame' not in wname:
+            #     print(f'I am not a frame {wname}!')
+            #     me.hover_enter_factory(wgt)
+            # else:
+            #     print(f'I am a frame {wname}!')
+            me.hover_enter_factory(wgt)
             try:
                 sub_wgts = getattr(wgt, 'wgts')
                 if sub_wgts is not None:
-                    me.recurse_hover(sub_wgts)
+                    me.recurse_hover(sub_wgts, indent=indent + 4)
             except AttributeError:
                 pass
 
@@ -81,13 +105,13 @@ class Popup:
 
         :param this_widget: a tkinter widget.
         """
-        print(this_widget)
+        # print(this_widget)
         this_widget = this_widget
         winfo = this_widget.grid_info()
 
         def set_loc_label(event, this_widget):
             event_widget = event.widget
-            # self._wgts['dev_label'].config(text=f'{winfo}')
+            # self.wgts['dev_label'].config(text=f'{winfo}')
             print(this_widget, event_widget, winfo)
 
         import functools
@@ -107,7 +131,7 @@ class Popup:
             x=5,
             y=3
         )
-        me._wgt_styles = {'toggle': 'Switch.TCheckbutton', 'labelframe': ''}
+        me._wgt_styles = {'toggle': 'Switch.TCheckbutton', 'labelframe': 'Card.TFrame'}
 
         # looking at hiding the titlebar, no luck
         # me.root.wm_attributes('-fullscreen', 'True')  # fullscreen no titlebar
@@ -172,7 +196,6 @@ class Popup:
             if new_val:
                 print('set sides true')
                 for val in not_all:
-
                     me.main_frm.wgts[msg_id].wgts[val].state_var.set(True)
             else:
                 print('set sides false')
@@ -206,9 +229,10 @@ class Popup:
                 #     me.main_frm.wgts[msg_id].wgts['all'].state_var.set(True)
 
     def add_buttons(me, parent, message):
-        btn_frame = tk.ttk.Frame(parent, style='Card.TFrame')
+        btn_frame = tk.ttk.Frame(parent, style=me._wgt_styles['labelframe'])  # is this style hiding the frame?
         btn_frame.grid(column=1, row=0, padx=me.pad['x'], pady=me.pad['y'], sticky="nesw")
         me.wigify(btn_frame)
+        parent.wgts[f'btn_frame_main'] = btn_frame
         # button_def_dict = {}
         # button_def_dict = {'all': {'params':
         #                                {'text': 'All of this length was removed.',
@@ -227,13 +251,21 @@ class Popup:
         #                            'state_var': me._removed_state_vars[message['msg_id']][side]
         #                            } for n, side in enumerate(('left', 'center', 'right'))}
 
+        # define the all of the section removed button
         button_def_dict = {'all': {'params':
                                        {'text': 'All of this length was removed.',
                                         'command': lambda: print('You press my buttons!'),
                                         'variable': tk.IntVar()},
-                                   'grid_params': {'column': 0, 'row': 0, 'columnspan': 3, 'rowspan': 2,
+                                   'grid_params': {'column': 4,
+                                                   'row': 0,
+                                                   # 'columnspan': 8,
+                                                   'padx': me.pad['x'],
+                                                   'pady': me.pad['y'],
                                                    'sticky': 'nesw'}
-                                   }}
+                                   }
+                           }
+
+        # define the sides buttons
         side_button_text = {'left': 'Operator\nSide', 'center': 'Center\n', 'right': 'Foamline\nSide'}
         side_button_dict = {side: {'params':
                                        {'text': f'{side_button_text[side]} was removed.',
@@ -245,22 +277,35 @@ class Popup:
         button_def_dict.update(side_button_dict)
         for bnum, (btn, btndef) in enumerate(button_def_dict.items()):
             # add an outline frame to the button_frame for this message
-            btn_frm = tk.ttk.Frame(btn_frame)
-            btn_frm.grid(**btndef['grid_params'])
-            btn_frame.wgts[f'sub_frame{bnum}'] = btn_frm
+            # btn_frm = tk.ttk.Frame(btn_frame)
+            # btn_frm.grid(**btndef['grid_params'])
+            # btn_frame.wgts[f'sub_frame{bnum}'] = btn_frm
 
             # add a toggle switch
-            btn_wgt = ttk.Checkbutton(btn_frm, style='Switch.TCheckbutton', **btndef['params'])
+            btn_wgt = ttk.Checkbutton(btn_frame, style=me._wgt_styles['toggle'], **btndef['params'])
             setattr(btn_wgt, 'state_var', btndef['params']['variable'])
             setattr(btn_wgt, 'side', btn)
             setattr(btn_wgt, 'msg_id', message['msg_id'])
             btn_wgt.bind('<Button-1>', me.show_me_the_event)
 
             btn_wgt.grid(**btndef['grid_params'])
+
+            # TODO: only the sections that should have been removed to default on (from the 'message')
+            btndef['params']['variable'].set(True)
             # my_command = btndef.get('command')
             # if my_command:
             #     btn_wgt.config(command=my_command(btn_wgt, btn))
             parent.wgts[btn] = btn_wgt
+
+        # add a line separator to make the all button stand out from the side buttons
+        sep = ttk.Separator(btn_frame, orient='horizontal')
+        sep_grid_dict = {'column': 0,
+                         'row': 1,
+                         'columnspan': 8,
+                         'padx': me.pad['x'],
+                         'pady': me.pad['y'],
+                         'sticky': 'nesw'}
+        sep.grid(**sep_grid_dict)
 
 
 # TODO: buttons need to do something
