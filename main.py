@@ -266,7 +266,7 @@ class Popup:
 
         # add them to the button frame
         for bnum, (btn, btndef) in enumerate(button_def_dict.items()):
-            self._add_toggle(btn_frame, btn, btndef, message)
+            self._add_toggle(btn_frame, btn, btndef, message, parent)
 
         # add a line separator to make the all button stand out from the side buttons
         sep = ttk.Separator(btn_frame, orient='horizontal')
@@ -278,7 +278,7 @@ class Popup:
                          'sticky': 'nesw'}
         sep.grid(**sep_grid_dict)
 
-    def _add_toggle(self, btn_frame, btn, btndef, message):
+    def _add_toggle(self, btn_frame, btn, btndef, message, parent):
         """Add a toggle button to the frame using a definition dictionary.
 
         :param btn_frame: tkinter.Frame
@@ -303,7 +303,7 @@ class Popup:
         btndef['params']['variable'].set(True)
 
         # add it to the wgts dict
-        btn_frame.wgts[btn] = btn_wgt
+        parent.wgts[btn] = btn_wgt
 
     def _get_toggle_definitions(self):
         """Get the dictionary defining the 'all' and 'left', 'center', and 'right' sides' toggle buttons.
