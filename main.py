@@ -250,24 +250,7 @@ class Popup:
 
         # add them to the button frame
         for bnum, (btn, btndef) in enumerate(button_def_dict.items()):
-            # add a toggle switch
-            btn_wgt = ttk.Checkbutton(btn_frame, style=self._wgt_styles['toggle'], **btndef['params'])
-            btn_wgt.grid(**btndef['grid_params'])
-
-            # add some custom attributes to use elsewhere, to keep track of which button is which
-            setattr(btn_wgt, 'state_var', btndef['params']['variable'])
-            setattr(btn_wgt, 'side', btn)
-            setattr(btn_wgt, 'msg_id', message['msg_id'])
-
-            # add the event handler method
-            btn_wgt.bind('<Button-1>', self.toggle_changes_event_handler)
-
-            # TODO: only the sections that should have been removed to default on (from the 'message')
-            # default to all toggles on
-            btndef['params']['variable'].set(True)
-
-            # add it to the wgts dict
-            btn_frame.wgts[btn] = btn_wgt
+            self._add_toggle(btn_frame, btn, btndef, message)
 
         # add a line separator to make the all button stand out from the side buttons
         sep = ttk.Separator(btn_frame, orient='horizontal')
@@ -278,6 +261,29 @@ class Popup:
                          'pady': self.pad['y'],
                          'sticky': 'nesw'}
         sep.grid(**sep_grid_dict)
+
+    def _add_toggle(self, btn_frame, btn, btndef, message):
+        """Add a toggle button to the frame using a definition dictionary.
+
+        :param btn_frame: tkinter.Frame
+        :param btn: str, the 'side' for the button.
+        :param btndef: dict, definining parameters for the button.
+        :param message: dict, the message definition.
+        """
+        # add a toggle switch
+        btn_wgt = ttk.Checkbutton(btn_frame, style=self._wgt_styles['toggle'], **btndef['params'])
+        btn_wgt.grid(**btndef['grid_params'])
+        # add some custom attributes to use elsewhere, to keep track of which button is which
+        setattr(btn_wgt, 'state_var', btndef['params']['variable'])
+        setattr(btn_wgt, 'side', btn)
+        setattr(btn_wgt, 'msg_id', message['msg_id'])
+        # add the event handler method
+        btn_wgt.bind('<Button-1>', self.toggle_changes_event_handler)
+        # TODO: only the sections that should have been removed to default on (from the 'message')
+        # default to all toggles on
+        btndef['params']['variable'].set(True)
+        # add it to the wgts dict
+        btn_frame.wgts[btn] = btn_wgt
 
     def _get_toggle_definitions(self):
         """Get the dictionary defining the 'all' and 'left', 'center', and 'right' sides' toggle buttons.
