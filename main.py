@@ -184,9 +184,7 @@ class Popup:
 
         :param event: tkinter.Event, for the toggle button being pressed.
         """
-        side = event.widget.side  # left, right, center, all
-        now_on = 'selected' not in event.widget.state()  # whether the toggle is turning on or off; was selected -> off
-        msg_id = event.widget.msg_id  # the custom id attribute, used to track which message this relates to
+        msg_id, now_on, side = self._get_event_info(event)
         print(event, event.widget.msg_id, event.widget.side, event.widget.state_var.get(), event.widget.state(),
               f'new {now_on}')
 
@@ -197,13 +195,10 @@ class Popup:
         if side == 'all':
             if now_on:
                 print('set sides true')
-                for val in not_all:
-                    self.main_frm.wgts[msg_id].wgts[val].state_var.set(True)
+                self._set_all_sides(msg_id, not_all, True)
             else:
                 print('set sides false')
-                for val in not_all:
-                    self.main_frm.wgts[msg_id].wgts[val].state_var.set(False)
-                # me.main_frm.wgts[msg_id].wgts['all'].state_var.set(False)
+                self._set_all_sides(msg_id, not_all, False)
         else:
             print('a side was changed')
             if not now_on:
@@ -225,6 +220,27 @@ class Popup:
 
                 if sides_count == 3:
                     self.main_frm.wgts[msg_id].wgts['all'].state_var.set(True)
+
+    def _set_all_sides(self, msg_id, not_all, state):
+        """Set all the side buttons to the same state.
+
+        :param msg_id: str, the id of the message these buttons belong to.
+        :param not_all: list, of strings defining the sides other than 'all'
+        :param state: bool, the state to set the toggle tkinter.IntVar to.
+        """
+        for val in not_all:
+            self.main_frm.wgts[msg_id].wgts[val].state_var.set(state)
+
+    def _get_event_info(self, event):
+        """Get the side, new state, and message id from the widget calling the event.
+
+        :param event: tkinter.Event, the button press event.
+        :return: tuple, of the info.
+        """
+        side = event.widget.side  # left, right, center, all
+        now_on = 'selected' not in event.widget.state()  # whether the toggle is turning on or off; was selected -> off
+        msg_id = event.widget.msg_id  # the custom id attribute, used to track which message this relates to
+        return msg_id, now_on, side
 
     def add_buttons(self, parent, message):
         """Add the button frames and their widgets to the parent frame.
@@ -273,15 +289,19 @@ class Popup:
         # add a toggle switch
         btn_wgt = ttk.Checkbutton(btn_frame, style=self._wgt_styles['toggle'], **btndef['params'])
         btn_wgt.grid(**btndef['grid_params'])
+
         # add some custom attributes to use elsewhere, to keep track of which button is which
         setattr(btn_wgt, 'state_var', btndef['params']['variable'])
         setattr(btn_wgt, 'side', btn)
         setattr(btn_wgt, 'msg_id', message['msg_id'])
+
         # add the event handler method
         btn_wgt.bind('<Button-1>', self.toggle_changes_event_handler)
+
         # TODO: only the sections that should have been removed to default on (from the 'message')
         # default to all toggles on
         btndef['params']['variable'].set(True)
+
         # add it to the wgts dict
         btn_frame.wgts[btn] = btn_wgt
 
