@@ -246,25 +246,7 @@ class Popup:
         self.wigify(btn_frame)
         parent.wgts[f'btn_frame_main'] = btn_frame
 
-        # define the 'all of the section removed' button
-        button_def_dict = {'all': {'params': {'text': 'All of this length was removed.',
-                                              'command': lambda: print('You press my buttons!'),
-                                              'variable': tk.IntVar()},
-                                   'grid_params': {'column': 4,
-                                                   'row': 0,
-                                                   # 'columnspan': 8,
-                                                   'padx': self.pad['x'],
-                                                   'pady': self.pad['y'],
-                                                   'sticky': 'nesw'}}}
-        # define the sides buttons
-        side_button_text = {'left': 'Operator\nSide', 'center': 'Center\n', 'right': 'Foamline\nSide'}
-        side_button_dict = {side: {'params':
-                                       {'text': f'{side_button_text[side]} was removed.',
-                                        'variable': tk.IntVar()},
-                                   'grid_params': {'column': 2 * (n + 1), 'columnspan': 2, 'rowspan': 2,
-                                                   'row': 2, 'padx': self.pad['x'], 'pady': self.pad['y']}
-                                   } for n, side in enumerate(('left', 'center', 'right'))}
-        button_def_dict.update(side_button_dict)
+        button_def_dict = self._get_toggle_definitions()
 
         # add them to the button frame
         for bnum, (btn, btndef) in enumerate(button_def_dict.items()):
@@ -296,6 +278,32 @@ class Popup:
                          'pady': self.pad['y'],
                          'sticky': 'nesw'}
         sep.grid(**sep_grid_dict)
+
+    def _get_toggle_definitions(self):
+        """Get the dictionary defining the 'all' and 'left', 'center', and 'right' sides' toggle buttons.
+
+        :return: dict, the definition dictionary.
+        """
+        # define the 'all of the section removed' button
+        button_def_dict = {'all': {'params': {'text': 'All of this length was removed.',
+                                              'command': lambda: print('You press my buttons!'),
+                                              'variable': tk.IntVar()},
+                                   'grid_params': {'column': 4,
+                                                   'row': 0,
+                                                   # 'columnspan': 8,
+                                                   'padx': self.pad['x'],
+                                                   'pady': self.pad['y'],
+                                                   'sticky': 'nesw'}}}
+        # define the sides buttons
+        side_button_text = {'left': 'Operator\nSide', 'center': 'Center\n', 'right': 'Foamline\nSide'}
+        side_button_dict = {side: {'params':
+                                       {'text': f'{side_button_text[side]} was removed.',
+                                        'variable': tk.IntVar()},
+                                   'grid_params': {'column': 2 * (n + 1), 'columnspan': 2, 'rowspan': 2,
+                                                   'row': 2, 'padx': self.pad['x'], 'pady': self.pad['y']}
+                                   } for n, side in enumerate(('left', 'center', 'right'))}
+        button_def_dict.update(side_button_dict)
+        return button_def_dict
 
 
 # TODO:
