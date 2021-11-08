@@ -3,6 +3,7 @@
 import argparse
 import json
 import tkinter as tk
+import traceback
 from tkinter import ttk
 from datetime import datetime
 from pprint import pprint  # for dev
