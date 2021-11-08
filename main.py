@@ -14,6 +14,24 @@ class Popup:
     """
 
     def __init__(self, input_dict):
+        """
+        example_input_dict = {'messages': [{'title': 'Out of spec!',
+                                        'msg_txt': {'template': template_str,
+                                                    'timestamp': datetime.now().isoformat(),
+                                                    'length_in_meters': oospec_len_meters},
+                                        'buttons': ['removed!', 'oops!'],
+                                        'msg_id': msg_id
+                                        }
+                                       for msg_id in ('msg123', 'msg456', 'msg789')],
+                          'main_win': {'title': 'Messages received!'}
+                          }
+            messages: a list of message dictionaries. Each of which should include:
+               title: a string title for the message frame
+            main_win: a dictionary of parameters for the window apart from the messages.
+                title: a string with the title for the main window.
+        :param input_dict:
+        """
+        pprint(json.dumps(input_dict, indent=4))
         # set things up for the main window
         self._defdic = input_dict
         self.root = tk.Tk()
