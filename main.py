@@ -46,6 +46,9 @@ class Popup:
         for mid, state_dict in self._removed_state_vars.items():
             state_dict['all'].set(True)
 
+        # the format for the datetime strftime to use for display
+        self.dt_format_str = self._defdic['main_win']['timestamp_display_format']
+
         # the main frame
         self.main_frm = tk.ttk.Frame(self.root)
         self.main_frm.grid(row=1, column=0, sticky='nesw', columnspan=3)
@@ -153,7 +156,7 @@ class Popup:
 
     def add_message_display(self, parent, message):
         msg = message['msg_txt']
-        message_text = msg['template'].format(timestamp=msg['timestamp'], len_meters=msg['length_in_meters'])
+        message_text = msg['template'].format(timestamp=msg['timestamp'].strftime(self.dt_format_str), len_meters=msg['length_in_meters'])
         label = tk.ttk.Label(parent, text=message_text)
         label.grid(column=0, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="w")
         parent.wgts['msg_box'] = label
@@ -390,7 +393,7 @@ if __name__ == '__main__':
     # for development, a dummy dict
     if json_str is None:
         oospec_len_meters = 4.3
-        template_str = 'At {timestamp}\n there were {len_meters} meters oospec!'
+        template_str = 'At {timestamp}\nthere were {len_meters} meters oospec!'
         test_json_dict = {'messages': [{'title': 'Out of spec!',
                                         'msg_txt': {'template': template_str,
                                                     'timestamp': datetime.now().isoformat(),
@@ -399,7 +402,7 @@ if __name__ == '__main__':
                                         'msg_id': msg_id
                                         }
                                        for msg_id in ('msg123', 'msg456', 'msg789')],
-                          'main_win': {'title': 'Messages received!'}
+                          'main_win': {'title': 'Messages received!', 'timestamp_display_format': r'%I:%M %d-%b'}
                           }
         json_str = json.dumps(test_json_dict)
 
