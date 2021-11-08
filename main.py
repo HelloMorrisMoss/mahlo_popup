@@ -41,7 +41,7 @@ class Popup:
         self.styling()
 
         self._removed_state_vars = {
-            msg['msg_id']: {'all': tk.IntVar(), 'left': tk.IntVar(), 'center': tk.IntVar(), 'right': tk.IntVar()}
+            msg['msg_id']: {'all': tk.IntVar(), 'left': tk.IntVar(), 'left_center': tk.IntVar(), 'center': tk.IntVar(), 'right_center': tk.IntVar(), 'right': tk.IntVar()}
             for msg in self._defdic['messages']}
         for mid, state_dict in self._removed_state_vars.items():
             state_dict['all'].set(True)
@@ -272,7 +272,7 @@ class Popup:
         self._add_removed_toggle_selectors(message, parent)
 
         # add the save button
-        send_button_frame = tk.ttk.Frame(parent, style=self._wgt_styles['labelframe'])  # is this style hiding the frame?
+        send_button_frame = tk.ttk.Frame(parent, style=self._wgt_styles['labelframe'])
 
         send_grid_params = {'column': 12, 'row': 0, 'padx': self.pad['x'],
                                                    'pady': self.pad['y'],
@@ -306,11 +306,13 @@ class Popup:
         self.wigify(btn_frame)
         parent.wgts[f'btn_frame_main'] = btn_frame
 
-        button_def_dict = self._get_toggle_definitions()
+        button_def_dict = self._get_toggle_definitions(message['toggle_count_guess'])
 
         # add them to the button frame
         for bnum, (btn, btndef) in enumerate(button_def_dict.items()):
             self._add_toggle(btn_frame, btn, btndef, message, parent)
+
+
 
         # add a line separator to make the all button stand out from the side buttons
         sep = ttk.Separator(btn_frame, orient='horizontal')
@@ -349,7 +351,7 @@ class Popup:
         # add it to the wgts dict
         parent.wgts[btn] = btn_wgt
 
-    def _get_toggle_definitions(self):
+    def _get_toggle_definitions(self, num_of_buttons=3):
         """Get the dictionary defining the 'all' and 'left', 'center', and 'right' sides' toggle buttons.
 
         :return: dict, the definition dictionary.
@@ -365,13 +367,17 @@ class Popup:
                                                    'pady': self.pad['y'],
                                                    'sticky': 'nesw'}}}
         # define the sides buttons
-        side_button_text = {'left': 'Operator\nSide', 'center': 'Center\n', 'right': 'Foamline\nSide'}
+        number_of_buttons_to_definitions = {1: [], 2: ['left', 'right'], 3: ['left', 'center', 'right'],
+                                            4: ['left', 'left_center', 'right_center', 'right'],
+                                            5: ['left', 'left_center', 'center', 'right_center', 'right']}
+        side_button_text = {'left': 'Operator\nSide', 'left_center': 'Operator\nSide of Center',
+                            'center': 'Center\n', 'right_center': 'Operator\nSide of Center', 'right': 'Foamline\nSide'}
         side_button_dict = {side: {'params':
                                        {'text': f'{side_button_text[side]} was removed.',
                                         'variable': tk.IntVar()},
                                    'grid_params': {'column': 2 * (n + 1), 'columnspan': 2, 'rowspan': 2,
                                                    'row': 2, 'padx': self.pad['x'], 'pady': self.pad['y']}
-                                   } for n, side in enumerate(('left', 'center', 'right'))}
+                                   } for n, side in enumerate(number_of_buttons_to_definitions[num_of_buttons])}
         button_def_dict.update(side_button_dict)
         return button_def_dict
 
@@ -399,9 +405,10 @@ if __name__ == '__main__':
                                                     'timestamp': datetime.now().isoformat(),
                                                     'length_in_meters': oospec_len_meters},
                                         'buttons': ['removed!', 'oops!'],
+                                        'toggle_count_guess': mnum + 1,
                                         'msg_id': msg_id
                                         }
-                                       for msg_id in ('msg123', 'msg456', 'msg789')],
+                                       for mnum, msg_id in enumerate(('msg123', 'msg456', 'msg789', 'msg987', 'msg654'))],
                           'main_win': {'title': 'Messages received!', 'timestamp_display_format': r'%I:%M %d-%b'}
                           }
         json_str = json.dumps(test_json_dict)
