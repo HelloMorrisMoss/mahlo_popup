@@ -6,6 +6,10 @@ import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
 from pprint import pprint  # for dev
+import logging
+
+lg = logging.getLogger('mds_popup_window')
+logging.basicConfig()
 
 
 class Popup:
@@ -204,7 +208,8 @@ class Popup:
               f'new {now_on}')
 
         # the sides that are not all
-        not_all = 'left', 'center', 'right'
+        # not_all = 'left', 'center', 'right'
+        not_all = event.widget.not_all_list
 
         # evaluate and set the toggles if needed
         if side == 'all':
@@ -233,7 +238,7 @@ class Popup:
                         sides_count += side_val
                     print(iter_side, side_val, sides_count)
 
-                if sides_count == 3:
+                if sides_count == len(event.widget.not_all_list):
                     self.main_frm.wgts[msg_id].wgts['all'].state_var.set(True)
 
     def _set_all_sides(self, msg_id, not_all, state):
@@ -339,6 +344,11 @@ class Popup:
         setattr(btn_wgt, 'side', btn)
         setattr(btn_wgt, 'msg_id', message['msg_id'])
 
+        # if it is the 'all' button add the list of buttons to toggle
+        if btndef.get('not_all_list') is not None:
+            lg.debug('setting not_all_list on all button')
+            setattr(btn_wgt, 'not_all_list', btndef['not_all_list'])
+
         # add the event handler method
         btn_wgt.bind('<Button-1>', self.toggle_changes_event_handler)
 
@@ -354,6 +364,20 @@ class Popup:
 
         :return: dict, the definition dictionary.
         """
+        # define the sides buttons
+        number_of_buttons_to_definitions_lists = {1: [], 2: ['left', 'right'], 3: ['left', 'center', 'right'],
+                                            4: ['left', 'left_center', 'right_center', 'right'],
+                                            5: ['left', 'left_center', 'center', 'right_center', 'right']}
+        side_button_text = {'left': 'Operator\nSide', 'left_center': 'Operator Side\nof Center',
+                            'center': 'Center\n', 'right_center': 'Foamline Side\nof Center', 'right': 'Foamline\nSide'}
+        side_button_dict = {side: {'params':
+                                       {'text': f'{side_button_text[side]} was removed.',
+                                        'variable': tk.IntVar()},
+                                   'grid_params': {'column': 2 * (n + 1), 'columnspan': 2, 'rowspan': 2,
+                                                   'row': 2, 'padx': self.pad['x'], 'pady': self.pad['y']},
+                                   'not_all_list': number_of_buttons_to_definitions_lists[num_of_buttons]
+                                   } for n, side in enumerate(number_of_buttons_to_definitions_lists[num_of_buttons])}
+
         # define the 'all of the section removed' button
         all_button_column = {1: 2, 2: 3, 3: 4, 4: 5, 5: 6}
         button_def_dict = {'all': {'params': {'text': 'All of this length was removed.',
@@ -364,19 +388,8 @@ class Popup:
                                                    'columnspan': 3,
                                                    'padx': self.pad['x'],
                                                    'pady': self.pad['y'],
-                                                   'sticky': 'nesw'}}}
-        # define the sides buttons
-        number_of_buttons_to_definitions = {1: [], 2: ['left', 'right'], 3: ['left', 'center', 'right'],
-                                            4: ['left', 'left_center', 'right_center', 'right'],
-                                            5: ['left', 'left_center', 'center', 'right_center', 'right']}
-        side_button_text = {'left': 'Operator\nSide', 'left_center': 'Operator\nSide of Center',
-                            'center': 'Center\n', 'right_center': 'Operator\nSide of Center', 'right': 'Foamline\nSide'}
-        side_button_dict = {side: {'params':
-                                       {'text': f'{side_button_text[side]} was removed.',
-                                        'variable': tk.IntVar()},
-                                   'grid_params': {'column': 2 * (n + 1), 'columnspan': 2, 'rowspan': 2,
-                                                   'row': 2, 'padx': self.pad['x'], 'pady': self.pad['y']}
-                                   } for n, side in enumerate(number_of_buttons_to_definitions[num_of_buttons])}
+                                                   'sticky': 'nesw'},
+                                   'not_all_list': number_of_buttons_to_definitions_lists[num_of_buttons]}}
         button_def_dict.update(side_button_dict)
         return button_def_dict
 
