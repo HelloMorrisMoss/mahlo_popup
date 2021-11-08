@@ -312,13 +312,11 @@ class Popup:
         for bnum, (btn, btndef) in enumerate(button_def_dict.items()):
             self._add_toggle(btn_frame, btn, btndef, message, parent)
 
-
-
         # add a line separator to make the all button stand out from the side buttons
         sep = ttk.Separator(btn_frame, orient='horizontal')
         sep_grid_dict = {'column': 0,
                          'row': 1,
-                         'columnspan': 8,
+                         'columnspan': 12,
                          'padx': self.pad['x'],
                          'pady': self.pad['y'],
                          'sticky': 'nesw'}
@@ -357,12 +355,13 @@ class Popup:
         :return: dict, the definition dictionary.
         """
         # define the 'all of the section removed' button
+        all_button_column = {1: 2, 2: 3, 3: 4, 4: 5, 5: 6}
         button_def_dict = {'all': {'params': {'text': 'All of this length was removed.',
                                               'command': lambda: print('You press my buttons!'),
                                               'variable': tk.IntVar()},
-                                   'grid_params': {'column': 4,
+                                   'grid_params': {'column': all_button_column[num_of_buttons],
                                                    'row': 0,
-                                                   # 'columnspan': 8,
+                                                   'columnspan': 3,
                                                    'padx': self.pad['x'],
                                                    'pady': self.pad['y'],
                                                    'sticky': 'nesw'}}}
