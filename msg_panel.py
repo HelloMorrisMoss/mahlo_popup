@@ -153,8 +153,11 @@ class MessagePanel:
         side_button_text = {'left': 'Operator\nSide', 'left_center': 'Operator Side\nof Center',
                             'center': 'Center\n', 'right_center': 'Foamline Side\nof Center', 'right': 'Foamline\nSide'}
         side_button_dict = {side: {'params':
-                                       {'text': f'{side_button_text[side]} was removed.',
-                                        'variable': tk.IntVar()},
+                                       # {'text': f'{side_button_text[side]} was removed.',
+                                       #  'variable': tk.IntVar()},
+                                   {'onvalue': f'{side_button_text[side]} was removed.',
+                                    'offvalue': f'{side_button_text[side]} was not removed.',
+                                    'textvariable': tk.StringVar()},
                                    'grid_params': {'column': 2 * (n + 1), 'columnspan': 2, 'rowspan': 2,
                                                    'row': 2, 'padx': self.pad['x'], 'pady': self.pad['y']},
                                    'not_all_list': number_of_buttons_to_definitions_lists[num_of_buttons]
@@ -164,7 +167,10 @@ class MessagePanel:
         all_button_column = {1: 2, 2: 3, 3: 4, 4: 5, 5: 6}
         button_def_dict = {'all': {'params': {'text': 'All of this length was removed.',
                                               'command': lambda: lg.debug('You press my buttons!'),
-                                              'variable': tk.IntVar()},
+                                              'onvalue': 'All of this length was removed.',
+                                              'offvalue': 'None of this length was removed.',
+                                              'textvariable': tk.StringVar()},
+                                              # 'variable': tk.IntVar()},
                                    'grid_params': {'column': all_button_column[num_of_buttons],
                                                    'row': 0,
                                                    'columnspan': 3,
@@ -173,6 +179,9 @@ class MessagePanel:
                                                    'sticky': 'nesw'},
                                    'not_all_list': number_of_buttons_to_definitions_lists[num_of_buttons]}}
         button_def_dict.update(side_button_dict)
+        for btndf in button_def_dict.values():
+            btndf['params']['variable'] = btndf['params']['textvariable']
+            btndf['params']['textvariable'].set(btndf['params']['onvalue'])
         return button_def_dict
 
     def destroy_toggle_panel(self):
@@ -208,10 +217,12 @@ class MessagePanel:
         if side == 'all':
             if now_on:
                 lg.debug('set sides true')
-                self._set_all_sides(not_all, True)
+                # self._set_all_sides(not_all, True)
+                self._set_all_sides(msg_id, not_all, event.widget.onvalue)
             else:
                 lg.debug('set sides false')
-                self._set_all_sides(not_all, False)
+                # self._set_all_sides(not_all, False)
+                self._set_all_sides(msg_id, not_all, event.widget.offvalue)
         else:
             lg.debug('a side was changed')
             if not now_on:
