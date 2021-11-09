@@ -8,11 +8,20 @@ lg = logging.getLogger('mds_popup_window')
 logging.basicConfig()
 
 
+def prompt_number_window(root):
+    pwin = tk.Toplevel(root)
+    row = 0
+    # col = 0
+    for col in range(1, 5):
+        tk.ttk.Button(pwin, text=str(col))
+
+
 class MessagePanel:
-    def __init__(self, parent, message, row, **kwargs):
+    def __init__(self, root, parent, message, row, **kwargs):
         for k, v in kwargs.items():
             setattr(self, k, v)
         # self.dt_format_str = dt_format_str
+        self._root = root
         self.message = message
         self.message['msg_txt']['timestamp'] = datetime.fromisoformat(message['msg_txt']['timestamp'])
         self.main_frame = tk.ttk.LabelFrame(parent, text=message['title'])  # , style='Card.TFrame')
@@ -58,10 +67,24 @@ class MessagePanel:
         # self.wigify(send_button_frame)
         # parent.wgts[f'send_button_frame'] = send_button_frame
         self.add_save_button(send_button_frame, message, send_grid_params)
+
+        # num_button = tk.ttk.Button(parent, style='Accent.TButton', text='3 toggles')
+        #                            # ,
+        #                            # # command=lambda: self.change_toggle_count(3))
+        #                            #  command=prompt_number_window(self._root))
+        # send_grid_params.update(row=20)
+
+        # num_button = tk.ttk.Button(parent, style='Accent.TButton', text='3 toggles',
+        #                            command=lambda: self.change_toggle_count(3))
+        # send_grid_params.update(row=1)
+
         num_button = tk.ttk.Button(parent, style='Accent.TButton', text='3 toggles',
                                    command=lambda: self.change_toggle_count(3))
         send_grid_params.update(row=1)
+
         num_button.grid(**send_grid_params)
+
+
 
     def add_save_button(self, parent, message, send_grid_params):
         """Add the save/send button.
