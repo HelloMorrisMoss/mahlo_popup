@@ -4,7 +4,6 @@ from tkinter import ttk
 
 import logging
 
-
 lg = logging.getLogger('mds_popup_window')
 logging.basicConfig()
 
@@ -14,7 +13,8 @@ class MessagePanel:
         for k, v in kwargs.items():
             setattr(self, k, v)
         # self.dt_format_str = dt_format_str
-        message['msg_txt']['timestamp'] = datetime.fromisoformat(message['msg_txt']['timestamp'])
+        self.message = message
+        self.message['msg_txt']['timestamp'] = datetime.fromisoformat(message['msg_txt']['timestamp'])
         self.main_frame = tk.ttk.LabelFrame(parent, text=message['title'])  # , style='Card.TFrame')
         # self.main_frm.wgts[message['msg_id']] = mlf
         # self.wigify(mlf)
@@ -25,7 +25,8 @@ class MessagePanel:
 
     def add_message_display(self, parent, message):
         msg = message['msg_txt']
-        message_text = msg['template'].format(timestamp=msg['timestamp'].strftime(self.dt_format_str), len_meters=msg['length_in_meters'])
+        message_text = msg['template'].format(timestamp=msg['timestamp'].strftime(self.dt_format_str),
+                                              len_meters=msg['length_in_meters'])
         label = tk.ttk.Label(parent, text=message_text)
         label.grid(column=0, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="w")
         # parent.wgts['msg_box'] = label
@@ -36,19 +37,36 @@ class MessagePanel:
         :param message: dict, the message dictionary
         :param parent: tkinter.Frame, or LabelFrame or similar.
         """
-        self._add_removed_toggle_selectors(message, parent)
+        self._add_foam_removed_toggle_selectors(parent, message)
 
         # add the save button
-        send_button_frame = tk.ttk.Frame(parent, style=self._wgt_styles['labelframe'])
+        self.add_action_buttons(message, parent)
 
+    def add_action_buttons(self, message, parent):
+        """Add the action button frame and buttons.
+
+        :param message:
+        :param parent:
+        """
+
+        send_button_frame = tk.ttk.Frame(parent, style=self._wgt_styles['labelframe'])
         send_grid_params = {'column': 12, 'row': 0, 'padx': self.pad['x'],
-                                                   'pady': self.pad['y'],
-                                                   'sticky': 'nesw',
+                            'pady': self.pad['y'],
+                            'sticky': 'nesw',
                             'rowspan': 2}
         send_button_frame.grid(**send_grid_params)
         # self.wigify(send_button_frame)
         # parent.wgts[f'send_button_frame'] = send_button_frame
-        send_btn = tk.ttk.Button(send_button_frame, style='Accent.TButton', text='Save')
+        self.add_save_button(send_button_frame, message, send_grid_params)
+
+    def add_save_button(self, parent, message, send_grid_params):
+        """Add the save/send button.
+
+        :param message:
+        :param parent:
+        :param send_grid_params:
+        """
+        send_btn = tk.ttk.Button(parent, style='Accent.TButton', text='Save')
         send_btn.grid(**send_grid_params)
         setattr(send_btn, 'msg_id', message['msg_id'])
         setattr(send_btn, 'side', 'send')
@@ -59,26 +77,30 @@ class MessagePanel:
         removed_results_dict = self._removed_state_vars[msg_id]
         # TODO: save to sqlite database, then try to send all items unsent in the db
 
-    def _add_removed_toggle_selectors(self, message, parent):
+    def _add_foam_removed_toggle_selectors(self, parent, message, number_of_buttons=None):
         """Add the toggle buttons frame to the parent frame.
 
         :param message: dict, the message dictionary
         :param parent: tkinter.Frame, or LabelFrame or similar.
         """
         # the toggle button frame
-        btn_frame = tk.ttk.Frame(parent, style=self._wgt_styles['labelframe'])  # is this style hiding the frame?
-        btn_frame.grid(column=1, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw")
+        self.btn_frame = tk.ttk.Frame(parent, style=self._wgt_styles['labelframe'])  # is this style hiding the frame?
+        self.btn_frame.grid(column=1, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw")
         # self.wigify(btn_frame)
         # parent.wgts[f'btn_frame_main'] = btn_frame
 
-        self.button_def_dict = self._get_toggle_definitions(message['toggle_count_guess'])
+        # default to the guessed number
+        if number_of_buttons is None:
+            number_of_buttons = message['toggle_count_guess']
+
+        self.button_def_dict = self._get_toggle_definitions(number_of_buttons)
 
         # add them to the button frame
         for bnum, (btn, btndef) in enumerate(self.button_def_dict.items()):
-            self._add_toggle(btn_frame, btn, btndef, message, parent)
+            self._add_toggle(self.btn_frame, btn, btndef, message, parent)
 
         # add a line separator to make the all button stand out from the side buttons
-        sep = ttk.Separator(btn_frame, orient='horizontal')
+        sep = ttk.Separator(self.btn_frame, orient='horizontal')
         sep_grid_dict = {'column': 0,
                          'row': 1,
                          'columnspan': 12,
@@ -126,8 +148,8 @@ class MessagePanel:
         """
         # define the sides buttons
         number_of_buttons_to_definitions_lists = {1: [], 2: ['left', 'right'], 3: ['left', 'center', 'right'],
-                                            4: ['left', 'left_center', 'right_center', 'right'],
-                                            5: ['left', 'left_center', 'center', 'right_center', 'right']}
+                                                  4: ['left', 'left_center', 'right_center', 'right'],
+                                                  5: ['left', 'left_center', 'center', 'right_center', 'right']}
         side_button_text = {'left': 'Operator\nSide', 'left_center': 'Operator Side\nof Center',
                             'center': 'Center\n', 'right_center': 'Foamline Side\nof Center', 'right': 'Foamline\nSide'}
         side_button_dict = {side: {'params':
@@ -153,6 +175,18 @@ class MessagePanel:
         button_def_dict.update(side_button_dict)
         return button_def_dict
 
+    def destroy_toggle_panel(self):
+        """Destroy the current button framer for this message panel."""
+        self.button_frame.destroy()
+
+    def change_toggle_count(self, new_count):
+        """Change the number of toggle-buttons on the the foam removed toggles frame.
+
+        :param new_count: int, the number of toggles to use.
+        """
+        self.destroy_toggle_panel()
+        self._add_foam_removed_toggle_selectors(self.main_frame, self.message, new_count)
+
     def toggle_changes_event_handler(self, event):
         """Handle the toggle button being changed with regard to its designation and the state of the other toggles.
 
@@ -164,7 +198,7 @@ class MessagePanel:
         """
         msg_id, now_on, side = self._get_event_info(event)
         lg.debug(event, event.widget.msg_id, event.widget.side, event.widget.state_var.get(), event.widget.state(),
-              f'new {now_on}')
+                 f'new {now_on}')
 
         # the sides that are not all
         # not_all = 'left', 'center', 'right'
