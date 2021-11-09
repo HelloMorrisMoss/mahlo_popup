@@ -58,6 +58,10 @@ class MessagePanel:
         # self.wigify(send_button_frame)
         # parent.wgts[f'send_button_frame'] = send_button_frame
         self.add_save_button(send_button_frame, message, send_grid_params)
+        num_button = tk.ttk.Button(parent, style='Accent.TButton', text='3 toggles',
+                                   command=lambda: self.change_toggle_count(3))
+        send_grid_params.update(row=1)
+        num_button.grid(**send_grid_params)
 
     def add_save_button(self, parent, message, send_grid_params):
         """Add the save/send button.
@@ -84,7 +88,8 @@ class MessagePanel:
         :param parent: tkinter.Frame, or LabelFrame or similar.
         """
         # the toggle button frame
-        self.btn_frame = tk.ttk.Frame(parent, style=self._wgt_styles['labelframe'])  # is this style hiding the frame?
+        self.btn_frame = tk.ttk.Frame(parent,
+                                      style=self._wgt_styles['labelframe'])  # is this style hiding the frame?
         self.btn_frame.grid(column=1, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw")
         # self.wigify(btn_frame)
         # parent.wgts[f'btn_frame_main'] = btn_frame
@@ -93,10 +98,10 @@ class MessagePanel:
         if number_of_buttons is None:
             number_of_buttons = message['toggle_count_guess']
 
-        self.button_def_dict = self._get_toggle_definitions(number_of_buttons)
+        self.toggle_button_def_dict = self._get_toggle_definitions(number_of_buttons)
 
         # add them to the button frame
-        for bnum, (btn, btndef) in enumerate(self.button_def_dict.items()):
+        for bnum, (btn, btndef) in enumerate(self.toggle_button_def_dict.items()):
             self._add_toggle(self.btn_frame, btn, btndef, message, parent)
 
         # add a line separator to make the all button stand out from the side buttons
@@ -153,15 +158,16 @@ class MessagePanel:
         side_button_text = {'left': 'Operator\nSide', 'left_center': 'Operator Side\nof Center',
                             'center': 'Center\n', 'right_center': 'Foamline Side\nof Center', 'right': 'Foamline\nSide'}
         side_button_dict = {side: {'params':
-                                       # {'text': f'{side_button_text[side]} was removed.',
-                                       #  'variable': tk.IntVar()},
-                                   {'onvalue': f'{side_button_text[side]} was removed.',
-                                    'offvalue': f'{side_button_text[side]} was not removed.',
-                                    'textvariable': tk.StringVar()},
+                                   # {'text': f'{side_button_text[side]} was removed.',
+                                   #  'variable': tk.IntVar()},
+                                       {'onvalue': f'{side_button_text[side]} was removed.',
+                                        'offvalue': f'{side_button_text[side]} was not removed.',
+                                        'textvariable': tk.StringVar()},
                                    'grid_params': {'column': 2 * (n + 1), 'columnspan': 2, 'rowspan': 2,
                                                    'row': 2, 'padx': self.pad['x'], 'pady': self.pad['y']},
                                    'not_all_list': number_of_buttons_to_definitions_lists[num_of_buttons]
-                                   } for n, side in enumerate(number_of_buttons_to_definitions_lists[num_of_buttons])}
+                                   } for n, side in
+                            enumerate(number_of_buttons_to_definitions_lists[num_of_buttons])}
 
         # define the 'all of the section removed' button
         all_button_column = {1: 2, 2: 3, 3: 4, 4: 5, 5: 6}
@@ -170,7 +176,7 @@ class MessagePanel:
                                               'onvalue': 'All of this length was removed.',
                                               'offvalue': 'None of this length was removed.',
                                               'textvariable': tk.StringVar()},
-                                              # 'variable': tk.IntVar()},
+                                   # 'variable': tk.IntVar()},
                                    'grid_params': {'column': all_button_column[num_of_buttons],
                                                    'row': 0,
                                                    'columnspan': 3,
@@ -186,7 +192,7 @@ class MessagePanel:
 
     def destroy_toggle_panel(self):
         """Destroy the current button framer for this message panel."""
-        self.button_frame.destroy()
+        self.btn_frame.destroy()
 
     def change_toggle_count(self, new_count):
         """Change the number of toggle-buttons on the the foam removed toggles frame.
@@ -258,7 +264,7 @@ class MessagePanel:
             set_value = 'offvalue'
 
         for side in not_all:
-            set_str = self.button_def_dict[side][set_value]
+            set_str = self.toggle_button_def_dict[side][set_value]
             self._removed_vals[side].set(set_str)
 
     def _get_event_info(self, event):
