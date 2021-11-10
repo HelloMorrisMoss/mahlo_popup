@@ -111,12 +111,14 @@ class MessagePanel:
         # send_grid_params.update(row=1)
 
         # TODO: NumberPrompt is just going to return a number, it needs a wrapper
-        num_button = tk.ttk.Button(send_button_frame, style='Accent.TButton', text='3 toggles',
-                                   # command=lambda: self.change_toggle_count(3))
-                                   command=lambda: NumberPrompt(self._root))
+        num_button = tk.ttk.Button(send_button_frame, style='Accent.TButton', text='# of Rolls',
+                                   command=lambda: self.change_toggle_count(NumberPrompt(self._root).show()))
+                                   # command=lambda: NumberPrompt(self._root))
         send_grid_params.update(row=1)
 
         num_button.grid(**send_grid_params)
+
+
 
     def add_save_button(self, parent, message, send_grid_params):
         """Add the save/send button.
