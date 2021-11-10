@@ -78,6 +78,7 @@ class MessagePanel:
         :param message: dict, the message dictionary
         :param parent: tkinter.Frame, or LabelFrame or similar.
         """
+        # add the removed foam toggles
         self._add_foam_removed_toggle_selectors(parent, message)
 
         # add the save button
@@ -110,15 +111,12 @@ class MessagePanel:
         #                            command=lambda: self.change_toggle_count(3))
         # send_grid_params.update(row=1)
 
-        # TODO: NumberPrompt is just going to return a number, it needs a wrapper
+        # TODO: NumberPrompt can return 0 (cancel), which needs to do nothing, it needs a wrapper
         num_button = tk.ttk.Button(send_button_frame, style='Accent.TButton', text='# of Rolls',
                                    command=lambda: self.change_toggle_count(NumberPrompt(self._root).show()))
-                                   # command=lambda: NumberPrompt(self._root))
         send_grid_params.update(row=1)
 
         num_button.grid(**send_grid_params)
-
-
 
     def add_save_button(self, parent, message, send_grid_params):
         """Add the save/send button.
@@ -198,7 +196,7 @@ class MessagePanel:
 
         # TODO: only the sections that should have been removed to default on (from the 'message')
         # default to all toggles on
-        btndef['params']['variable'].set(True)
+        btndef['params']['variable'].set(btndef['params']['onvalue'])
 
         # add it to the wgts dict
         # parent.wgts[btn] = btn_wgt
@@ -217,6 +215,7 @@ class MessagePanel:
         side_button_dict = {side: {'params':
                                    # {'text': f'{side_button_text[side]} was removed.',
                                    #  'variable': tk.IntVar()},
+                                    # TODO: finish the conversion to text vars for the toggles
                                        {'onvalue': f'{side_button_text[side]} was removed.',
                                         'offvalue': f'{side_button_text[side]} was not removed.',
                                         'textvariable': tk.StringVar()},
@@ -244,7 +243,7 @@ class MessagePanel:
         button_def_dict.update(side_button_dict)
         for btndf in button_def_dict.values():
             btndf['params']['variable'] = btndf['params']['textvariable']
-            btndf['params']['textvariable'].set(btndf['params']['onvalue'])
+            # btndf['params']['textvariable'].set(btndf['params']['onvalue'])
         return button_def_dict
 
     def destroy_toggle_panel(self):
