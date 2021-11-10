@@ -102,22 +102,16 @@ class MessagePanel:
         # parent.wgts[f'send_button_frame'] = send_button_frame
         self.add_save_button(send_button_frame, message, send_grid_params)
 
-        # num_button = tk.ttk.Button(parent, style='Accent.TButton', text='3 toggles')
-        #                            # ,
-        #                            # # command=lambda: self.change_toggle_count(3))
-        #                            #  command=prompt_number_window(self._root))
-        # send_grid_params.update(row=20)
-
-        # num_button = tk.ttk.Button(parent, style='Accent.TButton', text='3 toggles',
-        #                            command=lambda: self.change_toggle_count(3))
-        # send_grid_params.update(row=1)
-
         # TODO: NumberPrompt can return 0 (cancel), which needs to do nothing, it needs a wrapper
-        num_button = tk.ttk.Button(send_button_frame, style='Accent.TButton', text='# of Rolls',
-                                   command=lambda: self.change_toggle_count(NumberPrompt(self._root).show()))
+        num_button = tk.ttk.Button(send_button_frame, style='Accent.TButton', text='# of Rolls', command=self.prompt_for_rolls_count)
         send_grid_params.update(row=1)
 
         num_button.grid(**send_grid_params)
+
+    def prompt_for_rolls_count(self):
+        new_count = NumberPrompt(self._root).show()
+        if new_count:
+            self.change_toggle_count(new_count)
 
     def add_save_button(self, parent, message, send_grid_params):
         """Add the save/send button.
