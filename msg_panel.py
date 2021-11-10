@@ -217,14 +217,14 @@ class MessagePanel:
                                                   4: ['left', 'left_center', 'right_center', 'right'],
                                                   5: ['left', 'left_center', 'center', 'right_center', 'right']}
         self.not_all_list = number_of_buttons_to_definitions_lists[num_of_buttons]
-        side_button_text = {'left': 'Operator\nSide', 'left_center': 'Operator Side\nof Center',
-                            'center': 'Center\n', 'right_center': 'Foamline Side\nof Center', 'right': 'Foamline\nSide'}
+        side_button_text = {'left': 'Operator Side\n', 'left_center': 'Operator Side of Center\n',
+                            'center': 'Center of Foam\n', 'right_center': 'Foamline Side of Center\n', 'right': 'Foamline Side\n'}
         side_button_dict = {side: {'params':
                                    # {'text': f'{side_button_text[side]} was removed.',
                                    #  'variable': tk.IntVar()},
                                     # TODO: finish the conversion to text vars for the toggles
-                                       {'onvalue': f'{side_button_text[side]} was removed.',
-                                        'offvalue': f'{side_button_text[side]} was not removed.',
+                                       {'onvalue': f'{side_button_text[side]} WAS removed.',
+                                        'offvalue': f'{side_button_text[side]} NOT removed.',
                                         'textvariable': self._removed_vals[side]},
                                    'grid_params': {'column': 2 * (n + 1), 'columnspan': 2, 'rowspan': 2,
                                                    'row': 2, 'padx': self.pad['x'], 'pady': self.pad['y']},
@@ -233,11 +233,11 @@ class MessagePanel:
                             enumerate(number_of_buttons_to_definitions_lists[num_of_buttons])}
 
         # define the 'all of the section removed' button
-        all_button_column = {1: 2, 2: 3, 3: 4, 4: 5, 5: 6}
+        all_button_column = {1: 2, 2: 3, 3: 4, 4: 5, 5: 6}  # the column needs to be dynamic or it will be off center
         button_def_dict = {'all': {'params': {'text': 'All of this length was removed.',
                                               'command': lambda: lg.debug('You press my buttons!'),
-                                              'onvalue': 'All of this length was removed.',
-                                              'offvalue': 'None of this length was removed.',
+                                              'onvalue': 'ALL of this length was removed.',
+                                              'offvalue': 'NOT all of this length was removed.',
                                               'textvariable': tk.StringVar()},
                                    # 'variable': tk.IntVar()},
                                    'grid_params': {'column': all_button_column[num_of_buttons],
@@ -275,12 +275,10 @@ class MessagePanel:
         :param event: tkinter.Event, for the toggle button being pressed.
         """
         msg_id, now_on, side = self._get_event_info(event)
-        # lg.debug(event, event.widget.msg_id, event.widget.side, event.widget.state_var.get(), event.widget.state(),
-        #          f'new {now_on}')
+        dbg_vars = event, event.widget.msg_id, event.widget.side,\
+                   event.widget.state_var.get(), event.widget.state(), f'new {now_on}'
+        lg.debug('%s, ' * len(dbg_vars), *dbg_vars)
 
-        # the sides that are not all
-        # not_all = 'left', 'center', 'right'
-        # not_all = event.widget.not_all_list
 
         # evaluate and set the toggles if needed
         if side == 'all':
@@ -294,26 +292,26 @@ class MessagePanel:
                 self._set_all_sides(self.not_all_list, False)  #, event.widget.offvalue)
         else:
             lg.debug('a side was changed')
-            if not now_on:
-                lg.debug('set all toggle-button false since this is not true')
-                # if self.main_frame.wgts[msg_id].wgts['all'].state_var.get():
-                self._set_all_sides(('all',), False)
-            else:
-                lg.debug('a side was set to true')
-                sides_count = 0
-
-                for iter_side in self.not_all_list:
-                    # if this is the side
-                    if side == iter_side:
-                        sides_count += 1
-                        side_val = 1
-                    else:
-                        side_val = self._removed_vals.get(iter_side).get()
-                        sides_count += 'was removed' in side_val
-                    lg.debug('iter_side %s, side_val %s, sides_count %s', iter_side, side_val, sides_count)
-
-                if sides_count == len(self.not_all_list):
-                    self._set_all_sides(('all',), True)
+            # if not now_on:
+            #     lg.debug('set all toggle-button false since this is not true')
+            #     # if self.main_frame.wgts[msg_id].wgts['all'].state_var.get():
+            #     self._set_all_sides(('all',), False)
+            # else:
+            #     lg.debug('a side was set to true')
+            #     sides_count = 0
+            #
+            #     for iter_side in self.not_all_list:
+            #         # if this is the side
+            #         if side == iter_side:
+            #             sides_count += 1
+            #             side_val = 1
+            #         else:
+            #             side_val = self._removed_vals.get(iter_side).get()
+            #             sides_count += 'was removed' in side_val
+            #         lg.debug('iter_side %s, side_val %s, sides_count %s', iter_side, side_val, sides_count)
+            #
+            #     if sides_count == len(self.not_all_list):
+            #         self._set_all_sides(('all',), True)
 
     def _set_all_sides(self, not_all, state):
         """Set all the side buttons to the same state.
@@ -353,9 +351,9 @@ class MessagePanel:
 
     def add_toggle(self, button, side):
         # add a state tracker on the button, a side metadata-label, and add a side state tracker to the message frame
-        setattr(button, 'active', True)
+        # setattr(button, 'active', True)
         setattr(button, 'side', side)
-        setattr(button.master.master, side, True)
+        # setattr(button.master.master, side, True)
 
         def toggle_me(*args, **kwargs):
             lg.debug('args', args)
