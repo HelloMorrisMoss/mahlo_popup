@@ -79,6 +79,7 @@ class MessagePanel:
         :param message: dict, the message dictionary
         :param parent: tkinter.Frame, or LabelFrame or similar.
         """
+        # TODO: it may be worthwhile at some point to extract the toggle panel to its own class
         # add the removed foam toggles
         self._add_foam_removed_toggle_selectors(parent, message)
 
@@ -98,17 +99,17 @@ class MessagePanel:
                             'sticky': 'nesw',
                             'columnspan': 2}
         send_button_frame.grid(**send_grid_params)
-        # self.wigify(send_button_frame)
-        # parent.wgts[f'send_button_frame'] = send_button_frame
         self.add_save_button(send_button_frame, message, send_grid_params)
 
-        # TODO: NumberPrompt can return 0 (cancel), which needs to do nothing, it needs a wrapper
+        # add the prompt for roll count change button
         num_button = tk.ttk.Button(send_button_frame, style='Accent.TButton', text='# of Rolls', command=self.prompt_for_rolls_count)
         send_grid_params.update(row=1)
 
         num_button.grid(**send_grid_params)
 
     def prompt_for_rolls_count(self):
+        """Prompt for the number of rolls and change the toggles to match. Do nothing if cancel is selected."""
+
         new_count = NumberPrompt(self._root).show()
         if new_count:
             self.change_toggle_count(new_count)
@@ -187,7 +188,7 @@ class MessagePanel:
 
         # if it is the 'all' button add the list of buttons to toggle
         if btndef.get('not_all_list') is not None:
-            lg.debug('setting not_all_list on all button')
+            # lg.debug('setting not_all_list on all button')
             setattr(btn_wgt, 'not_all_list', btndef['not_all_list'])
 
         # add the event handler method
