@@ -8,12 +8,44 @@ lg = logging.getLogger('mds_popup_window')
 logging.basicConfig()
 
 
-def prompt_number_window(root):
-    pwin = tk.Toplevel(root)
-    row = 0
-    # col = 0
-    for col in range(1, 5):
-        tk.ttk.Button(pwin, text=str(col))
+class NumberPrompt(tk.Toplevel):
+    """Show a tk popup window prompting for a number between 1 and 5, returning that value when pressed. Cancel as 0."""
+    def __init__(self, parent, prompt=None):
+        tk.Toplevel.__init__(self, parent)
+        # def prompt_number_window(root):
+        #         pwin = tk.Toplevel(root)
+        row = 0
+        # col = 0
+        for col in range(0, 6):
+            button_label_text = str(col) if col != 0 else 'Cancel'
+            num_button = tk.ttk.Button(self, text=button_label_text)
+            num_button.bind('<Button-1>', self.return_button_val)
+            num_button.grid(row=row, column=col)
+        self.value = tk.IntVar()
+
+    def return_button_val(self, event):
+        """Set self.value to the widget['text'] value, or 0 if Cancel/anything without and int castable text is pressed.
+
+        :param event: tkinter.Event
+        """
+        try:
+            self.value.set(int(event.widget['text']))
+        except ValueError:
+            self.value.set(0)
+        self.destroy()
+
+    def show(self):
+        self.wm_deiconify()
+        self.focus_force()
+        self.wait_window()
+        return self.value.get()
+
+
+if __name__ == '__main__':
+    root = tk.Tk()
+    prompt_val = NumberPrompt(root, '').show()
+    lg.debug('prompt returned %s', prompt_val)
+    print(prompt_val)
 
 
 class MessagePanel:
@@ -62,7 +94,7 @@ class MessagePanel:
         send_grid_params = {'column': 12, 'row': 0, 'padx': self.pad['x'],
                             'pady': self.pad['y'],
                             'sticky': 'nesw',
-                            'rowspan': 2}
+                            'columnspan': 2}
         send_button_frame.grid(**send_grid_params)
         # self.wigify(send_button_frame)
         # parent.wgts[f'send_button_frame'] = send_button_frame
@@ -78,13 +110,13 @@ class MessagePanel:
         #                            command=lambda: self.change_toggle_count(3))
         # send_grid_params.update(row=1)
 
-        num_button = tk.ttk.Button(parent, style='Accent.TButton', text='3 toggles',
-                                   command=lambda: self.change_toggle_count(3))
+        # TODO: NumberPrompt is just going to return a number, it needs a wrapper
+        num_button = tk.ttk.Button(send_button_frame, style='Accent.TButton', text='3 toggles',
+                                   # command=lambda: self.change_toggle_count(3))
+                                   command=lambda: NumberPrompt(self._root))
         send_grid_params.update(row=1)
 
         num_button.grid(**send_grid_params)
-
-
 
     def add_save_button(self, parent, message, send_grid_params):
         """Add the save/send button.
