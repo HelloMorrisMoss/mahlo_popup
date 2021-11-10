@@ -13,6 +13,7 @@ from msg_panel import MessagePanel
 
 lg = logging.getLogger('mds_popup_window')
 logging.basicConfig()
+lg.setLevel(logging.DEBUG)
 
 
 class Popup:

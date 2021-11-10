@@ -5,7 +5,7 @@ from tkinter import ttk
 import logging
 
 lg = logging.getLogger('mds_popup_window')
-logging.basicConfig()
+lg.debug('logging in msg_panel')
 
 
 class NumberPrompt(tk.Toplevel):
@@ -60,6 +60,7 @@ class MessagePanel:
         # self.main_frm.wgts[message['msg_id']] = mlf
         # self.wigify(mlf)
         self._removed_vals = {'all': tk.StringVar(), 'left': tk.StringVar(), 'left_center': tk.StringVar(), 'center': tk.StringVar(), 'right_center': tk.StringVar(), 'right': tk.StringVar()}
+
         self.add_message_display(self.main_frame, message)
         self.main_frame.grid(column=0, row=row, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw")
         self.add_buttons(self.main_frame, message)
@@ -155,9 +156,11 @@ class MessagePanel:
 
         self.toggle_button_def_dict = self._get_toggle_definitions(number_of_buttons)
 
+        self._toggle_refs = {}
+
         # add them to the button frame
         for bnum, (btn, btndef) in enumerate(self.toggle_button_def_dict.items()):
-            self._add_toggle(self.btn_frame, btn, btndef, message, parent)
+            self._toggle_refs[btn] = self._add_toggle(self.btn_frame, btn, btndef, message, parent)
 
         # add a line separator to make the all button stand out from the side buttons
         sep = ttk.Separator(self.btn_frame, orient='horizontal')
@@ -169,11 +172,11 @@ class MessagePanel:
                          'sticky': 'nesw'}
         sep.grid(**sep_grid_dict)
 
-    def _add_toggle(self, btn_frame, btn, btndef, message, parent):
+    def _add_toggle(self, btn_frame, btn_side, btndef, message, parent):
         """Add a toggle button to the frame using a definition dictionary.
 
         :param btn_frame: tkinter.Frame
-        :param btn: str, the 'side' for the button.
+        :param btn_side: str, the 'side' for the button.
         :param btndef: dict, definining parameters for the button.
         :param message: dict, the message definition.
         """
@@ -183,8 +186,10 @@ class MessagePanel:
 
         # add some custom attributes to use elsewhere, to keep track of which button is which
         setattr(btn_wgt, 'state_var', btndef['params']['variable'])
-        setattr(btn_wgt, 'side', btn)
+        setattr(btn_wgt, 'side', btn_side)
         setattr(btn_wgt, 'msg_id', message['msg_id'])
+        # setattr(btn_wgt, 'onvalue', btndef['params']['onvalue'])
+        # setattr(btn_wgt, 'offvalue', btndef['params']['offvalue'])
 
         # if it is the 'all' button add the list of buttons to toggle
         if btndef.get('not_all_list') is not None:
@@ -199,7 +204,8 @@ class MessagePanel:
         btndef['params']['variable'].set(btndef['params']['onvalue'])
 
         # add it to the wgts dict
-        # parent.wgts[btn] = btn_wgt
+        # parent.wgts[btn_side] = btn_wgt
+        return btn_wgt
 
     def _get_toggle_definitions(self, num_of_buttons=3):
         """Get the dictionary defining the 'all' and 'left', 'center', and 'right' sides' toggle buttons.
@@ -210,6 +216,7 @@ class MessagePanel:
         number_of_buttons_to_definitions_lists = {1: [], 2: ['left', 'right'], 3: ['left', 'center', 'right'],
                                                   4: ['left', 'left_center', 'right_center', 'right'],
                                                   5: ['left', 'left_center', 'center', 'right_center', 'right']}
+        self.not_all_list = number_of_buttons_to_definitions_lists[num_of_buttons]
         side_button_text = {'left': 'Operator\nSide', 'left_center': 'Operator Side\nof Center',
                             'center': 'Center\n', 'right_center': 'Foamline Side\nof Center', 'right': 'Foamline\nSide'}
         side_button_dict = {side: {'params':
@@ -218,7 +225,7 @@ class MessagePanel:
                                     # TODO: finish the conversion to text vars for the toggles
                                        {'onvalue': f'{side_button_text[side]} was removed.',
                                         'offvalue': f'{side_button_text[side]} was not removed.',
-                                        'textvariable': tk.StringVar()},
+                                        'textvariable': self._removed_vals[side]},
                                    'grid_params': {'column': 2 * (n + 1), 'columnspan': 2, 'rowspan': 2,
                                                    'row': 2, 'padx': self.pad['x'], 'pady': self.pad['y']},
                                    'not_all_list': number_of_buttons_to_definitions_lists[num_of_buttons]
@@ -238,8 +245,8 @@ class MessagePanel:
                                                    'columnspan': 3,
                                                    'padx': self.pad['x'],
                                                    'pady': self.pad['y'],
-                                                   'sticky': 'nesw'},
-                                   'not_all_list': number_of_buttons_to_definitions_lists[num_of_buttons]}}
+                                                   'sticky': 'nesw'}
+                                   }}
         button_def_dict.update(side_button_dict)
         for btndf in button_def_dict.values():
             btndf['params']['variable'] = btndf['params']['textvariable']
@@ -268,34 +275,34 @@ class MessagePanel:
         :param event: tkinter.Event, for the toggle button being pressed.
         """
         msg_id, now_on, side = self._get_event_info(event)
-        lg.debug(event, event.widget.msg_id, event.widget.side, event.widget.state_var.get(), event.widget.state(),
-                 f'new {now_on}')
+        # lg.debug(event, event.widget.msg_id, event.widget.side, event.widget.state_var.get(), event.widget.state(),
+        #          f'new {now_on}')
 
         # the sides that are not all
         # not_all = 'left', 'center', 'right'
-        not_all = event.widget.not_all_list
+        # not_all = event.widget.not_all_list
 
         # evaluate and set the toggles if needed
         if side == 'all':
             if now_on:
                 lg.debug('set sides true')
                 # self._set_all_sides(not_all, True)
-                self._set_all_sides(msg_id, not_all, event.widget.onvalue)
+                self._set_all_sides(self.not_all_list, True)  #, event.widget.onvalue)
             else:
                 lg.debug('set sides false')
                 # self._set_all_sides(not_all, False)
-                self._set_all_sides(msg_id, not_all, event.widget.offvalue)
+                self._set_all_sides(self.not_all_list, False)  #, event.widget.offvalue)
         else:
             lg.debug('a side was changed')
             if not now_on:
                 lg.debug('set all toggle-button false since this is not true')
-                if self.main_frame.wgts[msg_id].wgts['all'].state_var.get():
-                    self._set_all_sides(('all',), False)
+                # if self.main_frame.wgts[msg_id].wgts['all'].state_var.get():
+                self._set_all_sides(('all',), False)
             else:
                 lg.debug('a side was set to true')
                 sides_count = 0
 
-                for iter_side in not_all:
+                for iter_side in self.not_all_list:
                     # if this is the side
                     if side == iter_side:
                         sides_count += 1
@@ -303,9 +310,9 @@ class MessagePanel:
                     else:
                         side_val = self._removed_vals.get(iter_side).get()
                         sides_count += 'was removed' in side_val
-                    lg.debug(iter_side, side_val, sides_count)
+                    lg.debug('iter_side %s, side_val %s, sides_count %s', iter_side, side_val, sides_count)
 
-                if sides_count == len(event.widget.not_all_list):
+                if sides_count == len(self.not_all_list):
                     self._set_all_sides(('all',), True)
 
     def _set_all_sides(self, not_all, state):
@@ -320,7 +327,8 @@ class MessagePanel:
             set_value = 'offvalue'
 
         for side in not_all:
-            set_str = self.toggle_button_def_dict[side][set_value]
+            set_str = self.toggle_button_def_dict[side]['params'][set_value]
+            # self._toggle_refs[side].textvariable.set(set_str)
             self._removed_vals[side].set(set_str)
 
     def _get_event_info(self, event):
