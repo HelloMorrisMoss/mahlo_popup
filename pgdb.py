@@ -8,7 +8,7 @@ from pprint import pprint, pformat
 from __init__ import lg, settings_dict
 
 
-# ## TODO: enable ssl for the oee postgres server
+# ## TODO: enable ssl for the oee postgres server - CHECK IF I DID THIS ALREADY
 
 ## this one works for the OEE db
 # cnn = psycopg2.connect(
