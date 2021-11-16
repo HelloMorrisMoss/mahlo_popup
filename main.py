@@ -165,13 +165,9 @@ class Popup:
 #  check that this will work over ssl (opening in the normal session) otherwise probably flask
 
 
-if __name__ == '__main__':
-    # if called from the command line (over ssl) parse the json to a dictionary
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--pup_json', help='A json string defining the popups to display.')
-    args = parser.parse_args()
-    json_str = args.pup_json
-
+def dev_popup(json_str=None):
+    import os
+    os.chdir(r'C:\Users\lmcglaughlin\PycharmProjects\mahlo_popup')
     # for development, a dummy dict
     if json_str is None:
         oospec_len_meters = 4.3
@@ -184,11 +180,20 @@ if __name__ == '__main__':
                                         'toggle_count_guess': mnum + 1,
                                         'msg_id': msg_id
                                         }
-                                       for mnum, msg_id in enumerate(('msg123', 'msg456', 'msg789', 'msg987', 'msg654'))],
+                                       for mnum, msg_id in
+                                       enumerate(('msg123', 'msg456', 'msg789', 'msg987', 'msg654'))],
                           'main_win': {'title': 'Messages received!', 'timestamp_display_format': r'%I:%M %d-%b'}
                           }
         json_str = json.dumps(test_json_dict)
-
     pup_dict = json.loads(json_str)
-
     pup = Popup(pup_dict)
+
+
+if __name__ == '__main__':
+    # if called from the command line (over ssl) parse the json to a dictionary
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--pup_json', help='A json string defining the popups to display.')
+    args = parser.parse_args()
+    json_str = args.pup_json
+
+    dev_popup()
