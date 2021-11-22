@@ -6,18 +6,22 @@ import tkinter as tk
 import traceback
 from tkinter import ttk
 from datetime import datetime
+import os
 from pprint import pprint  # for dev
 import logging
 
 from msg_panel import MessagePanel
 
+# init the logger
 lg = logging.getLogger('mds_popup_window')
 logging.basicConfig()
 lg.setLevel(logging.DEBUG)
+# when called by RPC the directory may change and be unable to find the ttk theme file directory
+os.chdir(r'C:\Users\lmcglaughlin\PycharmProjects\mahlo_popup')
 
 
 class Popup:
-    """A popup window with messages to respond to. Creats the window and messages based on a provided dictionary.
+    """A popup window with messages to respond to. Create the window and messages based on a provided dictionary.
 
     """
 
@@ -39,7 +43,8 @@ class Popup:
                 title: a string with the title for the main window.
         :param input_dict:
         """
-        pprint(json.dumps(input_dict, indent=4))
+        # pprint(json.dumps(input_dict, indent=4))
+        pprint(input_dict)
         # set things up for the main window
         self._defdic = input_dict
         self.root = tk.Tk()
@@ -166,27 +171,28 @@ class Popup:
 
 
 def dev_popup(json_str=None):
-    import os
-    os.chdir(r'C:\Users\lmcglaughlin\PycharmProjects\mahlo_popup')
     # for development, a dummy dict
     if json_str is None:
         oospec_len_meters = 4.3
-        template_str = 'At {timestamp}\nthere were {len_meters} meters oospec!'
-        test_json_dict = {'messages': [{'title': 'Out of spec!',
-                                        'msg_txt': {'template': template_str,
-                                                    'timestamp': datetime.now().isoformat(),
-                                                    'length_in_meters': oospec_len_meters},
-                                        'buttons': ['removed!', 'oops!'],
-                                        'toggle_count_guess': mnum + 1,
-                                        'msg_id': msg_id
-                                        }
-                                       for mnum, msg_id in
-                                       enumerate(('msg123', 'msg456', 'msg789', 'msg987', 'msg654'))],
-                          'main_win': {'title': 'Messages received!', 'timestamp_display_format': r'%I:%M %d-%b'}
-                          }
+        test_json_dict = get_dummy_dict(oospec_len_meters)
         json_str = json.dumps(test_json_dict)
     pup_dict = json.loads(json_str)
     pup = Popup(pup_dict)
+
+
+def get_dummy_dict(oospec_len_meters, template_str='At {timestamp}\nthere were {len_meters} meters oospec!', msg_count=5):
+    return {'messages': [{'title': 'Out of spec!',
+                          'msg_txt': {'template': template_str,
+                                      'timestamp': datetime.now().isoformat(),
+                                      'length_in_meters': oospec_len_meters},
+                          'buttons': ['removed!', 'oops!'],
+                          'toggle_count_guess': mnum + 1,
+                          'msg_id': msg_id
+                          }
+                         for mnum, msg_id in
+                         enumerate(('msg123', 'msg456', 'msg789', 'msg987', 'msg654'))],
+            'main_win': {'title': 'Messages received!', 'timestamp_display_format': r'%I:%M %d-%b'}
+            }
 
 
 if __name__ == '__main__':
