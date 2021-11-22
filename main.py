@@ -25,7 +25,7 @@ class Popup:
 
     """
 
-    def __init__(self, input_dict):
+    def __init__(self, input_dict, *args, **kwargs):
         """
         example_input_dict = {'messages': [{'title': 'Out of spec!',
                                         'msg_txt': {'template': template_str,
@@ -65,19 +65,67 @@ class Popup:
         # the main frame
         self.main_frm = tk.ttk.Frame(self.root)
         self.main_frm.grid(row=1, column=0, sticky='nesw', columnspan=3)
-        self.wigify(self.main_frm)
-        # me.hover_enter_factory(me.main_frm)
+        # dummy = ttk.Checkbutton(self.main_frm, text='dummy button')
+        # dummy.grid(row=0, column=0)
+
+        # self.wigify(self.main_frm)
+        # # me.hover_enter_factory(me.main_frm)
         self.wgts['main_frame'] = self.main_frm
+
+        self.messages_frames = []
 
         # add the frames for the messages and the widgets therein
         for mnum, message in enumerate(self._defdic['messages']):
-            MessagePanel(self.main_frm, self.root, message, mnum, dt_format_str=self.dt_format_str, pad={'x': self.pad['x'], 'y': self.pad['y']},
+            msg_frm = MessagePanel(self.main_frm, self.root, message, mnum, dt_format_str=self.dt_format_str, pad={'x': self.pad['x'], 'y': self.pad['y']},
                          _wgt_styles=self._wgt_styles)
+            self.messages_frames.append(msg_frm)
 
         # me.recurse_hover(me.wgts)
         self.recurse_tk_structure(self.root)
 
+        # move the window to the front
+        self.root.lift()
+        # self.root.attributes('-topmost', True)
+        # self.root.after_idle(self.root.attributes, '-topmost', False)
+
+        # shrink to a button when not the focus window
+        self.root.bind("<FocusOut>", self.focus_lost_handler)
+        self.root.bind("<FocusIn>", self.focus_gained_handler)
+
         self.root.mainloop()
+
+    def focus_gained_handler(self, event):
+        """When the window gains focus.
+
+        :param event: tkinter.Event
+        """
+        lg.debug(event.widget == self.root)
+        if event.widget == self.root:
+            lg.debug('Focus window!')
+            for mf in self.messages_frames:
+                mf.un_hide()
+            self.main_frm.grid()
+
+    def focus_lost_handler(self, event):
+        """When the window loses focus (another window is clicked or otherwise switched to).
+
+        :param event: tkinter.Event
+        """
+        lg.debug(event.widget == self.root)
+        if event.widget == self.root:
+            lg.debug('No longer focus window!')
+            for mf in self.messages_frames:
+                mf.hide()
+            # self.main_frm.grid_forget()
+            self.main_frm.grid_remove()
+            # self.root.after_idle(self.root.event_generate, '<Configure>')
+            # self.root.event_generate('<Configure>')
+            self.root.update()
+            # self.main_frm.destroy()
+
+
+
+
 
     def recurse_tk_structure(self, obj, name='starting_level', indent=0):
         """Recursively move down the nested tkinter objects by their 'children' attribute, printing the structure.
@@ -161,6 +209,13 @@ class Popup:
         # me.root.attributes('-fullscreen', 'True')  # same as with wm_
         # me.root.wm_attributes('-type', 'splash')  # linux specific
         # me.root.overrideredirect(1)  # this hides the titlebar, but it's placing the window in the corner
+
+    def to_the_front(self):
+        raise_above_all(self.root)
+
+def raise_above_all(window):
+    window.attributes('-topmost', 1)
+    window.attributes('-topmost', 0)
 
 
 # TODO:

@@ -48,8 +48,9 @@ if __name__ == '__main__':
     print(prompt_val)
 
 
-class MessagePanel:
+class MessagePanel(tk.ttk.Frame):
     def __init__(self, root, parent, message, row, **kwargs):
+        super().__init__(parent, text=message['title'])
         for k, v in kwargs.items():
             setattr(self, k, v)
         # self.dt_format_str = dt_format_str
@@ -64,6 +65,12 @@ class MessagePanel:
         self.add_message_display(self.main_frame, message)
         self.main_frame.grid(column=0, row=row, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw")
         self.add_buttons(self.main_frame, message)
+
+    def hide(self):
+        self.main_frame.grid_remove()
+
+    def un_hide(self):
+        self.main_frame.grid()
 
     def add_message_display(self, parent, message):
         msg = message['msg_txt']
