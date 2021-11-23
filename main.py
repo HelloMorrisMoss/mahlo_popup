@@ -49,6 +49,9 @@ class Popup:
         self.root = tk.Tk()
         self.root.title(self._defdic['main_win']['title'])
         # self.root.geometry('1000x500')
+        # self.root.resizable(0, 0)  # disables the maximize button, but it's still there
+        self.root.attributes('-toolwindow', True)
+        # self.root.transient(1)  # possible remove min/max buttons, _tkinter.TclError: bad window path name "1"
         self.wgts = {}
         self.styling()
 
@@ -85,12 +88,18 @@ class Popup:
 
         # move the window to the front
         self.root.lift()
-        # self.root.attributes('-topmost', True)
+        self.root.attributes('-topmost', True)
         # self.root.after_idle(self.root.attributes, '-topmost', False)
 
         # shrink to a button when not the focus window
         self.root.bind("<FocusOut>", self.focus_lost_handler)
-        self.root.bind("<FocusIn>", self.focus_gained_handler)
+        # self.root.bind("<FocusIn>", self.focus_gained_handler)
+
+        # the messages received button that shows when the window doesn't have focus
+        self.root.columnconfigure(0, weight=1)  # to make the button able to fill the width
+        self.root.rowconfigure(0, weight=1)  # to make the button able to fill the height
+        self.number_of_messages_button = tk.ttk.Button(self.root, text=str(len(self._defdic['messages'])), style='Accent.TButton')
+        self.number_of_messages_button.bind('<Button-1>', self.focus_gained_handler)  # bind the 'show messages' fn
 
         self.root.mainloop()
 
@@ -100,12 +109,14 @@ class Popup:
         :param event: tkinter.Event
         """
         lg.debug(event.widget == self.root)
-        if event.widget == self.root:
+        if event.widget in (self.root, self.number_of_messages_button):
             lg.debug('Focus window!')
-            self.root.geometry('')
+            self.number_of_messages_button.grid_remove()
             for mf in self.messages_frames:
                 mf.grid()
             self.main_frm.grid()
+            self.root.grid_propagate(True)
+            self.root.geometry('')
 
     def focus_lost_handler(self, event):
         """When the window loses focus (another window is clicked or otherwise switched to).
@@ -119,7 +130,10 @@ class Popup:
                 mf.grid_remove()
             self.main_frm.grid_remove()
             self.root.update()
-            self.root.geometry('100x100')
+            self.root.geometry('150x150')
+            self.root.grid_propagate(False)
+            self.number_of_messages_button.grid(row=0, column=0, sticky='nesw',
+                                                rowspan=3, columnspan=3)
 
     def recurse_tk_structure(self, obj, name='starting_level', indent=0):
         """Recursively move down the nested tkinter objects by their 'children' attribute, printing the structure.
