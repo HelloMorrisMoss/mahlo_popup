@@ -228,3 +228,4 @@ cython_debug/
 /build/
 /dist/
 !/main.spec
+/grpc_examples/
