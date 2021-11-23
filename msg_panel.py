@@ -4,7 +4,12 @@ from tkinter import ttk
 
 import logging
 
+from dev_common import get_dummy_dict
+
 lg = logging.getLogger('mds_popup_window')
+logging.basicConfig()
+lg.setLevel(logging.DEBUG)
+
 lg.debug('logging in msg_panel')
 
 
@@ -41,36 +46,75 @@ class NumberPrompt(tk.Toplevel):
         return self.value.get()
 
 
-if __name__ == '__main__':
-    root = tk.Tk()
-    prompt_val = NumberPrompt(root, '').show()
-    lg.debug('prompt returned %s', prompt_val)
-    print(prompt_val)
-
-
-class MessagePanel(tk.ttk.Frame):
+class MessagePanel(tk.ttk.LabelFrame):
     def __init__(self, root, parent, message, row, **kwargs):
         super().__init__(parent, text=message['title'])
         for k, v in kwargs.items():
             setattr(self, k, v)
         # self.dt_format_str = dt_format_str
-        self._root = root
+        # self.config(text=message['title'])
+        self._mp_root = root
         self.message = message
         self.message['msg_txt']['timestamp'] = datetime.fromisoformat(message['msg_txt']['timestamp'])
-        self.main_frame = tk.ttk.LabelFrame(parent, text=message['title'])  # , style='Card.TFrame')
-        # self.main_frm.wgts[message['msg_id']] = mlf
-        # self.wigify(mlf)
+        # # self = tk.ttk.LabelFrame(parent, text=message['title'])  # , style='Card.TFrame')
+        # # self.main_frm.wgts[message['msg_id']] = mlf
+        # # self.wigify(mlf)
         self._removed_vals = {'all': tk.StringVar(), 'left': tk.StringVar(), 'left_center': tk.StringVar(), 'center': tk.StringVar(), 'right_center': tk.StringVar(), 'right': tk.StringVar()}
+        #
+        # self.add_message_display(self, message)
+        # self.grid(column=0, row=row, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw")
+        self.grid(column=0, row=row, padx=kwargs['pad']['x'], pady=kwargs['pad']['y'], sticky="nesw")
+        self.add_buttons(self, message)
+        # dummy_button = tk.ttk.Button(self, text='dummy           !')
+        # dummy_button.bind('<Button-1>', self.hide)
+        # dummy_button.grid(row=row, column=0)
 
-        self.add_message_display(self.main_frame, message)
-        self.main_frame.grid(column=0, row=row, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw")
-        self.add_buttons(self.main_frame, message)
+        # shrink to a button when not the focus window
+        self._mp_root.bind("<FocusOut>", self.focus_lost_handler)
+        self._mp_root.bind("<FocusIn>", self.focus_gained_handler)
 
-    def hide(self):
-        self.main_frame.grid_remove()
+        # TODO: still need to figure out what it is that is keeping things from grid_remove'ing properly
+
+
+    def focus_lost_handler(self, event):
+        """When the window loses focus (another window is clicked or otherwise switched to).
+
+        :param event: tkinter.Event
+        """
+        lg.debug(event.widget == self._mp_root)
+        if event.widget == self._mp_root:
+            lg.debug('No longer focus window!')
+            # for mf in self.messages_frames:
+            #     mf.hide()
+            # self.main_frm.grid_forget()
+            # self.main_frm.grid_remove()
+            # self.root.after_idle(self.root.event_generate, '<Configure>')
+            # self.root.event_generate('<Configure>')
+            # self.root.update()
+            # self.main_frm.destroy()
+            self.grid_remove()
+            # self.destroy()
+            self._mp_root.update()
+    def focus_gained_handler(self, event):
+        """When the window gains focus.
+
+        :param event: tkinter.Event
+        """
+        lg.debug(event.widget == self._mp_root)
+        if event.widget == self._mp_root:
+            lg.debug('Focus window!')
+            # for mf in self.messages_frames:
+            #     mf.un_hide()
+            self.grid()
+
+    # def grid_remove(self):
+    #     super().grid_remove()
+
+    def hide(self, *args, **kwargs):
+        self.grid_remove()
 
     def un_hide(self):
-        self.main_frame.grid()
+        self.grid()
 
     def add_message_display(self, parent, message):
         msg = message['msg_txt']
@@ -117,7 +161,7 @@ class MessagePanel(tk.ttk.Frame):
     def prompt_for_rolls_count(self):
         """Prompt for the number of rolls and change the toggles to match. Do nothing if cancel is selected."""
 
-        new_count = NumberPrompt(self._root).show()
+        new_count = NumberPrompt(self._mp_root).show()
         if new_count:
             self.change_toggle_count(new_count)
 
@@ -261,7 +305,7 @@ class MessagePanel(tk.ttk.Frame):
         :param new_count: int, the number of toggles to use.
         """
         self.destroy_toggle_panel()
-        self._add_foam_removed_toggle_selectors(self.main_frame, self.message, new_count)
+        self._add_foam_removed_toggle_selectors(self, self.message, new_count)
 
     def toggle_changes_event_handler(self, event):
         """Handle the toggle button being changed with regard to its designation and the state of the other toggles.
@@ -369,3 +413,17 @@ class MessagePanel(tk.ttk.Frame):
 
         button.bind("<Button-1>", toggle_me)
         # return toggle_me
+
+
+if __name__ == '__main__':
+    # testing number change popoup
+    root = tk.Tk()
+    # prompt_val = NumberPrompt(root, '').show()
+    # lg.debug('prompt returned %s', prompt_val)
+    # print(prompt_val)
+    msg_dict = get_dummy_dict(10)
+    msg = msg_dict['messages'][0]
+    tsf = msg_dict['main_win']['timestamp_display_format']
+    mp = MessagePanel(root, root, msg, 0, dt_format_str=tsf, pad={'x': 5, 'y': 5},
+                      _wgt_styles={'toggle': 'Switch.TCheckbutton', 'labelframe': 'Card.TFrame'})
+    root.mainloop()
