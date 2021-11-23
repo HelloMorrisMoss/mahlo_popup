@@ -31,7 +31,7 @@ class MonitorService(rpyc.Service):
         lg.debug('Disconnected on {}\n'.format(date_time))
 
     def check_db_new_messages(self):
-        from main import get_dummy_dict
+        from dev_common import get_dummy_dict
 
         msg_dict = get_dummy_dict(5.2)
 

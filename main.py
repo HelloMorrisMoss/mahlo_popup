@@ -3,13 +3,12 @@
 import argparse
 import json
 import tkinter as tk
-import traceback
 from tkinter import ttk
-from datetime import datetime
 import os
 from pprint import pprint  # for dev
 import logging
 
+from dev_common import get_dummy_dict
 from msg_panel import MessagePanel
 
 # init the logger
@@ -102,8 +101,8 @@ class Popup:
         lg.debug(event.widget == self.root)
         if event.widget == self.root:
             lg.debug('Focus window!')
-            for mf in self.messages_frames:
-                mf.un_hide()
+            # for mf in self.messages_frames:
+            #     mf.un_hide()
             self.main_frm.grid()
 
     def focus_lost_handler(self, event):
@@ -114,8 +113,8 @@ class Popup:
         lg.debug(event.widget == self.root)
         if event.widget == self.root:
             lg.debug('No longer focus window!')
-            for mf in self.messages_frames:
-                mf.hide()
+            # for mf in self.messages_frames:
+            #     mf.hide()
             # self.main_frm.grid_forget()
             self.main_frm.grid_remove()
             # self.root.after_idle(self.root.event_generate, '<Configure>')
@@ -233,21 +232,6 @@ def dev_popup(json_str=None):
         json_str = json.dumps(test_json_dict)
     pup_dict = json.loads(json_str)
     pup = Popup(pup_dict)
-
-
-def get_dummy_dict(oospec_len_meters, template_str='At {timestamp}\nthere were {len_meters} meters oospec!', msg_count=5):
-    return {'messages': [{'title': 'Out of spec!',
-                          'msg_txt': {'template': template_str,
-                                      'timestamp': datetime.now().isoformat(),
-                                      'length_in_meters': oospec_len_meters},
-                          'buttons': ['removed!', 'oops!'],
-                          'toggle_count_guess': mnum + 1,
-                          'msg_id': msg_id
-                          }
-                         for mnum, msg_id in
-                         enumerate(('msg123', 'msg456', 'msg789', 'msg987', 'msg654'))],
-            'main_win': {'title': 'Messages received!', 'timestamp_display_format': r'%I:%M %d-%b'}
-            }
 
 
 if __name__ == '__main__':

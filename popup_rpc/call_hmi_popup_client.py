@@ -15,8 +15,7 @@ lg = logging.getLogger('mds_popup_window')
 logging.basicConfig()
 lg.setLevel(logging.DEBUG)
 
-
-from main import get_dummy_dict
+from dev_common import get_dummy_dict
 
 msg_dict = get_dummy_dict(5.2)
 # # todo: getting an error about trying to send this dict, might just be much easier to send it as a json string and
