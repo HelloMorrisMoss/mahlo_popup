@@ -52,6 +52,7 @@ class Popup:
         self.wgts = {}
         self.styling()
 
+        # variables for foam sections removed
         self._removed_state_vars = {
             msg['msg_id']: {'all': tk.IntVar(), 'left': tk.IntVar(), 'left_center': tk.IntVar(), 'center': tk.IntVar(), 'right_center': tk.IntVar(), 'right': tk.IntVar()}
             for msg in self._defdic['messages']}
@@ -101,8 +102,9 @@ class Popup:
         lg.debug(event.widget == self.root)
         if event.widget == self.root:
             lg.debug('Focus window!')
-            # for mf in self.messages_frames:
-            #     mf.un_hide()
+            self.root.geometry('')
+            for mf in self.messages_frames:
+                mf.grid()
             self.main_frm.grid()
 
     def focus_lost_handler(self, event):
@@ -113,18 +115,11 @@ class Popup:
         lg.debug(event.widget == self.root)
         if event.widget == self.root:
             lg.debug('No longer focus window!')
-            # for mf in self.messages_frames:
-            #     mf.hide()
-            # self.main_frm.grid_forget()
+            for mf in self.messages_frames:
+                mf.grid_remove()
             self.main_frm.grid_remove()
-            # self.root.after_idle(self.root.event_generate, '<Configure>')
-            # self.root.event_generate('<Configure>')
             self.root.update()
-            # self.main_frm.destroy()
-
-
-
-
+            self.root.geometry('100x100')
 
     def recurse_tk_structure(self, obj, name='starting_level', indent=0):
         """Recursively move down the nested tkinter objects by their 'children' attribute, printing the structure.
