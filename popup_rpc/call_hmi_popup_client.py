@@ -30,5 +30,6 @@ msg_dict = get_dummy_dict(5.2)
 # rpc_con.root.exposed_show_popup(rpyc.async_(nrd))
 # rpc_con.root.exposed_show_popup_pickle(pickle.dumps(msg_dict))
 # rpc_con.root.exposed_show_popup_json_sync(msg_dict)
-if rpc_con.root.exposed_check_db_for_new_messages():
-    lg.debug('server successfully contacted.')
+if __name__ == '__main__':
+    if rpc_con.root.exposed_check_db_for_new_messages():
+        lg.debug('server successfully contacted.')
