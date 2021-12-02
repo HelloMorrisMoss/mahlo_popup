@@ -20,6 +20,9 @@ lg.setLevel(logging.DEBUG)
 server = Flask(__name__)
 server._shutdown_bool = False
 
+# TODO: how to enable https?
+#  Would that actually be useful for anything here?
+
 
 # @server.route('/plot.png')
 # def plot_png():
@@ -40,6 +43,7 @@ def compression_refreshing():
 
 @server.route('/lam1_msg')
 def tell_lam1_to_check_for_messages():
+    # TODO: security on this?
     rpc_con.root.exposed_check_db_for_new_messages()
 
     return str('Checking for messages!')

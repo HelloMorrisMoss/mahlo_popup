@@ -229,3 +229,4 @@ cython_debug/
 /dist/
 !/main.spec
 /grpc_examples/
+!/db.json

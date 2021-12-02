@@ -1,14 +1,19 @@
+import logging
 import os
 import sqlite3
 from pprint import pformat, pprint
 
-from retry import retry
-
-from __init__ import lg, settings_dict
-from helpers import try_date
+# from retry import retry
+#
+# from __init__ import lg, settings_dict
+# from helpers import try_date
 
 # db_file_path = './database/db_file.sqlite3'
 from pgdb import DatabaseConnection
+
+lg = logging.getLogger('mds_popup_window')
+logging.basicConfig()
+lg.setLevel(logging.DEBUG)
 
 db_file_path = settings_dict['file_paths']['database']
 

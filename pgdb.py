@@ -1,12 +1,17 @@
 import datetime
+import logging
 import sys
 
 from psycopg2 import connect, sql
 from psycopg2.extras import execute_values
 from pprint import pprint, pformat
 
-from __init__ import lg, settings_dict
+# from __init__ import lg, settings_dict
+import json
 
+lg = logging.getLogger('mds_popup_window')
+logging.basicConfig()
+lg.setLevel(logging.DEBUG)
 
 # ## TODO: enable ssl for the oee postgres server - CHECK IF I DID THIS ALREADY
 
@@ -21,6 +26,8 @@ from __init__ import lg, settings_dict
 #     # sslmode='require'
 # )
 
+with open('db.json', 'r') as db_settings:
+    settings_dict = json.load(db_settings)
 
 tables_dict = {
             'records': {'sql': """
@@ -43,24 +50,10 @@ tables_dict = {
 
 class DatabaseConnection:
     def __init__(self, active_table_name: str = ''):
-        # self.cnn = connect(
-        #     dbname='postgres',
-        #     user='postgres',
-        #     password=settings_dict['production_db_pw'],
-        #     host='localhost',
-        #     port='5432'
-        #     # ,
-        #     # sslmode='require'
-        # )
-        self.cnn = connect(
-            dbname='postgres',
-            user='postgres',
-            password=settings_dict['production_db_pw'],
-            host='10.155.0.21',
-            port='5432'
+        self.cnn = connect(**settings_dict)
             # ,
             # sslmode='require'
-        )
+
         self.cnn.autocommit = True
         self.crs = self.cnn.cursor()
         self._active_table = active_table_name
