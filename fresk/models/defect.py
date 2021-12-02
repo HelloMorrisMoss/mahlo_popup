@@ -1,5 +1,10 @@
+import datetime
+import json
+
 from fresk.sqla_instance import fsa
-from defect_args import all_args
+from fresk.defect_args import all_args
+# from helpers import Timestamp
+from log_setup import lg
 
 class DefectModel(fsa.Model):
     __tablename__ = 'laminator_foam_defect_removal_records'
@@ -10,8 +15,10 @@ class DefectModel(fsa.Model):
     recipe = fsa.Column(fsa.String)
     lam_num = fsa.Column(fsa.Integer)
     rolls_of_product_post_slit = fsa.Column(fsa.Integer)
-    defect_start_ts = fsa.Column(fsa.DateTime(timezone=True))
-    defect_end_ts = fsa.Column(fsa.DateTime(timezone=True))
+    defect_start_ts = fsa.Column(fsa.TIMESTAMP(timezone=True))
+    defect_end_ts = fsa.Column(fsa.TIMESTAMP(timezone=True))
+    # defect_start_ts = fsa.Column(Timestamp(timezone=True))
+    # defect_end_ts =  fsa.Column(Timestamp(timezone=True))
     length_of_defect_meters = fsa.Column(fsa.Float(precision=2))
     belt_marks = fsa.Column(fsa.Boolean)
     bursting = fsa.Column(fsa.Boolean)
@@ -53,5 +60,17 @@ class DefectModel(fsa.Model):
 
         :return: dict
         """
-
-        return {k: str(v) for k, v in self.__dict__['_sa_instance_state'].__dict__.items()}
+        jdict = {}
+        for key in all_args:
+            this_val = self.__dict__.get(key)
+            if isinstance(this_val, datetime.datetime):
+                try:
+                    this_val = this_val.isoformat()
+                except AttributeError as er:
+                    lg.error(er)
+                    this_val = str(this_val)
+            jdict[key] = this_val
+        # jdict = json.dumps(jdict, default=lambda x: x.isoformat())  # converting it to json early is not pretty
+        # return {k: str(v) for k, v in self.__dict__['_sa_instance_state']._instance_dict.items() if k in all_args}
+        # return {k: getattr(self, k) for k in all_args}
+        return jdict, 200

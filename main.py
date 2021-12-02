@@ -9,12 +9,10 @@ from pprint import pprint  # for dev
 import logging
 
 from dev_common import get_dummy_dict
+from log_setup import lg
 from msg_panel import MessagePanel
 
-# init the logger
-lg = logging.getLogger('mds_popup_window')
-logging.basicConfig()
-lg.setLevel(logging.DEBUG)
+
 # when called by RPC the directory may change and be unable to find the ttk theme file directory
 os.chdir(r'C:\Users\lmcglaughlin\PycharmProjects\mahlo_popup')
 

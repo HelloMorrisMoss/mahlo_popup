@@ -18,7 +18,7 @@ api = Api(app)
 def create_tables():
     fsa.create_all()
 
-api.add_resource(Defect, '/defect/add')
+api.add_resource(Defect, '/defect')
 
 if __name__ == '__main__':
     fsa.init_app(app)
