@@ -1,4 +1,8 @@
+import json
+
 from flask_restful import reqparse, Resource
+from main import dev_popup
+from dev_common import get_dummy_dict
 
 
 class Popup(Resource):
@@ -14,5 +18,5 @@ class Popup(Resource):
         # the laminator is moving
         pass
 
-
-
+    def get(self):
+        dev_popup(json.dumps(get_dummy_dict(5.6)))

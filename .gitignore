@@ -230,4 +230,4 @@ cython_debug/
 !/main.spec
 /grpc_examples/
 !/db.json
-!/fresk/db_uri.py
+!/db_uri.py

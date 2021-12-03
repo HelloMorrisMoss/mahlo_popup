@@ -1,8 +1,10 @@
 import flask
 from flask_restful import Api
+
+from fresk.resources.signal_popup import Popup
 from fresk.sqla_instance import fsa
 
-from fresk.resources.defect import Defect
+from fresk.resources.defect import Defect, DefectList
 from db_uri import DATABASE_URI
 
 app = flask.Flask(__name__)
@@ -14,11 +16,15 @@ app.secret_key = 'this will be important when security is implemented'
 
 api = Api(app)
 
+
 @app.before_first_request
 def create_tables():
     fsa.create_all()
 
+
 api.add_resource(Defect, '/defect')
+api.add_resource(Popup, '/popup')
+api.add_resource(DefectList, '/defects')
 
 if __name__ == '__main__':
     fsa.init_app(app)

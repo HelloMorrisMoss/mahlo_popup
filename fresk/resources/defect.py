@@ -64,3 +64,17 @@ class Defect(Resource):
         defect.save_to_database()
 
         return defect.json(), return_code
+
+
+class DefectList(Resource):
+    # parser = reqparse.RequestParser()
+    #
+    # parser.add_argument('')
+
+    # results = DefectModel.query.filter('entry_created_ts' != 'entry_modified_ts').all()
+    def get(self):
+        results = DefectModel.query.all()
+        result_dict = {}
+        for row in results:
+            result_dict[row.id] = row.json()
+        return result_dict, 200

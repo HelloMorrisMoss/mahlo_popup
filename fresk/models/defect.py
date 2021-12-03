@@ -55,6 +55,16 @@ class DefectModel(fsa.Model):
         fsa.session.add(self)
         fsa.session.commit()
 
+    def get_model_dict(self):
+        """Get a dictionary of {column_name: value}
+
+        :return: dict
+        """
+        jdict = {}
+        for key in all_args:
+            jdict[key] = self.__dict__.get(key)
+        return jdict
+
     def json(self):
         """Get a json representation of the defect instance.
 
@@ -73,4 +83,4 @@ class DefectModel(fsa.Model):
         # jdict = json.dumps(jdict, default=lambda x: x.isoformat())  # converting it to json early is not pretty
         # return {k: str(v) for k, v in self.__dict__['_sa_instance_state']._instance_dict.items() if k in all_args}
         # return {k: getattr(self, k) for k in all_args}
-        return jdict, 200
+        return jdict
