@@ -2,6 +2,7 @@ import tkinter as tk
 from pprint import pprint
 from tkinter import ttk
 
+from dev_common import add_show_messages_button
 from log_setup import lg
 # from main_window import hover_enter_factory
 from msg_panel import MessagePanel
@@ -66,14 +67,10 @@ class PopupFrame(ttk.Frame):
         # add the frames for the messages and the widgets therein
         init_messages = self._defdic['messages']
 
-        # the messages received button that shows when the window doesn't have focus
-        self.columnconfigure(0, weight=1)  # to make the button able to fill the width
-        self.rowconfigure(0, weight=1)  # to make the button able to fill the height
-        self.number_of_messages_button = tk.ttk.Button(self, text=str(len(self._defdic['messages'])),
-                                                       style='Accent.TButton')
-        self.number_of_messages_button.bind('<Button-1>', self.focus_gained_handler)  # bind the 'show messages' fn
+        # add_show_messages_button(self, self.focus_gained_handler)
 
         self.add_message_panels(init_messages)
+
 
     def set_style(self, kwargs):
         styling = kwargs.get('style_settings')
@@ -133,13 +130,13 @@ class PopupFrame(ttk.Frame):
         :param event: tkinter.Event
         """
         lg.debug(event.widget == self.parent)
-        if event.widget in (self, self.number_of_messages_button):
+        if event.widget in (self,):
             lg.debug('Focus window!')
             self.grow()
 
     def grow(self):
         """Grow to show the foam removal messages."""
-        self.number_of_messages_button.grid_remove()
+        # self.number_of_messages_button.grid_remove()
         for mf in self.messages_frames:
             mf.grid()
         self.main_frm.grid()
@@ -159,12 +156,13 @@ class PopupFrame(ttk.Frame):
     def shrink(self):
         """Shrink the window down to show only the 'show messages' button."""
 
-        for mf in self.messages_frames:
-            mf.grid_remove()
+        self.grid_remove()
+        # for mf in self.messages_frames:
+        #     mf.grid_remove()
         self.parent.update()
         self.parent.geometry('150x150')
         self.parent.grid_propagate(False)
-        self.show_number_of_msgs_button()
+        # self.show_number_of_msgs_button()
 
     def show_number_of_msgs_button(self):
         self.number_of_messages_button.grid(row=0, column=0, sticky='nesw',

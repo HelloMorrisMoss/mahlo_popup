@@ -5,14 +5,16 @@ import json
 import tkinter as tk
 import os
 
-from dev_common import get_dummy_dict, get_empty_dict, recurse_hover, recurse_tk_structure
+from log_setup import lg
+
+from dev_common import get_dummy_dict, get_empty_dict, recurse_hover, recurse_tk_structure, add_show_messages_button
 
 # when called by RPC the directory may change and be unable to find the ttk theme file directory
 from popup_frame import PopupFrame
 
 os.chdir(r'C:\Users\lmcglaughlin\PycharmProjects\mahlo_popup')
 
-
+# TODO: why not just have the popup ask (get request) flask if it has any current messages every second?
 class Popup(tk.Tk):
     def __init__(self, input_dict, *args, **kwargs):
         super().__init__()
@@ -31,22 +33,60 @@ class Popup(tk.Tk):
 
         params = {'style_settings': {'pad': self.pad, '_wgt_styles': self._wgt_styles}}
 
+        self.hideables = []
+
+        def hide_hideables(event=None):
+            for hideable in self.hideables:
+                lg.debug('hiding %s, %s', hideable, hideable.winfo_viewable())
+                hideable.grid_remove()
+            self.number_of_messages_button.grid(row=0, column=0)
+            self.geometry('150x150')  # fixed size small window
+            self.update()
+
+        def show_hideables(event=None):
+            for hideable in self.hideables:
+                lg.debug('showing')
+                hideable.grid()
+            self.number_of_messages_button.grid_remove()
+            self.geometry('')  # grow to whatever size is needed for all the messages and other widgets
+            # self.update()
+
+        self.number_of_messages_button = add_show_messages_button(self, len(input_dict['messages']), show_hideables)
+        self.number_of_messages_button.grid(row=0, column=0, sticky='nesw')
+
+        self.columnconfigure(0, weight=1)  # to make the button able to fill the width
+        self.rowconfigure(0, weight=1)  # to make the button able to fill the height
+
+        # where the messages about defect appear and their toggles/save buttons
         self.popup_frame = PopupFrame(self, input_dict, **params)
-        self.popup_frame.grid(row=0, column=0, sticky='nesw')
+        self.popup_frame.grid(row=1, column=0, sticky='nesw')
+
+        self.hideables.append(self.popup_frame)
+
+        self.controls_panel = IndependentControlsPanel(self, 'A title!')
+        self.controls_panel.grid(row=2, column=0)
+
+        self.hideables.append(self.controls_panel)
+
+        if len(input_dict['messages']) == 0:
+            lg.debug('no messages, hiding hideables')
+            lg.debug(input_dict['messages'])
+            hide_hideables()
+        else:
+            lg.debug('messages, showing hideables')
+            show_hideables()
 
         # move the window to the front
         self.lift()
         self.attributes('-topmost', True)
         # self.root.after_idle(self.root.attributes, '-topmost', False)
 
-        # shrink to a button when not the focus window
-        self.bind("<FocusOut>", self.popup_frame.focus_lost_handler)
+        self.bind("<FocusOut>", hide_hideables)
+        self.bind("<FocusIn>", show_hideables)
 
-        self.bind("<FocusIn>", self.popup_frame.focus_gained_handler)
+        lg.debug(self.hideables)
 
-        self.columnconfigure(0, weight=1)  # to make the button able to fill the width
-        self.rowconfigure(0, weight=1)  # to make the button able to fill the height
-
+        # if working on the code, print the tk structure
         if self.debugging:
             def recursive_print():
                 recurse_tk_structure(self)
@@ -56,6 +96,23 @@ class Popup(tk.Tk):
             recurse_hover(self.popup_frame)  # for debugging, shows widget info when mouse cursor moves over it
 
         self.mainloop()
+
+
+class IndependentControlsPanel(tk.ttk.LabelFrame):
+    def __init__(self, parent_container, text='This is the title'):
+        super().__init__(parent_container, text=text)
+
+        self.dummy_label = tk.ttk.Label(self, text='words on a label')
+        self.dummy_label.grid(row=3, column=0)
+
+        self.dummy_button = tk.ttk.Button(self)
+        self.dummy_button.grid(row=3, column=1)
+
+
+    def hide(self):
+        recurse_tk_structure(self, apply_function=lambda x: x.grid_remove())
+        # self.grid_remove()
+        # self.dummy_label.grid_remove()
 
 
 # TODO:
@@ -78,7 +135,6 @@ def dev_popup(json_str=None):
 def dev_popup_empty(json_str=None):
     # for development, a dummy dict
     if json_str is None:
-        oospec_len_meters = 4.3
         test_json_dict = get_empty_dict()
         json_str = json.dumps(test_json_dict)
     pup_dict = json.loads(json_str)
@@ -93,4 +149,4 @@ if __name__ == '__main__':
     json_str = args.pup_json
 
     dev_popup()
-    dev_popup_empty()
+    # dev_popup_empty()

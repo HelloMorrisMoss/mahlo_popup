@@ -1,5 +1,6 @@
 """For development helpers, in their own module to avoid circular imports and keep things organized."""
-import tkinter
+import tkinter as tk
+from tkinter import ttk
 from datetime import datetime
 
 
@@ -50,15 +51,23 @@ def get_empty_dict():
             }
 
 
-def recurse_tk_structure(obj: tkinter.Widget, name='starting_level', indent=0):
+def recurse_tk_structure(obj: tk.Widget, name='starting_level', indent=0, print_structure=True, apply_function=None,
+                         apply_args=([], {})):
     """Recursively move down the nested tkinter objects by their 'children' attribute, printing the structure.
 
+    :param apply_function:
+    :param apply_args:
+    :param function:
     :param obj: tkinter object.
     :param name: the 'key' from the next level up dict for this object.
     :param indent: how far to indent the print statement.
     """
-    ind_space = ' ' * indent
-    print(f'{ind_space}{name} - {obj}: ')
+    if print_structure:
+        ind_space = ' ' * indent
+        print(f'{ind_space}{name} - {obj}: ')
+
+    if apply_function:
+        apply_function(obj, *apply_args[0], **apply_args[1])
 
     try:
         for name, kid in obj.children.items():
@@ -105,3 +114,15 @@ def to_the_front(self):
 def raise_above_all(window):
     window.attributes('-topmost', 1)
     window.attributes('-topmost', 0)
+
+
+def add_show_messages_button(parent_container, current_messages_count, command):
+    # the messages received button that shows when the window doesn't have focus
+    # parent_container.columnconfigure(0, weight=1)  # to make the button able to fill the width
+    # parent_container.rowconfigure(0, weight=1)  # to make the button able to fill the height
+    number_of_messages_button = tk.ttk.Button(parent_container, text=str(current_messages_count),
+                                                               style='Accent.TButton')
+    number_of_messages_button.bind('<Button-1>', command)  # bind the 'show messages' fn
+    parent_container.columnconfigure(0, weight=1)  # to make the button able to fill the width
+    parent_container.rowconfigure(0, weight=1)  # to make the button able to fill the height
+    return number_of_messages_button
