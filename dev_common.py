@@ -43,13 +43,7 @@ def create_message_dict(rolls_count_guess, msg_id, oospec_len_meters, template_s
             }
 
 
-def get_empty_dict(oospec_len_meters,
-                   template_str='At {timestamp}\nthere were {len_meters} meters oospec!',
-                   msg_count=5):
-    # return {'messages': [create_message_dict(0, 0, 0, 'No new defects detected.')],
-    empty_message_dict = create_message_dict(3, 0, 0, 'No new defects detected.')
-    # empty_message_dict['empty'] = True
-    # return {'messages': [empty_message_dict],
+def get_empty_dict():
     return {'messages': [],
             'main_win': {'title': 'Messages received!', 'timestamp_display_format': r'%I:%M %d-%b'}
             }

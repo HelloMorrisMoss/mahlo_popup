@@ -47,25 +47,23 @@ class NumberPrompt(tk.Toplevel):
 class MessagePanel(tk.ttk.LabelFrame):
     def __init__(self, root, parent, message=None, row=0, **kwargs):
         super().__init__(parent, text=message['title'])
+
+        self.grid(column=0, row=row, padx=kwargs['pad']['x'], pady=kwargs['pad']['y'], sticky="nesw")
+
         for k, v in kwargs.items():
             setattr(self, k, v)
-        # self.dt_format_str = dt_format_str
-        # self.config(text=message['title'])
+
         self._mp_root = root
         self.message = message
         self.message['msg_txt']['timestamp'] = datetime.fromisoformat(message['msg_txt']['timestamp'])
-        # # self = tk.ttk.LabelFrame(parent, text=message['title'])  # , style='Card.TFrame')
-        # # self.main_frm.wgts[message['msg_id']] = mlf
-        # # self.wigify(mlf)
+
+        # the toggles selected values
         self._removed_vals = {'all': tk.StringVar(), 'left': tk.StringVar(), 'left_center': tk.StringVar(), 'center': tk.StringVar(), 'right_center': tk.StringVar(), 'right': tk.StringVar()}
-        #
+
+        # the label that displays the message
         self.add_message_display(self, message)
-        # self.grid(column=0, row=row, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw")
-        self.grid(column=0, row=row, padx=kwargs['pad']['x'], pady=kwargs['pad']['y'], sticky="nesw")
+
         self.add_buttons(self, message)
-        # dummy_button = tk.ttk.Button(self, text='dummy           !')
-        # dummy_button.bind('<Button-1>', self.hide)
-        # dummy_button.grid(row=row, column=0)
 
         # shrink to a button when not the focus window
         self._mp_root.bind("<FocusOut>", self.focus_lost_handler)
@@ -79,17 +77,9 @@ class MessagePanel(tk.ttk.LabelFrame):
         lg.debug(event.widget == self._mp_root)
         if event.widget == self._mp_root:
             lg.debug('No longer focus window!')
-            # for mf in self.messages_frames:
-            #     mf.hide()
-            # self.main_frm.grid_forget()
-            # self.main_frm.grid_remove()
-            # self.root.after_idle(self.root.event_generate, '<Configure>')
-            # self.root.event_generate('<Configure>')
-            # self.root.update()
-            # self.main_frm.destroy()
             self.grid_remove()
-            # self.destroy()
             self._mp_root.update()
+
     def focus_gained_handler(self, event):
         """When the window gains focus.
 
@@ -98,12 +88,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         lg.debug(event.widget == self._mp_root)
         if event.widget == self._mp_root:
             lg.debug('Focus window!')
-            # for mf in self.messages_frames:
-            #     mf.un_hide()
             self.grid()
-
-    # def grid_remove(self):
-    #     super().grid_remove()
 
     def hide(self, *args, **kwargs):
         self.grid_remove()
@@ -117,7 +102,6 @@ class MessagePanel(tk.ttk.LabelFrame):
                                               len_meters=msg['length_in_meters'])
         label = tk.ttk.Label(parent, text=message_text)
         label.grid(column=0, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="w")
-        # parent.wgts['msg_box'] = label
 
     def add_buttons(self, parent, message):
         """Add the button frames and their widgets to the parent frame.
@@ -174,7 +158,6 @@ class MessagePanel(tk.ttk.LabelFrame):
 
     def send_response(self, event):
         msg_id = self._get_event_info(event)
-        # removed_results_dict = {side: self.main_frm.wgts[msg_id].wgts[side].state_var.get() for side in ('left', 'center', 'right')}
         removed_results_dict = self._removed_state_vars[msg_id]
         # TODO: save to sqlite database, then try to send all items unsent in the db
 
@@ -188,8 +171,6 @@ class MessagePanel(tk.ttk.LabelFrame):
         self.btn_frame = tk.ttk.Frame(parent,
                                       style=self._wgt_styles['labelframe'])  # is this style hiding the frame?
         self.btn_frame.grid(column=1, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw")
-        # self.wigify(btn_frame)
-        # parent.wgts[f'btn_frame_main'] = btn_frame
 
         # default to the guessed number
         if number_of_buttons is None:
@@ -229,12 +210,9 @@ class MessagePanel(tk.ttk.LabelFrame):
         setattr(btn_wgt, 'state_var', btndef['params']['variable'])
         setattr(btn_wgt, 'side', btn_side)
         setattr(btn_wgt, 'msg_id', message['msg_id'])
-        # setattr(btn_wgt, 'onvalue', btndef['params']['onvalue'])
-        # setattr(btn_wgt, 'offvalue', btndef['params']['offvalue'])
 
         # if it is the 'all' button add the list of buttons to toggle
         if btndef.get('not_all_list') is not None:
-            # lg.debug('setting not_all_list on all button')
             setattr(btn_wgt, 'not_all_list', btndef['not_all_list'])
 
         # add the event handler method
@@ -245,7 +223,6 @@ class MessagePanel(tk.ttk.LabelFrame):
         btndef['params']['variable'].set(btndef['params']['onvalue'])
 
         # add it to the wgts dict
-        # parent.wgts[btn_side] = btn_wgt
         return btn_wgt
 
     def _get_toggle_definitions(self, num_of_buttons=3):
@@ -287,7 +264,6 @@ class MessagePanel(tk.ttk.LabelFrame):
         button_def_dict.update(side_button_dict)
         for btndf in button_def_dict.values():
             btndf['params']['variable'] = btndf['params']['textvariable']
-            # btndf['params']['textvariable'].set(btndf['params']['onvalue'])
         return button_def_dict
 
     def destroy_toggle_panel(self):
@@ -413,9 +389,7 @@ class MessagePanel(tk.ttk.LabelFrame):
 if __name__ == '__main__':
     # testing number change popoup
     root = tk.Tk()
-    # prompt_val = NumberPrompt(root, '').show()
-    # lg.debug('prompt returned %s', prompt_val)
-    # print(prompt_val)
+
     msg_dict = get_dummy_dict(10)
     msg = msg_dict['messages'][0]
     tsf = msg_dict['main_win']['timestamp_display_format']

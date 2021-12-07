@@ -21,7 +21,7 @@ os.chdir(r'C:\Users\lmcglaughlin\PycharmProjects\mahlo_popup')
 class Popup(tk.Tk):
     def __init__(self, input_dict, *args, **kwargs):
         super().__init__()
-
+        self.debugging = kwargs.get('debug')
         self.attributes('-toolwindow', True)
 
         # styling
@@ -49,39 +49,18 @@ class Popup(tk.Tk):
 
         self.bind("<FocusIn>", self.popup_frame.focus_gained_handler)
 
-        def recursive_print():
-            recurse_tk_structure(self)
-            self.after(15000, recursive_print)
-
-        self.after(1000, recursive_print)
-        recurse_hover(self.popup_frame)
-
-        # self.grid()
-
         self.columnconfigure(0, weight=1)  # to make the button able to fill the width
         self.rowconfigure(0, weight=1)  # to make the button able to fill the height
-        # recurse_tk_structure(self)
+
+        if self.debugging:
+            def recursive_print():
+                recurse_tk_structure(self)
+                self.after(15000, recursive_print)
+
+            self.after(1000, recursive_print)  # for debugging, prints out the tkinter structure
+            recurse_hover(self.popup_frame)  # for debugging, shows widget info when mouse cursor moves over it
 
         self.mainloop()
-
-        # def styling(self):
-        #     """Set the styling elements of the window.
-        #
-        #     """
-        #     self.tk.call("source", "Azure-ttk-theme-main/Azure-ttk-theme-main/azure.tcl")
-        #     self.tk.call("set_theme", "dark")
-        #     # frame padding
-        #     self.pad = dict(
-        #         x=5,
-        #         y=3
-        #     )
-        #     self._wgt_styles = {'toggle': 'Switch.TCheckbutton', 'labelframe': 'Card.TFrame'}
-        #
-        #     # looking at hiding the titlebar, no luck
-        #     # me.root.wm_attributes('-fullscreen', 'True')  # fullscreen no titlebar
-        #     # me.root.attributes('-fullscreen', 'True')  # same as with wm_
-        #     # me.root.wm_attributes('-type', 'splash')  # linux specific
-        #     # me.root.overrideredirect(1)  # this hides the titlebar, but it's placing the window in the corner
 
 
 def recurse_tk_structure(obj: tkinter.Widget, name='starting_level', indent=0):
@@ -106,13 +85,11 @@ def hover_enter_factory(this_widget):
 
     :param this_widget: a tkinter widget.
     """
-    # print(this_widget)
     this_widget = this_widget
     winfo = this_widget.grid_info()
 
     def set_loc_label(event, this_widget):
         event_widget = event.widget
-        # self.wgts['dev_label'].config(text=f'{winfo}')
         print(this_widget, event_widget, winfo)
 
     import functools
@@ -132,18 +109,6 @@ def recurse_hover(wgt, indent=0):
     hover_enter_factory(wgt)
     for child in wgt.winfo_children():
         recurse_hover(child, indent=indent + 4)
-        # print('wd' + '\t' * indent, wgt, wgt.grid_info())
-        # if 'frame' not in wname:
-        #     print(f'I am not a frame {wname}!')
-        #     me.hover_enter_factory(wgt)
-        # else:
-        #     print(f'I am a frame {wname}!')
-        # try:
-        #     # sub_wgts = getattr(wgt, 'wgts')
-        #     if sub_wgts is not None:
-        #         recurse_hover(sub_wgts, indent=indent + 4)
-        # except AttributeError:
-        #     print(wd)
 
 
 class PopupFrame(ttk.Frame):
@@ -173,50 +138,34 @@ class PopupFrame(ttk.Frame):
         self.parent = parent_container
         super().__init__(self.parent)
 
-        styling = kwargs.get('style_settings')
-        if styling:
-            lg.debug('style provided')
-            for k, v in styling.items():
-                lg.debug(f'PopupFrame add {k}: {v}')
-                setattr(self, k, v)
+        self.set_style(kwargs)
 
-        # pprint(json.dumps(input_dict, indent=4))
         pprint(input_dict)
         # set things up for the main window
         self._defdic = input_dict
-        # if kwargs.get('root') is None:
-        #     self.root = tk.Tk()
-        # else:
-        #     self.root = kwargs['root']
+
         self.parent.title(self._defdic['main_win']['title'])  # TODO: this is a bad way to do this
-        # self.root.geometry('1000x500')
-        # self.root.resizable(0, 0)  # disables the maximize button, but it's still there
-        # self.root.attributes('-toolwindow', True)
-        # self.root.transient(1)  # possible remove min/max buttons, _tkinter.TclError: bad window path name "1"
+
         self.wgts = {}
-        # self.styling()
 
         # variables for foam sections removed
         self._removed_state_vars = {}
         self.update_removed_vars(self._defdic['messages'])
 
-        # msg[
-        #     'msg_id']: {'all': tk.IntVar(), 'left': tk.IntVar(), 'left_center': tk.IntVar(), 'center': tk.IntVar(), 'right_center': tk.IntVar(), 'right': tk.IntVar()}
-        # for msg in self._defdic['messages']}
-        for mid, state_dict in self._removed_state_vars.items():
+        # for now set all the sections as removed
+        for msg_id, state_dict in self._removed_state_vars.items():
             state_dict['all'].set(True)
 
         # the format for the datetime strftime to use for display
         self.dt_format_str = self._defdic['main_win']['timestamp_display_format']
 
         # the main frame
-        # self.main_frm = ttk.Frame(self)
         self.main_frm = self
-        # self.main_frm.grid(row=1, column=0, sticky='nesw', columnspan=3)
-        self.grid(row=0, column=0, sticky='nesw', columnspan=100, rowspan=100)
+        self.main_frm.grid(row=1, column=0, sticky='nesw', columnspan=3)
         self.wgts['main_frame'] = self.main_frm
 
         self.messages_frames = []
+        self.hideable = []
 
         # add the frames for the messages and the widgets therein
         init_messages = self._defdic['messages']
@@ -230,19 +179,25 @@ class PopupFrame(ttk.Frame):
 
         self.add_message_panels(init_messages)
 
+    def set_style(self, kwargs):
+        styling = kwargs.get('style_settings')
+        if styling:
+            lg.debug('style provided')
+            for k, v in styling.items():
+                lg.debug(f'PopupFrame add {k}: {v}')
+                setattr(self, k, v)
+
     def add_message_panels(self, init_messages):
         if not init_messages:
             lg.debug('Single message')
             msg_frm = tk.ttk.LabelFrame(self, text='Single message.')
             msg_frm.grid(row=0, column=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw", columnspan=12,
                          rowspan=5)
-            # msg_frm = ttk.Frame(self)
-            # single_label = ttk.Label(msg_frm, text=init_messages[0])
             single_label = tk.ttk.Label(msg_frm, text='here is some text')
             single_label.grid(row=0, column=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw", columnspan=12,
                               rowspan=5)
             self.messages_frames.append(msg_frm)
-            # self.shrink()
+            self.shrink()
 
         else:
             for mnum, message in enumerate(init_messages):
@@ -275,8 +230,6 @@ class PopupFrame(ttk.Frame):
             msg['msg_id']: {'all': tk.IntVar(), 'left': tk.IntVar(), 'left_center': tk.IntVar(), 'center': tk.IntVar(),
                             'right_center': tk.IntVar(), 'right': tk.IntVar()}
             for msg in messages})
-        # for mid, state_dict in self._removed_state_vars.items():
-        #     state_dict['all'].set(True)
 
     def focus_gained_handler(self, event):
         """When the window gains focus.
@@ -312,7 +265,6 @@ class PopupFrame(ttk.Frame):
 
         for mf in self.messages_frames:
             mf.grid_remove()
-        # self.main_frm.grid_remove()
         self.parent.update()
         self.parent.geometry('150x150')
         self.parent.grid_propagate(False)
@@ -337,11 +289,6 @@ class PopupFrame(ttk.Frame):
         """
         for wname, wgt in wgts_dict.items():
             print('wd' + '\t' * indent, wgt, wgt.grid_info())
-            # if 'frame' not in wname:
-            #     print(f'I am not a frame {wname}!')
-            #     me.hover_enter_factory(wgt)
-            # else:
-            #     print(f'I am a frame {wname}!')
             hover_enter_factory(wgt)
             try:
                 sub_wgts = getattr(wgt, 'wgts')
@@ -349,25 +296,6 @@ class PopupFrame(ttk.Frame):
                     self.recurse_hover(sub_wgts, indent=indent + 4)
             except AttributeError:
                 pass
-
-    # def styling(self):
-    #     """Set the styling elements of the window.
-    #
-    #     """
-    #     self.root.tk.call("source", "Azure-ttk-theme-main/Azure-ttk-theme-main/azure.tcl")
-    #     self.root.tk.call("set_theme", "dark")
-    #     # frame padding
-    #     self.pad = dict(
-    #         x=5,
-    #         y=3
-    #     )
-    #     self._wgt_styles = {'toggle': 'Switch.TCheckbutton', 'labelframe': 'Card.TFrame'}
-    #
-    #     # looking at hiding the titlebar, no luck
-    #     # me.root.wm_attributes('-fullscreen', 'True')  # fullscreen no titlebar
-    #     # me.root.attributes('-fullscreen', 'True')  # same as with wm_
-    #     # me.root.wm_attributes('-type', 'splash')  # linux specific
-    #     # me.root.overrideredirect(1)  # this hides the titlebar, but it's placing the window in the corner
 
 
 def to_the_front(self):
@@ -400,7 +328,7 @@ def dev_popup_empty(json_str=None):
     # for development, a dummy dict
     if json_str is None:
         oospec_len_meters = 4.3
-        test_json_dict = get_empty_dict(oospec_len_meters)
+        test_json_dict = get_empty_dict()
         json_str = json.dumps(test_json_dict)
     pup_dict = json.loads(json_str)
     pup = Popup(pup_dict)
@@ -413,5 +341,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     json_str = args.pup_json
 
-    # dev_popup()
+    dev_popup()
     dev_popup_empty()
