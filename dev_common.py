@@ -49,7 +49,7 @@ def get_empty_dict(oospec_len_meters,
     # return {'messages': [create_message_dict(0, 0, 0, 'No new defects detected.')],
     empty_message_dict = create_message_dict(3, 0, 0, 'No new defects detected.')
     # empty_message_dict['empty'] = True
-    return {'messages': [empty_message_dict],
-            # return {'messages': [],
+    # return {'messages': [empty_message_dict],
+    return {'messages': [],
             'main_win': {'title': 'Messages received!', 'timestamp_display_format': r'%I:%M %d-%b'}
             }

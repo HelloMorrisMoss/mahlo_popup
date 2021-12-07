@@ -17,10 +17,8 @@ class NumberPrompt(tk.Toplevel):
     """Show a tk popup window prompting for a number between 1 and 5, returning that value when pressed. Cancel as 0."""
     def __init__(self, parent, prompt=None):
         tk.Toplevel.__init__(self, parent)
-        # def prompt_number_window(root):
-        #         pwin = tk.Toplevel(root)
         row = 0
-        # col = 0
+
         for col in range(0, 6):
             button_label_text = str(col) if col != 0 else 'Cancel'
             num_button = tk.ttk.Button(self, text=button_label_text)
@@ -61,7 +59,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         # # self.wigify(mlf)
         self._removed_vals = {'all': tk.StringVar(), 'left': tk.StringVar(), 'left_center': tk.StringVar(), 'center': tk.StringVar(), 'right_center': tk.StringVar(), 'right': tk.StringVar()}
         #
-        # self.add_message_display(self, message)
+        self.add_message_display(self, message)
         # self.grid(column=0, row=row, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw")
         self.grid(column=0, row=row, padx=kwargs['pad']['x'], pady=kwargs['pad']['y'], sticky="nesw")
         self.add_buttons(self, message)

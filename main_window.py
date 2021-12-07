@@ -227,45 +227,22 @@ class PopupFrame(ttk.Frame):
         self.number_of_messages_button = tk.ttk.Button(self, text=str(len(self._defdic['messages'])),
                                                        style='Accent.TButton')
         self.number_of_messages_button.bind('<Button-1>', self.focus_gained_handler)  # bind the 'show messages' fn
-        if not len(init_messages):
-            self.show_number_of_msgs_button()
-        else:
-            # TODO: how about only show the count button to start? may not solve the 'if the operator needs to interact'
-            #  problem
-            self.add_message_panels(init_messages)
-        # if len(init_messages):
-        #     self.add_message_panels(init_messages)
-        # else:
-        # empty_dict = get_empty_dict(0)
-        # no_messages_message = create_message_dict(rolls_count_guess=0, msg_id=0, oospec_len_meters=0,
-        #                                           template_str='No defects detected!')
-        # empty_dict['messages'].append(no_messages_message)
-        # self.add_message_panels(empty_dict)
 
-        # me.recurse_hover(me.wgts)
-
-        # # move the window to the front
-        # self.root.lift()
-        # self.root.attributes('-topmost', True)
-        # # self.root.after_idle(self.root.attributes, '-topmost', False)
-        #
-        # # shrink to a button when not the focus window
-        # self.root.bind("<FocusOut>", self.focus_lost_handler)
-        # # self.root.bind("<FocusIn>", self.focus_gained_handler)
-
-        # import threading
-        # self.flask_thread = threading.Thread(target=start_flask_app)
-        # self.root.mainloop()
+        self.add_message_panels(init_messages)
 
     def add_message_panels(self, init_messages):
         if not init_messages:
+            lg.debug('Single message')
             msg_frm = tk.ttk.LabelFrame(self, text='Single message.')
+            msg_frm.grid(row=0, column=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw", columnspan=12,
+                         rowspan=5)
             # msg_frm = ttk.Frame(self)
             # single_label = ttk.Label(msg_frm, text=init_messages[0])
             single_label = tk.ttk.Label(msg_frm, text='here is some text')
             single_label.grid(row=0, column=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw", columnspan=12,
                               rowspan=5)
             self.messages_frames.append(msg_frm)
+            # self.shrink()
 
         else:
             for mnum, message in enumerate(init_messages):
@@ -436,5 +413,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     json_str = args.pup_json
 
-    dev_popup()
-    # dev_popup_empty()
+    # dev_popup()
+    dev_popup_empty()
