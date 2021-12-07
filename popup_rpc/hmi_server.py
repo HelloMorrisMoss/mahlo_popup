@@ -7,7 +7,7 @@ import threading
 import rpyc
 from rpyc.utils.server import ThreadedServer
 
-from main import Popup
+from main_window import Popup
 
 lg = logging.getLogger('mds_popup_window')
 logging.basicConfig()

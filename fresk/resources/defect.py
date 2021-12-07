@@ -16,6 +16,7 @@ class Defect(Resource):
 
     for arg in editing_optional_args:
         edit_parser.add_argument(arg, type=arg_type_dict[arg], required=False, help='This argument is optional.')
+
     def get(self):
         parser = reqparse.RequestParser()
         for arg in all_args:
