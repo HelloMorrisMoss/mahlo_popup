@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import tkinter
 import tkinter as tk
 from tkinter import ttk
 import os
@@ -36,7 +37,7 @@ class Popup(tk.Tk):
         params = {'style_settings': {'pad': self.pad, '_wgt_styles': self._wgt_styles}}
 
         self.popup_frame = PopupFrame(self, input_dict, **params)
-        self.popup_frame.grid()
+        self.popup_frame.grid(row=0, column=0, sticky='nesw')
 
         # move the window to the front
         self.lift()
@@ -45,8 +46,21 @@ class Popup(tk.Tk):
 
         # shrink to a button when not the focus window
         self.bind("<FocusOut>", self.popup_frame.focus_lost_handler)
-        # self.root.bind("<FocusIn>", self.focus_gained_handler)
 
+        self.bind("<FocusIn>", self.popup_frame.focus_gained_handler)
+
+        def recursive_print():
+            recurse_tk_structure(self)
+            self.after(15000, recursive_print)
+
+        self.after(1000, recursive_print)
+        recurse_hover(self.popup_frame)
+
+        # self.grid()
+
+        self.columnconfigure(0, weight=1)  # to make the button able to fill the width
+        self.rowconfigure(0, weight=1)  # to make the button able to fill the height
+        # recurse_tk_structure(self)
 
         self.mainloop()
 
@@ -68,6 +82,68 @@ class Popup(tk.Tk):
         #     # me.root.attributes('-fullscreen', 'True')  # same as with wm_
         #     # me.root.wm_attributes('-type', 'splash')  # linux specific
         #     # me.root.overrideredirect(1)  # this hides the titlebar, but it's placing the window in the corner
+
+
+def recurse_tk_structure(obj: tkinter.Widget, name='starting_level', indent=0):
+    """Recursively move down the nested tkinter objects by their 'children' attribute, printing the structure.
+
+    :param obj: tkinter object.
+    :param name: the 'key' from the next level up dict for this object.
+    :param indent: how far to indent the print statement.
+    """
+    ind_space = ' ' * indent
+    print(f'{ind_space}{name} - {obj}: ')
+
+    try:
+        for name, kid in obj.children.items():
+            recurse_tk_structure(kid, name, indent + 4)
+    except AttributeError:
+        print(f'{ind_space}leaf - end')
+
+
+def hover_enter_factory(this_widget):
+    """Bind a mouse-hover function to a tkinter widget to display information when hovered.
+
+    :param this_widget: a tkinter widget.
+    """
+    # print(this_widget)
+    this_widget = this_widget
+    winfo = this_widget.grid_info()
+
+    def set_loc_label(event, this_widget):
+        event_widget = event.widget
+        # self.wgts['dev_label'].config(text=f'{winfo}')
+        print(this_widget, event_widget, winfo)
+
+    import functools
+
+    this_fn = functools.partial(set_loc_label, this_widget=this_widget)
+
+    this_widget.bind("<Enter>", this_fn)
+
+
+def recurse_hover(wgt, indent=0):
+    """Recursively move down the nested tk objects by their 'custom' .wgt dict items adding a mouse-over function.
+
+    :param wgt: tkinter.Widget, highest level tkinter widget to set hover (can be the 'root' tk.Tk).
+    :param indent: int, spaces to indent
+    """
+
+    hover_enter_factory(wgt)
+    for child in wgt.winfo_children():
+        recurse_hover(child, indent=indent + 4)
+        # print('wd' + '\t' * indent, wgt, wgt.grid_info())
+        # if 'frame' not in wname:
+        #     print(f'I am not a frame {wname}!')
+        #     me.hover_enter_factory(wgt)
+        # else:
+        #     print(f'I am a frame {wname}!')
+        # try:
+        #     # sub_wgts = getattr(wgt, 'wgts')
+        #     if sub_wgts is not None:
+        #         recurse_hover(sub_wgts, indent=indent + 4)
+        # except AttributeError:
+        #     print(wd)
 
 
 class PopupFrame(ttk.Frame):
@@ -112,7 +188,7 @@ class PopupFrame(ttk.Frame):
         #     self.root = tk.Tk()
         # else:
         #     self.root = kwargs['root']
-        self.parent.title(self._defdic['main_win']['title'])
+        self.parent.title(self._defdic['main_win']['title'])  # TODO: this is a bad way to do this
         # self.root.geometry('1000x500')
         # self.root.resizable(0, 0)  # disables the maximize button, but it's still there
         # self.root.attributes('-toolwindow', True)
@@ -137,24 +213,36 @@ class PopupFrame(ttk.Frame):
         # self.main_frm = ttk.Frame(self)
         self.main_frm = self
         # self.main_frm.grid(row=1, column=0, sticky='nesw', columnspan=3)
-        self.grid(row=1, column=0, sticky='nesw', columnspan=3)
+        self.grid(row=0, column=0, sticky='nesw', columnspan=100, rowspan=100)
         self.wgts['main_frame'] = self.main_frm
 
         self.messages_frames = []
 
         # add the frames for the messages and the widgets therein
         init_messages = self._defdic['messages']
-        if len(init_messages):
-            self.add_message_panels(init_messages)
+
+        # the messages received button that shows when the window doesn't have focus
+        self.columnconfigure(0, weight=1)  # to make the button able to fill the width
+        self.rowconfigure(0, weight=1)  # to make the button able to fill the height
+        self.number_of_messages_button = tk.ttk.Button(self, text=str(len(self._defdic['messages'])),
+                                                       style='Accent.TButton')
+        self.number_of_messages_button.bind('<Button-1>', self.focus_gained_handler)  # bind the 'show messages' fn
+        if not len(init_messages):
+            self.show_number_of_msgs_button()
         else:
-            empty_dict = get_empty_dict(0)
-            no_messages_message = create_message_dict(rolls_count_guess=0, msg_id=0, oospec_len_meters=0,
-                                                      template_str='No defects detected!')
-            empty_dict['messages'].append(no_messages_message)
-            self.add_message_panels(empty_dict)
+            # TODO: how about only show the count button to start? may not solve the 'if the operator needs to interact'
+            #  problem
+            self.add_message_panels(init_messages)
+        # if len(init_messages):
+        #     self.add_message_panels(init_messages)
+        # else:
+        # empty_dict = get_empty_dict(0)
+        # no_messages_message = create_message_dict(rolls_count_guess=0, msg_id=0, oospec_len_meters=0,
+        #                                           template_str='No defects detected!')
+        # empty_dict['messages'].append(no_messages_message)
+        # self.add_message_panels(empty_dict)
 
         # me.recurse_hover(me.wgts)
-        self.recurse_tk_structure(self)
 
         # # move the window to the front
         # self.root.lift()
@@ -165,23 +253,18 @@ class PopupFrame(ttk.Frame):
         # self.root.bind("<FocusOut>", self.focus_lost_handler)
         # # self.root.bind("<FocusIn>", self.focus_gained_handler)
 
-        # the messages received button that shows when the window doesn't have focus
-        self.columnconfigure(0, weight=1)  # to make the button able to fill the width
-        self.rowconfigure(0, weight=1)  # to make the button able to fill the height
-        self.number_of_messages_button = tk.ttk.Button(self, text=str(len(self._defdic['messages'])),
-                                                       style='Accent.TButton')
-        self.number_of_messages_button.bind('<Button-1>', self.focus_gained_handler)  # bind the 'show messages' fn
-
         # import threading
         # self.flask_thread = threading.Thread(target=start_flask_app)
         # self.root.mainloop()
 
     def add_message_panels(self, init_messages):
-        if init_messages[0].get('empty'):
-            msg_frm = ttk.LabelFrame(self, text='Single message.')
-            single_label = ttk.Label(msg_frm, text=init_messages[0])
-            single_label = ttk.Label(msg_frm, text='here is some text')
-            single_label.grid(row=0, column=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw", columnspan=12)
+        if not init_messages:
+            msg_frm = tk.ttk.LabelFrame(self, text='Single message.')
+            # msg_frm = ttk.Frame(self)
+            # single_label = ttk.Label(msg_frm, text=init_messages[0])
+            single_label = tk.ttk.Label(msg_frm, text='here is some text')
+            single_label.grid(row=0, column=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw", columnspan=12,
+                              rowspan=5)
             self.messages_frames.append(msg_frm)
 
         else:
@@ -223,8 +306,8 @@ class PopupFrame(ttk.Frame):
 
         :param event: tkinter.Event
         """
-        lg.debug(event.widget == self.root)
-        if event.widget in (self.root, self.number_of_messages_button):
+        lg.debug(event.widget == self.parent)
+        if event.widget in (self, self.number_of_messages_button):
             lg.debug('Focus window!')
             self.grow()
 
@@ -234,8 +317,8 @@ class PopupFrame(ttk.Frame):
         for mf in self.messages_frames:
             mf.grid()
         self.main_frm.grid()
-        self.root.grid_propagate(True)
-        self.root.geometry('')
+        self.parent.grid_propagate(True)
+        self.parent.geometry('')
 
     def focus_lost_handler(self, event):
         """When the window loses focus (another window is clicked or otherwise switched to).
@@ -252,28 +335,15 @@ class PopupFrame(ttk.Frame):
 
         for mf in self.messages_frames:
             mf.grid_remove()
-        self.main_frm.grid_remove()
+        # self.main_frm.grid_remove()
         self.parent.update()
         self.parent.geometry('150x150')
         self.parent.grid_propagate(False)
+        self.show_number_of_msgs_button()
+
+    def show_number_of_msgs_button(self):
         self.number_of_messages_button.grid(row=0, column=0, sticky='nesw',
-                                            rowspan=3, columnspan=3)
-
-    def recurse_tk_structure(self, obj, name='starting_level', indent=0):
-        """Recursively move down the nested tkinter objects by their 'children' attribute, printing the structure.
-
-        :param obj: tkinter object.
-        :param name: the 'key' from the next level up dict for this object.
-        :param indent: how far to indent the print statement.
-        """
-        ind_space = ' ' * indent
-        print(f'{ind_space}{name} - {obj}')
-
-        try:
-            for name, kid in obj.children.items():
-                self.recurse_tk_structure(kid, name, indent + 4)
-        except AttributeError:
-            print(f'{ind_space}leaf - end')
+                                            rowspan=9, columnspan=3)
 
     def wigify(self, obj):
         """Add a property 'wgts' that is an empty dictionary to the obj. (Intended for keeping track of tkinter widgets.)
@@ -295,33 +365,13 @@ class PopupFrame(ttk.Frame):
             #     me.hover_enter_factory(wgt)
             # else:
             #     print(f'I am a frame {wname}!')
-            self.hover_enter_factory(wgt)
+            hover_enter_factory(wgt)
             try:
                 sub_wgts = getattr(wgt, 'wgts')
                 if sub_wgts is not None:
                     self.recurse_hover(sub_wgts, indent=indent + 4)
             except AttributeError:
                 pass
-
-    def hover_enter_factory(self, this_widget):
-        """Bind a mouse-hover function to a tkinter widget to display information when hovered.
-
-        :param this_widget: a tkinter widget.
-        """
-        # print(this_widget)
-        this_widget = this_widget
-        winfo = this_widget.grid_info()
-
-        def set_loc_label(event, this_widget):
-            event_widget = event.widget
-            # self.wgts['dev_label'].config(text=f'{winfo}')
-            print(this_widget, event_widget, winfo)
-
-        import functools
-
-        this_fn = functools.partial(set_loc_label, this_widget=this_widget)
-
-        this_widget.bind("<Enter>", this_fn)
 
     # def styling(self):
     #     """Set the styling elements of the window.

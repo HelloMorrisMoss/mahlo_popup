@@ -47,7 +47,7 @@ class NumberPrompt(tk.Toplevel):
 
 
 class MessagePanel(tk.ttk.LabelFrame):
-    def __init__(self, root, parent, message, row, **kwargs):
+    def __init__(self, root, parent, message=None, row=0, **kwargs):
         super().__init__(parent, text=message['title'])
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -72,9 +72,6 @@ class MessagePanel(tk.ttk.LabelFrame):
         # shrink to a button when not the focus window
         self._mp_root.bind("<FocusOut>", self.focus_lost_handler)
         self._mp_root.bind("<FocusIn>", self.focus_gained_handler)
-
-        # TODO: still need to figure out what it is that is keeping things from grid_remove'ing properly
-
 
     def focus_lost_handler(self, event):
         """When the window loses focus (another window is clicked or otherwise switched to).

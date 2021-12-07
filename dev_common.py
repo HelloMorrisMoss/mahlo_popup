@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 def get_dummy_dict_by_ids(id_list=[1, 2, 3], oospec_len_meters=5.55,
-                   template_str='At {timestamp}\nthere were {len_meters} meters oospec!'):
+                          template_str='At {timestamp}\nthere were {len_meters} meters oospec!'):
     return {'messages': [get_message_dict(mnum, msg_id, oospec_len_meters, template_str)
                          for mnum, msg_id in
                          enumerate(id_list)],
@@ -32,8 +32,8 @@ def get_dummy_dict(oospec_len_meters=5.55,
             }
 
 
-def create_message_dict(rolls_count_guess, msg_id, oospec_len_meters, template_str):
-    return {'title': 'Out of spec!',
+def create_message_dict(rolls_count_guess, msg_id, oospec_len_meters, template_str, window_title='Out of spec!'):
+    return {'title': window_title,
             'msg_txt': {'template': template_str,
                         'timestamp': datetime.now().isoformat(),
                         'length_in_meters': oospec_len_meters},
@@ -47,8 +47,9 @@ def get_empty_dict(oospec_len_meters,
                    template_str='At {timestamp}\nthere were {len_meters} meters oospec!',
                    msg_count=5):
     # return {'messages': [create_message_dict(0, 0, 0, 'No new defects detected.')],
-    empty_message_dict = create_message_dict(0, 0, 0, 'No new defects detected.')
-    empty_message_dict['empty'] = True
+    empty_message_dict = create_message_dict(3, 0, 0, 'No new defects detected.')
+    # empty_message_dict['empty'] = True
     return {'messages': [empty_message_dict],
+            # return {'messages': [],
             'main_win': {'title': 'Messages received!', 'timestamp_display_format': r'%I:%M %d-%b'}
             }
