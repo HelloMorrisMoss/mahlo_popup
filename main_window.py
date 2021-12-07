@@ -17,12 +17,65 @@ from msg_panel import MessagePanel
 os.chdir(r'C:\Users\lmcglaughlin\PycharmProjects\mahlo_popup')
 
 
-class Popup:
+class Popup(tk.Tk):
+    def __init__(self, input_dict, *args, **kwargs):
+        super().__init__()
+
+        self.attributes('-toolwindow', True)
+
+        # styling
+        self.tk.call("source", "Azure-ttk-theme-main/Azure-ttk-theme-main/azure.tcl")
+        self.tk.call("set_theme", "dark")
+        # frame padding
+        self.pad = dict(
+            x=5,
+            y=3
+        )
+        self._wgt_styles = {'toggle': 'Switch.TCheckbutton', 'labelframe': 'Card.TFrame'}
+
+        params = {'style_settings': {'pad': self.pad, '_wgt_styles': self._wgt_styles}}
+
+        self.popup_frame = PopupFrame(self, input_dict, **params)
+        self.popup_frame.grid()
+
+        # move the window to the front
+        self.lift()
+        self.attributes('-topmost', True)
+        # self.root.after_idle(self.root.attributes, '-topmost', False)
+
+        # shrink to a button when not the focus window
+        self.bind("<FocusOut>", self.popup_frame.focus_lost_handler)
+        # self.root.bind("<FocusIn>", self.focus_gained_handler)
+
+
+        self.mainloop()
+
+        # def styling(self):
+        #     """Set the styling elements of the window.
+        #
+        #     """
+        #     self.tk.call("source", "Azure-ttk-theme-main/Azure-ttk-theme-main/azure.tcl")
+        #     self.tk.call("set_theme", "dark")
+        #     # frame padding
+        #     self.pad = dict(
+        #         x=5,
+        #         y=3
+        #     )
+        #     self._wgt_styles = {'toggle': 'Switch.TCheckbutton', 'labelframe': 'Card.TFrame'}
+        #
+        #     # looking at hiding the titlebar, no luck
+        #     # me.root.wm_attributes('-fullscreen', 'True')  # fullscreen no titlebar
+        #     # me.root.attributes('-fullscreen', 'True')  # same as with wm_
+        #     # me.root.wm_attributes('-type', 'splash')  # linux specific
+        #     # me.root.overrideredirect(1)  # this hides the titlebar, but it's placing the window in the corner
+
+
+class PopupFrame(ttk.Frame):
     """A popup window with messages to respond to. Create the window and messages based on a provided dictionary.
 
     """
 
-    def __init__(self, input_dict, *args, **kwargs):
+    def __init__(self, parent_container, input_dict, *args, **kwargs):
         """
         example_input_dict = {'messages': [{'title': 'Out of spec!',
                                         'msg_txt': {'template': template_str,
@@ -40,21 +93,32 @@ class Popup:
                 title: a string with the title for the main window.
         :param input_dict:
         """
+
+        self.parent = parent_container
+        super().__init__(self.parent)
+
+        styling = kwargs.get('style_settings')
+        if styling:
+            lg.debug('style provided')
+            for k, v in styling.items():
+                lg.debug(f'PopupFrame add {k}: {v}')
+                setattr(self, k, v)
+
         # pprint(json.dumps(input_dict, indent=4))
         pprint(input_dict)
         # set things up for the main window
         self._defdic = input_dict
-        if kwargs.get('root') is None:
-            self.root = tk.Tk()
-        else:
-            self.root = kwargs['root']
-        self.root.title(self._defdic['main_win']['title'])
+        # if kwargs.get('root') is None:
+        #     self.root = tk.Tk()
+        # else:
+        #     self.root = kwargs['root']
+        self.parent.title(self._defdic['main_win']['title'])
         # self.root.geometry('1000x500')
         # self.root.resizable(0, 0)  # disables the maximize button, but it's still there
-        self.root.attributes('-toolwindow', True)
+        # self.root.attributes('-toolwindow', True)
         # self.root.transient(1)  # possible remove min/max buttons, _tkinter.TclError: bad window path name "1"
         self.wgts = {}
-        self.styling()
+        # self.styling()
 
         # variables for foam sections removed
         self._removed_state_vars = {}
@@ -70,8 +134,10 @@ class Popup:
         self.dt_format_str = self._defdic['main_win']['timestamp_display_format']
 
         # the main frame
-        self.main_frm = tk.ttk.Frame(self.root)
-        self.main_frm.grid(row=1, column=0, sticky='nesw', columnspan=3)
+        # self.main_frm = ttk.Frame(self)
+        self.main_frm = self
+        # self.main_frm.grid(row=1, column=0, sticky='nesw', columnspan=3)
+        self.grid(row=1, column=0, sticky='nesw', columnspan=3)
         self.wgts['main_frame'] = self.main_frm
 
         self.messages_frames = []
@@ -88,34 +154,42 @@ class Popup:
             self.add_message_panels(empty_dict)
 
         # me.recurse_hover(me.wgts)
-        self.recurse_tk_structure(self.root)
+        self.recurse_tk_structure(self)
 
-        # move the window to the front
-        self.root.lift()
-        self.root.attributes('-topmost', True)
-        # self.root.after_idle(self.root.attributes, '-topmost', False)
-
-        # shrink to a button when not the focus window
-        self.root.bind("<FocusOut>", self.focus_lost_handler)
-        # self.root.bind("<FocusIn>", self.focus_gained_handler)
+        # # move the window to the front
+        # self.root.lift()
+        # self.root.attributes('-topmost', True)
+        # # self.root.after_idle(self.root.attributes, '-topmost', False)
+        #
+        # # shrink to a button when not the focus window
+        # self.root.bind("<FocusOut>", self.focus_lost_handler)
+        # # self.root.bind("<FocusIn>", self.focus_gained_handler)
 
         # the messages received button that shows when the window doesn't have focus
-        self.root.columnconfigure(0, weight=1)  # to make the button able to fill the width
-        self.root.rowconfigure(0, weight=1)  # to make the button able to fill the height
-        self.number_of_messages_button = tk.ttk.Button(self.root, text=str(len(self._defdic['messages'])),
+        self.columnconfigure(0, weight=1)  # to make the button able to fill the width
+        self.rowconfigure(0, weight=1)  # to make the button able to fill the height
+        self.number_of_messages_button = tk.ttk.Button(self, text=str(len(self._defdic['messages'])),
                                                        style='Accent.TButton')
         self.number_of_messages_button.bind('<Button-1>', self.focus_gained_handler)  # bind the 'show messages' fn
 
         # import threading
         # self.flask_thread = threading.Thread(target=start_flask_app)
-        self.root.mainloop()
+        # self.root.mainloop()
 
     def add_message_panels(self, init_messages):
-        for mnum, message in enumerate(init_messages):
-            msg_frm = MessagePanel(self.main_frm, self.root, message, mnum, dt_format_str=self.dt_format_str,
-                                   pad={'x': self.pad['x'], 'y': self.pad['y']},
-                                   _wgt_styles=self._wgt_styles)
+        if init_messages[0].get('empty'):
+            msg_frm = ttk.LabelFrame(self, text='Single message.')
+            single_label = ttk.Label(msg_frm, text=init_messages[0])
+            single_label = ttk.Label(msg_frm, text='here is some text')
+            single_label.grid(row=0, column=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw", columnspan=12)
             self.messages_frames.append(msg_frm)
+
+        else:
+            for mnum, message in enumerate(init_messages):
+                msg_frm = MessagePanel(self.main_frm, self, message, mnum, dt_format_str=self.dt_format_str,
+                                       pad={'x': self.pad['x'], 'y': self.pad['y']},
+                                       _wgt_styles=self._wgt_styles)
+                self.messages_frames.append(msg_frm)
 
     def refresh_data(self):
         """
@@ -134,12 +208,12 @@ class Popup:
         print('RefreshData...')
 
         #  timer to refresh the gui with data from the asyncio thread
-        self.root.after(1000, self.refresh_data)  # called only once!
+        self.after(1000, self.refresh_data)  # called only once!
 
     def update_removed_vars(self, messages):
         self._removed_state_vars.update({
-            msg[
-                'msg_id']: {'all': tk.IntVar(), 'left': tk.IntVar(), 'left_center': tk.IntVar(), 'center': tk.IntVar(), 'right_center': tk.IntVar(), 'right': tk.IntVar()}
+            msg['msg_id']: {'all': tk.IntVar(), 'left': tk.IntVar(), 'left_center': tk.IntVar(), 'center': tk.IntVar(),
+                            'right_center': tk.IntVar(), 'right': tk.IntVar()}
             for msg in messages})
         # for mid, state_dict in self._removed_state_vars.items():
         #     state_dict['all'].set(True)
@@ -169,7 +243,7 @@ class Popup:
         :param event: tkinter.Event
         """
 
-        if event.widget == self.root:
+        if event.widget == self.parent:
             lg.debug('No longer focus window!')
             self.shrink()
 
@@ -179,9 +253,9 @@ class Popup:
         for mf in self.messages_frames:
             mf.grid_remove()
         self.main_frm.grid_remove()
-        self.root.update()
-        self.root.geometry('150x150')
-        self.root.grid_propagate(False)
+        self.parent.update()
+        self.parent.geometry('150x150')
+        self.parent.grid_propagate(False)
         self.number_of_messages_button.grid(row=0, column=0, sticky='nesw',
                                             rowspan=3, columnspan=3)
 
@@ -249,24 +323,24 @@ class Popup:
 
         this_widget.bind("<Enter>", this_fn)
 
-    def styling(self):
-        """Set the styling elements of the window.
-
-        """
-        self.root.tk.call("source", "Azure-ttk-theme-main/Azure-ttk-theme-main/azure.tcl")
-        self.root.tk.call("set_theme", "dark")
-        # frame padding
-        self.pad = dict(
-            x=5,
-            y=3
-        )
-        self._wgt_styles = {'toggle': 'Switch.TCheckbutton', 'labelframe': 'Card.TFrame'}
-
-        # looking at hiding the titlebar, no luck
-        # me.root.wm_attributes('-fullscreen', 'True')  # fullscreen no titlebar
-        # me.root.attributes('-fullscreen', 'True')  # same as with wm_
-        # me.root.wm_attributes('-type', 'splash')  # linux specific
-        # me.root.overrideredirect(1)  # this hides the titlebar, but it's placing the window in the corner
+    # def styling(self):
+    #     """Set the styling elements of the window.
+    #
+    #     """
+    #     self.root.tk.call("source", "Azure-ttk-theme-main/Azure-ttk-theme-main/azure.tcl")
+    #     self.root.tk.call("set_theme", "dark")
+    #     # frame padding
+    #     self.pad = dict(
+    #         x=5,
+    #         y=3
+    #     )
+    #     self._wgt_styles = {'toggle': 'Switch.TCheckbutton', 'labelframe': 'Card.TFrame'}
+    #
+    #     # looking at hiding the titlebar, no luck
+    #     # me.root.wm_attributes('-fullscreen', 'True')  # fullscreen no titlebar
+    #     # me.root.attributes('-fullscreen', 'True')  # same as with wm_
+    #     # me.root.wm_attributes('-type', 'splash')  # linux specific
+    #     # me.root.overrideredirect(1)  # this hides the titlebar, but it's placing the window in the corner
 
 
 def to_the_front(self):
@@ -312,5 +386,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     json_str = args.pup_json
 
-    # dev_popup()
-    dev_popup_empty()
+    dev_popup()
+    # dev_popup_empty()
