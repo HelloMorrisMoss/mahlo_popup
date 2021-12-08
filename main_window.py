@@ -41,7 +41,7 @@ class Popup(tk.Tk):
                 hideable.grid_remove()
             self.number_of_messages_button.grid(row=0, column=0)
             self.geometry('150x150')  # fixed size small window
-            self.update()
+            # self.update()
 
         def show_hideables(event=None):
             for hideable in self.hideables:
@@ -57,14 +57,14 @@ class Popup(tk.Tk):
         self.columnconfigure(0, weight=1)  # to make the button able to fill the width
         self.rowconfigure(0, weight=1)  # to make the button able to fill the height
 
-        # where the messages about defect appear and their toggles/save buttons
+        # where the messages about defect appear with their toggles/save buttons
         self.popup_frame = PopupFrame(self, input_dict, **params)
         self.popup_frame.grid(row=1, column=0, sticky='nesw')
 
         self.hideables.append(self.popup_frame)
 
-        self.controls_panel = IndependentControlsPanel(self, 'A title!')
-        self.controls_panel.grid(row=2, column=0)
+        self.controls_panel = IndependentControlsPanel(self, 'Control Panel')
+        self.controls_panel.grid(row=2, column=0, sticky='we')
 
         self.hideables.append(self.controls_panel)
 
@@ -102,17 +102,12 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
     def __init__(self, parent_container, text='This is the title'):
         super().__init__(parent_container, text=text)
 
-        self.dummy_label = tk.ttk.Label(self, text='words on a label')
-        self.dummy_label.grid(row=3, column=0)
+        # self.dummy_label = tk.ttk.Label(self, text='words on a label')
+        # self.dummy_label.grid(row=3, column=0)
 
-        self.dummy_button = tk.ttk.Button(self)
-        self.dummy_button.grid(row=3, column=1)
+        self.add_defect_button = tk.ttk.Button(self, text='Add removed')
+        self.add_defect_button.grid(row=3, column=10)
 
-
-    def hide(self):
-        recurse_tk_structure(self, apply_function=lambda x: x.grid_remove())
-        # self.grid_remove()
-        # self.dummy_label.grid_remove()
 
 
 # TODO:

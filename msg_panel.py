@@ -47,7 +47,7 @@ class NumberPrompt(tk.Toplevel):
 class MessagePanel(tk.ttk.LabelFrame):
     def __init__(self, root, parent, message=None, row=0, **kwargs):
         super().__init__(parent, text=message['title'])
-
+        self.msg_number = row
         self.grid(column=0, row=row, padx=kwargs['pad']['x'], pady=kwargs['pad']['y'], sticky="nesw")
 
         for k, v in kwargs.items():

@@ -2,7 +2,7 @@ import tkinter as tk
 from pprint import pprint
 from tkinter import ttk
 
-from dev_common import add_show_messages_button
+from dev_common import add_show_messages_button, get_message_dict
 from log_setup import lg
 # from main_window import hover_enter_factory
 from msg_panel import MessagePanel
@@ -94,10 +94,24 @@ class PopupFrame(ttk.Frame):
 
         else:
             for mnum, message in enumerate(init_messages):
-                msg_frm = MessagePanel(self.main_frm, self, message, mnum, dt_format_str=self.dt_format_str,
-                                       pad={'x': self.pad['x'], 'y': self.pad['y']},
-                                       _wgt_styles=self._wgt_styles)
-                self.messages_frames.append(msg_frm)
+                self.add_message_panel(message, mnum)
+
+    def get_message_rows(self):
+        mrows = [msg_panel.msg_number for msg_panel in self.messages_frames]
+        return mrows
+
+    def append_blank_message_panel(self, defect_id):
+        mrows = self.get_message_rows()
+        highest_row = max(mrows)
+
+        get_message_dict(defect_id, 1, 'At {timestamp}\nthere were {len_meters} meters oospec!')
+
+
+    def add_message_panel(self, message, mnum):
+        msg_frm = MessagePanel(self.main_frm, self, message, mnum, dt_format_str=self.dt_format_str,
+                               pad={'x': self.pad['x'], 'y': self.pad['y']},
+                               _wgt_styles=self._wgt_styles)
+        self.messages_frames.append(msg_frm)
 
     def refresh_data(self):
         """
