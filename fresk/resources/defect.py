@@ -9,20 +9,22 @@ from log_setup import lg
 
 
 class Defect(Resource):
-    edit_parser = reqparse.RequestParser()
+    defect_parser = reqparse.RequestParser()
 
-    for arg in editing_required_args:
-        edit_parser.add_argument(arg, type=arg_type_dict[arg], required=True, help='This argument is required.')
-
-    for arg in editing_optional_args:
-        edit_parser.add_argument(arg, type=arg_type_dict[arg], required=False, help='This argument is optional.')
+    # for arg in editing_required_args:
+    #     defect_parser.add_argument(arg, type=arg_type_dict[arg], required=True, help='This argument is required.')
+    #
+    # for arg in editing_optional_args:
+    #     defect_parser.add_argument(arg, type=arg_type_dict[arg], required=False, help='This argument is optional.')
+    for arg in all_args:
+        defect_parser.add_argument(arg, type=arg_type_dict[arg], required=False, help='This argument is optional.')
 
     def get(self):
-        parser = reqparse.RequestParser()
-        for arg in all_args:
-            parser.add_argument(arg, type=arg_type_dict[arg], required=False, help='This argument is optional.')
+        # parser = reqparse.RequestParser()
+        # for arg in all_args:
+        #     parser.add_argument(arg, type=arg_type_dict[arg], required=False, help='This argument is optional.')
 
-        data = parser.parse_args()
+        data = self.defect_parser.parse_args()
         from pprint import pprint, pformat
         pprint(data)
         id_ = data.get('defect_id')
@@ -38,14 +40,17 @@ class Defect(Resource):
         return {'message': f'An id is required! (?id=###)'}, 400
 
     def post(self):
-        data = self.edit_parser.parse_args()
-        defect = DefectModel(**data)
-        defect.save_to_database()
+        data = self.defect_parser.parse_args()
+        if data.get('create_new_defect_record'):
+            defect = DefectModel.new_defect()
+        else:
+            defect = DefectModel(**data)
+            defect.save_to_database()
 
         return defect.json(), 201
 
     def put(self):
-        data = self.edit_parser.parse_args()
+        data = self.defect_parser.parse_args()
 
         # check if there is an id, if there is, try to get the defect record
         id_ = data.get('defect_id')
