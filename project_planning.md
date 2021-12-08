@@ -60,3 +60,22 @@ future:
   * Possibly signal that the Mahlo is running or not running.
 
 * the flask server and tkinter (popup) threads must communicate in some way.
+
+12/8 todo:
+
+popup needs to:
+* grow/shrink when needed
+  * shrink when the lam starts
+    * to signal this, could use flask server
+      * communicate via queue?
+    * could use sqlalchemy to watch a table for whether the lam is running
+      * maybe the Timescale history (this makes me nervous, how to readonly?)
+      * a table in the report database that just holds this value
+  * shrink when some 'shrink' button is hit
+  * grow when the show messages button is hit
+* load new defect records from the database
+  * could use sqlalchemy directly
+  * could use requests to ask flask server for records
+* update the database when the defects are changed
+  * could use sqlalchemy directly
+  * could use requests to ask flask server for records
