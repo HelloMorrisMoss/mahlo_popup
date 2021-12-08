@@ -4,6 +4,7 @@ import argparse
 import json
 import tkinter as tk
 import os
+from pprint import pprint
 
 from log_setup import lg
 
@@ -114,17 +115,34 @@ class Popup(tk.Tk):
 
             self.after(1000, recursive_print)  # for debugging, prints out the tkinter structure
             recurse_hover(self.popup_frame)  # for debugging, shows widget info when mouse cursor moves over it
-
+        
+        # messages from flask
+        self.new_messages = []
+        self.flask_app = None
         self.after(1000, self.check_for_inbound_messages)
 
         self.mainloop()
 
     def check_for_inbound_messages(self):
         """Check the inbound queue for new defect messages and if there are any, send them to the MessagePanel."""
-        new_messages = []
+        
         while len(self.incoming_messages):
-            new_messages.append(self.incoming_messages.pop())
-        lg.debug('new messages: %s', new_messages)
+            self.new_messages.append(self.incoming_messages.pop())
+        if self.new_messages:
+            lg.debug('new messages: %s', self.new_messages)
+
+            # if we haven't gotten the flask app via the queue yet, look for it
+            if self.flask_app is None:
+                for mindex, msg in enumerate(self.new_messages):
+                    if msg.get('flask_app'):
+                        self.flask_app = self.new_messages.pop(mindex)['flask_app']
+            else:
+                # if we do have a flask app, use it for the messages
+                with self.flask_app.app_context():
+                    defmodel = self.new_messages[0]  #['defect_model']
+                    pprint(defmodel.json())
+                    defmodel.belt_marks = True
+                    defmodel.save_to_database()
         self.after(5000, self.check_for_inbound_messages)
         # self.popup_frame.add_message_panels(new_messages)
 
