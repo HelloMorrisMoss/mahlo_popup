@@ -13,7 +13,7 @@ class PopupFrame(ttk.Frame):
 
     """
 
-    def __init__(self, parent_container, input_dict, *args, **kwargs):
+    def __init__(self, parent_container, input_dict=None, *args, **kwargs):
         """
         example_input_dict = {'messages': [{'title': 'Out of spec!',
                                         'msg_txt': {'template': template_str,
@@ -25,8 +25,8 @@ class PopupFrame(ttk.Frame):
                                        for msg_id in ('msg123', 'msg456', 'msg789')],
                           'main_win': {'title': 'Messages received!'}
                           }
-            messages: a list of message dictionaries. Each of which should include:
-               title: a string title for the message frame
+            messages: a list of defect_instance dictionaries. Each of which should include:
+               title: a string title for the defect_instance frame
             main_win: a dictionary of parameters for the window apart from the messages.
                 title: a string with the title for the main window.
         :param input_dict:
@@ -41,20 +41,20 @@ class PopupFrame(ttk.Frame):
         # set things up for the main window
         self._defdic = input_dict
 
-        self.parent.title(self._defdic['main_win']['title'])  # TODO: this is a bad way to do this
+        # self.parent.title(self._defdic['main_win']['title'])  # TODO: this is a bad way to do this
 
         self.wgts = {}
 
         # variables for foam sections removed
-        self._removed_state_vars = {}
-        self.update_removed_vars(self._defdic['messages'])
-
-        # for now set all the sections as removed
-        for msg_id, state_dict in self._removed_state_vars.items():
-            state_dict['all'].set(True)
+        # self._removed_state_vars = {}
+        # self.update_removed_vars(self._defdic['messages'])
+        #
+        # # for now set all the sections as removed
+        # for msg_id, state_dict in self._removed_state_vars.items():
+        #     state_dict['all'].set(True)
 
         # the format for the datetime strftime to use for display
-        self.dt_format_str = self._defdic['main_win']['timestamp_display_format']
+        self.dt_format_str = r'%I:%M %d-%b'
 
         # the main frame
         self.main_frm = self
@@ -65,11 +65,11 @@ class PopupFrame(ttk.Frame):
         self.hideable = []
 
         # add the frames for the messages and the widgets therein
-        init_messages = self._defdic['messages']
+        # init_messages = self._defdic['messages']
 
         # add_show_messages_button(self, self.focus_gained_handler)
 
-        self.add_message_panels(init_messages)
+        # self.add_message_panels(init_messages)
 
 
     def set_style(self, kwargs):
@@ -82,8 +82,8 @@ class PopupFrame(ttk.Frame):
 
     def add_message_panels(self, init_messages):
         if not init_messages:
-            lg.debug('Single message')
-            msg_frm = tk.ttk.LabelFrame(self, text='Single message.')
+            lg.debug('Single defect_instance')
+            msg_frm = tk.ttk.LabelFrame(self, text='Single defect_instance.')
             msg_frm.grid(row=0, column=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw", columnspan=12,
                          rowspan=5)
             single_label = tk.ttk.Label(msg_frm, text='here is some text')

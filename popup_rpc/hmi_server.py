@@ -70,7 +70,7 @@ class MonitorService(rpyc.Service):
     #     return
 
     def exposed_check_db_for_new_messages(self):
-        """Start an asynchronous check for new messages in the database. If found, show popup message."""
+        """Start an asynchronous check for new messages in the database. If found, show popup defect_instance."""
         self.check_db_new_messages()
 
 

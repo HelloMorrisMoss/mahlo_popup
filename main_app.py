@@ -4,8 +4,7 @@ import tkinter
 from collections import deque
 
 from flask_app import start_flask_app
-from main_window import dev_popup
-
+from main_window import dev_popup, dev_popup_empty
 
 # allow communication
 f2p_queue = deque()
@@ -18,11 +17,11 @@ flask_thread.start()
 import  datetime
 import time
 
-while True:
-    time.sleep(20)
-    p2f_queue.append(f'popup sent msg at {datetime.datetime.now()}')
-    while f2p_queue:
-        print(f'message back: {f2p_queue.pop()} at {datetime.datetime.now()}')
+# while True:
+#     time.sleep(20)
+#     p2f_queue.append(f'popup sent msg at {datetime.datetime.now()}')
+#     while f2p_queue:
+#         print(f'defect_instance back: {f2p_queue.pop()} at {datetime.datetime.now()}')
 
 
 # root = tkinter.Tk()
@@ -40,7 +39,7 @@ while True:
 #
 # root.bind('<<MessageGenerated>>', lambda e: process(message_queue, e))
 
-dev_popup()
+dev_popup_empty(inbound_queue=f2p_queue, outbound_queue=p2f_queue)
 
 # import subprocess
 #

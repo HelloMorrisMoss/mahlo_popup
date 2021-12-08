@@ -141,9 +141,9 @@ def add_show_messages_button(parent_container, current_messages_count, command):
 
 
 class DefectMessage(object):
-    """An object to represent the defect 'message' from the database.
+    """An object to represent the defect 'defect_instance' from the database.
 
-    Create by providing the parameters or by using the class method .from_dict that converts the 'message' dict
+    Create by providing the parameters or by using the class method .from_dict that converts the 'defect_instance' dict
     into the parameters and uses them to instantiate a class object and returns it.
         ex:
             >srcd = {'msg_id': 'msg123',

@@ -1,3 +1,4 @@
+from flask import g
 from flask_restful import reqparse, Resource
 
 from fresk.models.defect import DefectModel
@@ -31,11 +32,12 @@ class Defect(Resource):
             defect = DefectModel.find_by_id(id_)
 
             if defect:
+                g.out_message_queue.append(defect)  # TODO: JUST TEMPORARY FOR PROOF OF CONCEPT
                 return defect.json(), 200
             else:
-                return {'message': f'Defect not found with id: {id_}'}, 404
+                return {'defect_instance': f'Defect not found with id: {id_}'}, 404
 
-        return {'message': f'An id is required! (?id=###)'}, 400
+        return {'defect_instance': f'An id is required! (?id=###)'}, 400
 
     def post(self):
         data = self.edit_parser.parse_args()

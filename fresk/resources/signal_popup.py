@@ -15,12 +15,12 @@ class Popup(Resource):
         #     self.get()
         # self.popup = g.popup
 
-    def show(self):
-        import threading
-
-        g.popup_thread = threading.Thread(target=dev_popup)
-
-
+    # def show(self):
+    #     import threading
+    #
+    #     # g.popup_thread = threading.Thread(target=dev_popup)
+    #
+    #
 
     #     # the laminator is stopped, show the full popup
     #     # do we want to have this happen automatically? maybe not?
@@ -42,9 +42,9 @@ class Popup(Resource):
 
         if data['action'] == 'shrink':
             g.popup.shrink()
-            return {'message': 'Shrinking popup window.'}, 200
+            return {'defect_instance': 'Shrinking popup window.'}, 200
 
         elif data['action'] == 'show':
             lg.debug('showing popup')
             g.popup.show()
-            return {'message': 'Showing popup window.'}, 200
+            return {'defect_instance': 'Showing popup window.'}, 200

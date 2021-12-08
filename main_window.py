@@ -14,12 +14,32 @@ from popup_frame import PopupFrame
 
 os.chdir(r'C:\Users\lmcglaughlin\PycharmProjects\mahlo_popup')
 
+
 # TODO: why not just have the popup ask (get request) flask if it has any current messages every second?
+#  because then the defect would need to be changed from a DefectModel or DefectResourse to a json string and back to
+#  useful values and then sent back again the same way
+
 class Popup(tk.Tk):
-    def __init__(self, input_dict, *args, **kwargs):
+    """The main tkinter window that the defect_instance panels, controls, etc reside in."""
+    def __init__(self, input_dict=None, *args, **kwargs):
         super().__init__()
         self.debugging = kwargs.get('debug')
         self.attributes('-toolwindow', True)
+
+        # communication with flask app
+        inbound_queue = kwargs.get('inbound_queue')
+        if inbound_queue is not None:
+            self.incoming_messages = inbound_queue
+        else:
+            lg.warning('No inbound_queue')
+
+        outbound_queue = kwargs.get('outbound_queue')
+        if outbound_queue is not None:
+            self.outgoing_messages = outbound_queue
+        else:
+            lg.warning('No outbound_queue')
+
+        self.outgoing_messages.append({'action': 'get_a_defect'})
 
         # styling
         self.tk.call("source", "Azure-ttk-theme-main/Azure-ttk-theme-main/azure.tcl")
@@ -51,7 +71,7 @@ class Popup(tk.Tk):
             self.geometry('')  # grow to whatever size is needed for all the messages and other widgets
             # self.update()
 
-        self.number_of_messages_button = add_show_messages_button(self, len(input_dict['messages']), show_hideables)
+        self.number_of_messages_button = add_show_messages_button(self, 0, show_hideables)
         self.number_of_messages_button.grid(row=0, column=0, sticky='nesw')
 
         self.columnconfigure(0, weight=1)  # to make the button able to fill the width
@@ -68,9 +88,9 @@ class Popup(tk.Tk):
 
         self.hideables.append(self.controls_panel)
 
-        if len(input_dict['messages']) == 0:
+        if input_dict is None:
             lg.debug('no messages, hiding hideables')
-            lg.debug(input_dict['messages'])
+            # lg.debug(input_dict['messages'])
             hide_hideables()
         else:
             lg.debug('messages, showing hideables')
@@ -95,7 +115,18 @@ class Popup(tk.Tk):
             self.after(1000, recursive_print)  # for debugging, prints out the tkinter structure
             recurse_hover(self.popup_frame)  # for debugging, shows widget info when mouse cursor moves over it
 
+        self.after(1000, self.check_for_inbound_messages)
+
         self.mainloop()
+
+    def check_for_inbound_messages(self):
+        """Check the inbound queue for new defect messages and if there are any, send them to the MessagePanel."""
+        new_messages = []
+        while len(self.incoming_messages):
+            new_messages.append(self.incoming_messages.pop())
+        lg.debug('new messages: %s', new_messages)
+        self.after(5000, self.check_for_inbound_messages)
+        # self.popup_frame.add_message_panels(new_messages)
 
 
 class IndependentControlsPanel(tk.ttk.LabelFrame):
@@ -107,7 +138,6 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
 
         self.add_defect_button = tk.ttk.Button(self, text='Add removed')
         self.add_defect_button.grid(row=3, column=10)
-
 
 
 # TODO:
@@ -127,14 +157,14 @@ def dev_popup(json_str=None):
     pup = Popup(pup_dict)
 
 
-def dev_popup_empty(json_str=None):
+def dev_popup_empty(json_str=None, **kwargs):
     # for development, a dummy dict
     if json_str is None:
         test_json_dict = get_empty_dict()
         json_str = json.dumps(test_json_dict)
     pup_dict = json.loads(json_str)
-    pup = Popup(pup_dict)
-
+    # pup = Popup(pup_dict)
+    Popup(**kwargs)
 
 if __name__ == '__main__':
     # if called from the command line (over ssl) parse the json to a dictionary
@@ -143,5 +173,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     json_str = args.pup_json
 
-    dev_popup()
-    # dev_popup_empty()
+    # dev_popup()
+    dev_popup_empty()

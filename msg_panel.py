@@ -45,8 +45,8 @@ class NumberPrompt(tk.Toplevel):
 
 
 class MessagePanel(tk.ttk.LabelFrame):
-    def __init__(self, root, parent, message=None, row=0, **kwargs):
-        super().__init__(parent, text=message['title'])
+    def __init__(self, root, parent, defect_instance=None, row=0, **kwargs):
+        super().__init__(parent, text='Foam Problem')
         self.msg_number = row
         self.grid(column=0, row=row, padx=kwargs['pad']['x'], pady=kwargs['pad']['y'], sticky="nesw")
 
@@ -54,16 +54,18 @@ class MessagePanel(tk.ttk.LabelFrame):
             setattr(self, k, v)
 
         self._mp_root = root
-        self.message = message
-        self.message['msg_txt']['timestamp'] = datetime.fromisoformat(message['msg_txt']['timestamp'])
+        self.defect_interface = defect_instance
+        self.message_text_template = 'At {timestamp}\nthere were {len_meters} meters oospec!'
+        # self.defect_interface = defect_instance
+        # self.defect_interface['msg_txt']['timestamp'] = datetime.fromisoformat(defect_instance['msg_txt']['timestamp'])
 
         # the toggles selected values
         self._removed_vals = {'all': tk.StringVar(), 'left': tk.StringVar(), 'left_center': tk.StringVar(), 'center': tk.StringVar(), 'right_center': tk.StringVar(), 'right': tk.StringVar()}
 
-        # the label that displays the message
-        self.add_message_display(self, message)
+        # the label that displays the defect_instance
+        self.add_message_display(self, defect_instance)
 
-        self.add_buttons(self, message)
+        self.add_buttons(self, defect_instance)
 
         # shrink to a button when not the focus window
         self._mp_root.bind("<FocusOut>", self.focus_lost_handler)
@@ -97,16 +99,16 @@ class MessagePanel(tk.ttk.LabelFrame):
         self.grid()
 
     def add_message_display(self, parent, message):
-        msg = message['msg_txt']
-        message_text = msg['template'].format(timestamp=msg['timestamp'].strftime(self.dt_format_str),
-                                              len_meters=msg['length_in_meters'])
+        # msg = message['msg_txt']
+        message_text = self.message_text_template.format(timestamp=message.defect_end_ts.strftime(self.dt_format_str),
+                                              len_meters=message.length_of_defect_meters)
         label = tk.ttk.Label(parent, text=message_text)
         label.grid(column=0, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="w")
 
     def add_buttons(self, parent, message):
         """Add the button frames and their widgets to the parent frame.
 
-        :param message: dict, the message dictionary
+        :param message: dict, the defect_instance dictionary
         :param parent: tkinter.Frame, or LabelFrame or similar.
         """
         # TODO: it may be worthwhile at some point to extract the toggle panel to its own class
@@ -153,7 +155,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         """
         send_btn = tk.ttk.Button(parent, style='Accent.TButton', text='Save')
         send_btn.grid(**send_grid_params)
-        setattr(send_btn, 'msg_id', message['msg_id'])
+        setattr(send_btn, 'msg_id', message.defect_id)
         setattr(send_btn, 'side', 'send')
 
     def send_response(self, event):
@@ -164,7 +166,7 @@ class MessagePanel(tk.ttk.LabelFrame):
     def _add_foam_removed_toggle_selectors(self, parent, message, number_of_buttons=None):
         """Add the toggle buttons frame to the parent frame.
 
-        :param message: dict, the message dictionary
+        :param message: dict, the defect_instance dictionary
         :param parent: tkinter.Frame, or LabelFrame or similar.
         """
         # the toggle button frame
@@ -174,7 +176,8 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         # default to the guessed number
         if number_of_buttons is None:
-            number_of_buttons = message['toggle_count_guess']
+            # number_of_buttons = defect_interface['toggle_count_guess']
+            number_of_buttons = message.rolls_of_product_post_slit
 
         self.toggle_button_def_dict = self._get_toggle_definitions(number_of_buttons)
 
@@ -194,13 +197,13 @@ class MessagePanel(tk.ttk.LabelFrame):
                          'sticky': 'nesw'}
         sep.grid(**sep_grid_dict)
 
-    def _add_toggle(self, btn_frame, btn_side, btndef, message, parent):
+    def _add_toggle(self, btn_frame, btn_side, btndef, defect_interface, parent):
         """Add a toggle button to the frame using a definition dictionary.
 
         :param btn_frame: tkinter.Frame
         :param btn_side: str, the 'side' for the button.
         :param btndef: dict, definining parameters for the button.
-        :param message: dict, the message definition.
+        :param defect_interface: DefectModel.
         """
         # add a toggle switch
         btn_wgt = ttk.Checkbutton(btn_frame, style=self._wgt_styles['toggle'], **btndef['params'])
@@ -209,7 +212,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         # add some custom attributes to use elsewhere, to keep track of which button is which
         setattr(btn_wgt, 'state_var', btndef['params']['variable'])
         setattr(btn_wgt, 'side', btn_side)
-        setattr(btn_wgt, 'msg_id', message['msg_id'])
+        setattr(btn_wgt, 'msg_id', defect_interface.defect_id)
 
         # if it is the 'all' button add the list of buttons to toggle
         if btndef.get('not_all_list') is not None:
@@ -218,7 +221,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         # add the event handler method
         btn_wgt.bind('<Button-1>', self.toggle_changes_event_handler)
 
-        # TODO: only the sections that should have been removed to default on (from the 'message')
+        # TODO: only the sections that should have been removed to default on (from the 'defect_instance')
         # default to all toggles on
         btndef['params']['variable'].set(btndef['params']['onvalue'])
 
@@ -267,7 +270,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         return button_def_dict
 
     def destroy_toggle_panel(self):
-        """Destroy the current button framer for this message panel."""
+        """Destroy the current button framer for this defect_instance panel."""
         self.btn_frame.destroy()
 
     def change_toggle_count(self, new_count):
@@ -276,7 +279,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         :param new_count: int, the number of toggles to use.
         """
         self.destroy_toggle_panel()
-        self._add_foam_removed_toggle_selectors(self, self.message, new_count)
+        self._add_foam_removed_toggle_selectors(self, self.defect_interface, new_count)
 
     def toggle_changes_event_handler(self, event):
         """Handle the toggle button being changed with regard to its designation and the state of the other toggles.
@@ -342,12 +345,12 @@ class MessagePanel(tk.ttk.LabelFrame):
             self._removed_vals[side].set(set_str)
 
     def _get_event_info(self, event):
-        """Get the side, new state, and message id from the widget calling the event.
+        """Get the side, new state, and defect_instance id from the widget calling the event.
 
         :param event: tkinter.Event, the button press event.
         :return: tuple, of the info.
         """
-        msg_id = event.widget.msg_id  # the custom id attribute, used to track which message this relates to
+        msg_id = event.widget.msg_id  # the custom id attribute, used to track which defect_instance this relates to
         try:
             side = event.widget.side  # left, right, center, all
             now_on = 'selected' not in event.widget.state()  # whether the toggle is turning on or off; was selected -> off
@@ -362,7 +365,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         pass
 
     def add_toggle(self, button, side):
-        # add a state tracker on the button, a side metadata-label, and add a side state tracker to the message frame
+        # add a state tracker on the button, a side metadata-label, and add a side state tracker to the defect_instance frame
         setattr(button, 'side', side)
 
         def toggle_me(*args, **kwargs):
