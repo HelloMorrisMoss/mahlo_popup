@@ -74,6 +74,7 @@ class PopupFrame(ttk.Frame):
         self.message_panel_row = 0
 
         # self.add_message_panels(init_messages)
+        self.parent.after(5000, self.update_message_panels)
 
     def set_style(self, kwargs):
         styling = kwargs.get('style_settings')
