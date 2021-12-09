@@ -15,7 +15,7 @@ lg.debug('logging in msg_panel')
 
 
 class MessagePanel(tk.ttk.LabelFrame):
-    def __init__(self, root, parent, defect_instance=None, row=0, **kwargs):
+    def __init__(self, parent, defect_instance=None, row=0, **kwargs):
         super().__init__(parent, text='Foam Problem')
         self.msg_number = row
         self.grid(column=0, row=row, padx=kwargs['pad']['x'], pady=kwargs['pad']['y'], sticky="nesw")
@@ -24,8 +24,8 @@ class MessagePanel(tk.ttk.LabelFrame):
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-        self._mp_root = root
-        # self._mp_root = tk.Toplevel  # if this works then we don't need to worry about the parameter
+        # self._mp_root = root
+        self._mp_root = tk.Toplevel  # if this works then we don't need to worry about the parameter
         self.defect_interface = defect_instance
         self.message_text_template = 'At {timestamp}\nthere were {len_meters} meters oospec!'
 
@@ -157,6 +157,9 @@ class MessagePanel(tk.ttk.LabelFrame):
         with self.parent.parent.flask_app.app_context():
             self.defect_interface.save_to_database()
         self.destroy()
+        lg.debug(self.parent.current_defects)
+        self.parent.current_defects.pop(self.parent.current_defects.index(self.defect_interface))
+        lg.debug(self.parent.current_defects)
         # TODO: save to sqlite database, then try to send all items unsent in the db
 
     def _add_foam_removed_toggle_selectors(self, parent):

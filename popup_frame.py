@@ -101,20 +101,6 @@ class PopupFrame(ttk.Frame):
 
         if not self.current_defects:
             self.shrink()
-        # if not init_messages:
-        #     lg.debug('Single defect_instance')
-        #     msg_frm = tk.ttk.LabelFrame(self, text='Single defect_instance.')
-        #     msg_frm.grid(row=0, column=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw", columnspan=12,
-        #                  rowspan=5)
-        #     single_label = tk.ttk.Label(msg_frm, text='here is some text')
-        #     single_label.grid(row=0, column=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw", columnspan=12,
-        #                       rowspan=5)
-        #     self.messages_frames.append(msg_frm)
-        #     self.shrink()
-
-        # else:
-        #     for mnum, message in enumerate(init_messages):
-        #         self.add_message_panel(message, mnum)
 
     def get_message_rows(self):
         mrows = [msg_panel.msg_number for msg_panel in self.messages_frames]
@@ -128,7 +114,7 @@ class PopupFrame(ttk.Frame):
 
     def add_message_panel(self, defect):
         self.message_panel_row += 1
-        msg_frm = MessagePanel(self.main_frm, self, defect, self.message_panel_row, dt_format_str=self.dt_format_str,
+        msg_frm = MessagePanel(self.main_frm, defect, self.message_panel_row, dt_format_str=self.dt_format_str,
                                pad={'x': self.pad['x'], 'y': self.pad['y']},
                                _wgt_styles=self._wgt_styles)
         self.messages_frames.append(msg_frm)

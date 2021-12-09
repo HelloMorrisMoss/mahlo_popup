@@ -65,14 +65,12 @@ class Popup(tk.Tk):
                 hideable.grid_remove()
             self.number_of_messages_button.grid(row=0, column=0)
             self.geometry('150x150')  # fixed size small window
-            # self.update()
 
         def show_hideables(event=None):
             for hideable in self.hideables:
                 hideable.grid()
             self.number_of_messages_button.grid_remove()
             self.geometry('')  # grow to whatever size is needed for all the messages and other widgets
-            # self.update()
 
         self.number_of_messages_button = add_show_messages_button(self, 0, show_hideables)
         self.number_of_messages_button.grid(row=0, column=0, sticky='nesw')
@@ -183,11 +181,17 @@ class Popup(tk.Tk):
 class IndependentControlsPanel(tk.ttk.LabelFrame):
     def __init__(self, parent_container, text='This is the title'):
         super().__init__(parent_container, text=text)
+        self.parent = parent_container
 
         # self.dummy_label = tk.ttk.Label(self, text='words on a label')
         # self.dummy_label.grid(row=3, column=0)
 
-        self.add_defect_button = tk.ttk.Button(self, text='Add removed')
+        def add_new_defect():
+            new_defect = DefectModel.new_defect()
+            popup = self.parent.popup_frame
+            popup.current_defects.append(new_defect)
+            popup.add_message_panel(new_defect)
+        self.add_defect_button = tk.ttk.Button(self, text='Add removed', command=add_new_defect)
         self.add_defect_button.grid(row=3, column=10)
 
 

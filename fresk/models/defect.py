@@ -58,12 +58,20 @@ class DefectModel(fsa.Model):
 
     @classmethod
     def find_new(cls):
+        """Get a list of DefectModel objects where the creation and modification times are the same.
+
+        :return: list, [<DefectModel 1>, <DefectModel 2>]
+        """
         # return cls.query.filter(DefectModel.entry_created_ts=DefectModel.entry_modified_ts).all()
         return cls.query.filter(DefectModel.entry_modified_ts == DefectModel.entry_created_ts).all()
 
     @classmethod
     def find_all(cls):
         return cls.query.all()
+
+    @classmethod
+    def new_defect(cls):
+        return cls()
 
     def save_to_database(self):
         fsa.session.add(self)
