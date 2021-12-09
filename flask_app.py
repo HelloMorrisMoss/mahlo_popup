@@ -1,3 +1,5 @@
+import datetime
+
 from collections import deque
 from threading import Thread
 import flask
@@ -47,10 +49,11 @@ api.add_resource(DefectList, '/defects')
 
 def start_flask_app(in_message_queue=None, out_message_queue=None):
     if in_message_queue is not None:
-        with app.app_context():
+        app_context = app.app_context()
+        with app_context:
             g.in_message_queue = in_message_queue
             g.out_message_queue = out_message_queue
-            g.out_message_queue.append({'flask_app': app})
+            g.out_message_queue.append({'flask_app': app_context})
             schedule_queue_watcher(in_message_queue, out_message_queue)
     else:
         lg.warning('No inbound defect_instance queue!')
@@ -59,7 +62,7 @@ def start_flask_app(in_message_queue=None, out_message_queue=None):
     host = '0.0.0.0'
     port = 5000
     waitress.serve(app, host=host, port=port, threads=2)
-    return 'success!'
+    lg.debug('after waitress!')
 
 
 def schedule_queue_watcher(in_message_queue, out_message_queue):
@@ -74,8 +77,9 @@ def schedule_queue_watcher(in_message_queue, out_message_queue):
     def regular_check_function():
         # when it's ready, this will watch for requests from the popup (in_message_queue) and send the responses
         # via the out_message_queue
-        import datetime
-        with app.app_context():
+
+        check_context = app.app_context()
+        with check_context:
             while len(in_message_queue):
                 print(f'defect_instance count: {len(in_message_queue)}')
                 print(in_message_queue)
@@ -92,9 +96,10 @@ def schedule_queue_watcher(in_message_queue, out_message_queue):
                     #         lg.debug('action is %s', action)
                     # else:
                     #     lg.debug('message is not a dict it is a %s, and this is it: %s', type(msg), msg)
-                    from fresk.models.defect import DefectModel
-                    def8 = DefectModel.find_by_id(8)
-                    out_message_queue.append(def8)
+                    # from fresk.models.defect import DefectModel
+                    # def8, ssn = DefectModel.find_by_id(8, True)
+                    # out_message_queue.append({'defect_model': def8, 'session': ssn, 'flask_context': check_context})
+                    out_message_queue.append({'message': 'hello'})
                     lg.debug(f'Regular check at {datetime.datetime.now()} found a defect_instance: {msg}')
                     # out_message_queue.append(f'I got the defect_instance "{msg}"!')
                 except IndexError:

@@ -6,6 +6,9 @@ import tkinter as tk
 import os
 from pprint import pprint
 
+from fresk.models.defect import DefectModel
+from fresk.sqla_instance import fsa
+
 from log_setup import lg
 
 from dev_common import get_dummy_dict, get_empty_dict, recurse_hover, recurse_tk_structure, add_show_messages_button
@@ -138,11 +141,28 @@ class Popup(tk.Tk):
                         self.flask_app = self.new_messages.pop(mindex)['flask_app']
             else:
                 # if we do have a flask app, use it for the messages
-                with self.flask_app.app_context():
-                    defmodel = self.new_messages[0]  #['defect_model']
-                    pprint(defmodel.json())
-                    defmodel.belt_marks = True
-                    defmodel.save_to_database()
+                # with self.flask_app:
+                # # TODO: this needs to pop the message
+                # defmodel = self.new_messages[0]['defect_model']
+                # session = self.new_messages[0]['session']
+                # app_context = self.new_messages[0]['flask_context']
+                # # pprint(defmodel.json())
+                # defmodel.bursting = False
+                # from pprint import pprint
+                # pprint(dir())
+                #
+                # # with app_context:
+                # #     defmodel.save_to_database()
+                # # with self.flask_app:
+                # #     defmodel.save_to_database()
+                # TODO: now it seems so obvious... once you have access to the flask app, just import the
+                #  model and create the context here
+                #  ps: this is still a context passed through, change it for the app so each time it can
+                #  be a new session - or can the app just be imported?
+                with self.flask_app:
+                    defm = DefectModel.find_by_id(8)
+                    defm.bursting = True
+                    defm.save_to_database()
         self.after(5000, self.check_for_inbound_messages)
         # self.popup_frame.add_message_panels(new_messages)
 

@@ -40,6 +40,8 @@ class DefectModel(fsa.Model):
     entry_modified_ts = fsa.Column(fsa.DateTime(timezone=True))
     record_creation_source = fsa.Column(fsa.String())
 
+    flask_sqlalchemy_instance = fsa
+
     def __init__(self, **kwargs):
         # for the kwargs provided, assign them to the corresponding columns
         self_keys = DefectModel.__dict__.keys()
@@ -48,8 +50,11 @@ class DefectModel(fsa.Model):
                 setattr(self, kw, val)
 
     @classmethod
-    def find_by_id(cls, id_):
-        return cls.query.filter_by(id=id_).first()
+    def find_by_id(cls, id_, get_sqalchemy=False):
+        id_df = cls.query.filter_by(id=id_).first()
+        if get_sqalchemy:
+            return id_df, fsa
+        return id_df
 
     def save_to_database(self):
         fsa.session.add(self)
