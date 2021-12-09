@@ -13,37 +13,6 @@ lg.setLevel(logging.DEBUG)
 lg.debug('logging in msg_panel')
 
 
-class NumberPrompt(tk.Toplevel):
-    """Show a tk popup window prompting for a number between 1 and 5, returning that value when pressed. Cancel as 0."""
-
-    def __init__(self, parent, prompt=None):
-        tk.Toplevel.__init__(self, parent)
-        row = 0
-
-        for col in range(0, 6):
-            button_label_text = str(col) if col != 0 else 'Cancel'
-            num_button = tk.ttk.Button(self, text=button_label_text)
-            num_button.bind('<Button-1>', self.return_button_val)
-            num_button.grid(row=row, column=col)
-        self.value = tk.IntVar()
-
-    def return_button_val(self, event):
-        """Set self.value to the widget['text'] value, or 0 if Cancel/anything without and int castable text is pressed.
-
-        :param event: tkinter.Event
-        """
-        try:
-            self.value.set(int(event.widget['text']))
-        except ValueError:
-            self.value.set(0)
-        self.destroy()
-
-    def show(self):
-        self.wm_deiconify()
-        self.focus_force()
-        self.wait_window()
-        return self.value.get()
-
 
 class MessagePanel(tk.ttk.LabelFrame):
     def __init__(self, root, parent, defect_instance=None, row=0, **kwargs):
@@ -158,6 +127,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         """Prompt for the number of rolls and change the toggles to match. Do nothing if cancel is selected."""
 
         new_count = NumberPrompt(self._mp_root).show()
+        self.defect_interface.rolls_of_product_post_slit = new_count
         if new_count:
             self.change_toggle_count(new_count)
 
@@ -168,21 +138,28 @@ class MessagePanel(tk.ttk.LabelFrame):
         :param parent:
         :param send_grid_params:
         """
-        send_btn = tk.ttk.Button(parent, style='Accent.TButton', text='Save', command=self.send_response)
+        send_btn = tk.ttk.Button(parent, style='Accent.TButton', text='Save', command=self.save_response)
         send_btn.grid(**send_grid_params)
         setattr(send_btn, 'msg_id', self.defect_interface.id)
         setattr(send_btn, 'side', 'send')
 
-    def send_response(self, event=None):
+    def save_response(self, event=None):
+        """Save the changes made to the database.
+
+        :param event: tkinter.Event, (optional)
+        """
         # msg_id = self._get_event_info(event)
         # removed_results_dict = self._removed_state_vars[msg_id]
         lg.debug(self.defect_interface)
         self.defect_interface.entry_modified_ts = datetime.now()
+        # I don't love this parent.parent referencing, if the app changes (from flask being restarted) it would
+        # automatically grab the new one if updated in the main window
         with self.parent.parent.flask_app.app_context():
             self.defect_interface.save_to_database()
+        self.destroy()
         # TODO: save to sqlite database, then try to send all items unsent in the db
 
-    def _add_foam_removed_toggle_selectors(self, parent, number_of_buttons=None):
+    def _add_foam_removed_toggle_selectors(self, parent):
         """Add the toggle buttons frame to the parent frame.
 
         :param message: dict, the defect_instance dictionary
@@ -194,9 +171,8 @@ class MessagePanel(tk.ttk.LabelFrame):
         self.btn_frame.grid(column=1, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw")
 
         # default to the guessed number
-        if number_of_buttons is None:
-            # number_of_buttons = defect_interface['toggle_count_guess']
-            number_of_buttons = self.defect_interface.rolls_of_product_post_slit
+        # number_of_buttons = defect_interface['toggle_count_guess']
+        number_of_buttons = self.defect_interface.rolls_of_product_post_slit
 
         self.toggle_button_def_dict = self._get_toggle_definitions(number_of_buttons)
 
@@ -298,7 +274,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         :param new_count: int, the number of toggles to use.
         """
         self.destroy_toggle_panel()
-        self._add_foam_removed_toggle_selectors(self, self.defect_interface, new_count)
+        self._add_foam_removed_toggle_selectors(self)
 
     def toggle_changes_event_handler(self, event):
         """Handle the toggle button being changed with regard to its designation and the state of the other toggles.
@@ -383,7 +359,11 @@ class MessagePanel(tk.ttk.LabelFrame):
         pass
 
     def add_toggle(self, button, side):
-        # add a state tracker on the button, a side metadata-label, and add a side state tracker to the defect_instance frame
+        """add a state tracker on the button, a side property, and add a side state tracker to the defect_instance frame
+
+        :param button: tkinter.ttk.CheckButton
+        :param side: str, the 'side' for the button
+        """
         setattr(button, 'side', side)
 
         def toggle_me(*args, **kwargs):
@@ -404,7 +384,38 @@ class MessagePanel(tk.ttk.LabelFrame):
                 button.config(background='blue')
 
         button.bind("<Button-1>", toggle_me)
-        # return toggle_me
+
+
+class NumberPrompt(tk.Toplevel):
+    """Show a tk popup window prompting for a number between 1 and 5, returning that value when pressed. Cancel as 0."""
+
+    def __init__(self, parent, prompt=None):
+        tk.Toplevel.__init__(self, parent)
+        row = 0
+
+        for col in range(0, 6):
+            button_label_text = str(col) if col != 0 else 'Cancel'
+            num_button = tk.ttk.Button(self, text=button_label_text)
+            num_button.bind('<Button-1>', self.return_button_val)
+            num_button.grid(row=row, column=col)
+        self.value = tk.IntVar()
+
+    def return_button_val(self, event):
+        """Set self.value to the widget['text'] value, or 0 if Cancel/anything without and int castable text is pressed.
+
+        :param event: tkinter.Event
+        """
+        try:
+            self.value.set(int(event.widget['text']))
+        except ValueError:
+            self.value.set(0)
+        self.destroy()
+
+    def show(self):
+        self.wm_deiconify()
+        self.focus_force()
+        self.wait_window()
+        return self.value.get()
 
 
 if __name__ == '__main__':

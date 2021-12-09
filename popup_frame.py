@@ -120,11 +120,11 @@ class PopupFrame(ttk.Frame):
         mrows = [msg_panel.msg_number for msg_panel in self.messages_frames]
         return mrows
 
-    def append_blank_message_panel(self, defect_id):
-        mrows = self.get_message_rows()
-        highest_row = max(mrows)
-
-        get_message_dict(defect_id, 1, 'At {timestamp}\nthere were {len_meters} meters oospec!')
+    # def append_blank_message_panel(self, defect_id):
+    #     mrows = self.get_message_rows()
+    #     highest_row = max(mrows)
+    #
+    #     get_message_dict(defect_id, 1, 'At {timestamp}\nthere were {len_meters} meters oospec!')
 
     def add_message_panel(self, defect):
         self.message_panel_row += 1
@@ -133,24 +133,24 @@ class PopupFrame(ttk.Frame):
                                _wgt_styles=self._wgt_styles)
         self.messages_frames.append(msg_frm)
 
-    def refresh_data(self):
-        """
-        """
-        # do nothing if the aysyncio thread is dead
-        # and no more data in the queue
-        if not self.thread.is_alive() and self.the_queue.empty():
-            return
-
-        # refresh the GUI with new data from the queue
-        while not self.the_queue.empty():
-            key, data = self.the_queue.get()
-            # self.data[key].set(data)
-            # messages =
-
-        print('RefreshData...')
-
-        #  timer to refresh the gui with data from the asyncio thread
-        self.after(1000, self.refresh_data)  # called only once!
+    # def refresh_data(self):
+    #     """
+    #     """
+    #     # do nothing if the aysyncio thread is dead
+    #     # and no more data in the queue
+    #     if not self.thread.is_alive() and self.the_queue.empty():
+    #         return
+    #
+    #     # refresh the GUI with new data from the queue
+    #     while not self.the_queue.empty():
+    #         key, data = self.the_queue.get()
+    #         # self.data[key].set(data)
+    #         # messages =
+    #
+    #     print('RefreshData...')
+    #
+    #     #  timer to refresh the gui with data from the asyncio thread
+    #     self.after(1000, self.refresh_data)  # called only once!
 
     def update_removed_vars(self, messages):
         self._removed_state_vars.update({

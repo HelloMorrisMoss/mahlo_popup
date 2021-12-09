@@ -62,7 +62,6 @@ class Popup(tk.Tk):
 
         def hide_hideables(event=None):
             for hideable in self.hideables:
-                lg.debug('hiding %s, %s', hideable, hideable.winfo_viewable())
                 hideable.grid_remove()
             self.number_of_messages_button.grid(row=0, column=0)
             self.geometry('150x150')  # fixed size small window
@@ -70,7 +69,6 @@ class Popup(tk.Tk):
 
         def show_hideables(event=None):
             for hideable in self.hideables:
-                lg.debug('showing')
                 hideable.grid()
             self.number_of_messages_button.grid_remove()
             self.geometry('')  # grow to whatever size is needed for all the messages and other widgets
