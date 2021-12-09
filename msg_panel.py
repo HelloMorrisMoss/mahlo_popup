@@ -4,7 +4,7 @@ from tkinter import ttk
 
 import logging
 
-from dev_common import get_dummy_dict
+from dev_common import get_dummy_dict, StrCol
 
 lg = logging.getLogger('mds_popup_window')
 logging.basicConfig()
@@ -15,6 +15,7 @@ lg.debug('logging in msg_panel')
 
 class NumberPrompt(tk.Toplevel):
     """Show a tk popup window prompting for a number between 1 and 5, returning that value when pressed. Cancel as 0."""
+
     def __init__(self, parent, prompt=None):
         tk.Toplevel.__init__(self, parent)
         row = 0
@@ -49,23 +50,35 @@ class MessagePanel(tk.ttk.LabelFrame):
         super().__init__(parent, text='Foam Problem')
         self.msg_number = row
         self.grid(column=0, row=row, padx=kwargs['pad']['x'], pady=kwargs['pad']['y'], sticky="nesw")
+        self.parent = parent
 
         for k, v in kwargs.items():
             setattr(self, k, v)
 
         self._mp_root = root
+        # self._mp_root = tk.Toplevel  # if this works then we don't need to worry about the parameter
         self.defect_interface = defect_instance
         self.message_text_template = 'At {timestamp}\nthere were {len_meters} meters oospec!'
+
         # self.defect_interface = defect_instance
         # self.defect_interface['msg_txt']['timestamp'] = datetime.fromisoformat(defect_instance['msg_txt']['timestamp'])
 
+
+
         # the toggles selected values
-        self._removed_vals = {'all': tk.StringVar(), 'left': tk.StringVar(), 'left_center': tk.StringVar(), 'center': tk.StringVar(), 'right_center': tk.StringVar(), 'right': tk.StringVar()}
+        # self._removed_vals = {'all': tk.StringVar(), 'left': tk.StringVar(), 'left_center': tk.StringVar(), 'center': tk.StringVar(), 'right_center': tk.StringVar(), 'right': tk.StringVar()}
+        sides_to_defect_columns_dict = {'left': 'rem_l', 'left_center': 'rem_lc',
+                                        'center': 'rem_c', 'right_center': 'rem_rc', 'right': 'rem_r'}
+        # for side, column in sides_to_defect_columns_dict.items():
+        #     self._removed_vals[side].set(getattr(self.defect_interface, column))
+        #     setattr(self.defect_interface, column, self._removed_vals[side])
+        self._removed_vals = {k: StrCol(self.defect_interface, col) for k, col in sides_to_defect_columns_dict.items()}
+        self._removed_vals.update({'all': tk.StringVar()})
 
         # the label that displays the defect_instance
-        self.add_message_display(self, defect_instance)
+        self.add_message_display(self)
 
-        self.add_buttons(self, defect_instance)
+        self.add_buttons(self)
 
         # shrink to a button when not the focus window
         self._mp_root.bind("<FocusOut>", self.focus_lost_handler)
@@ -98,14 +111,15 @@ class MessagePanel(tk.ttk.LabelFrame):
     def un_hide(self):
         self.grid()
 
-    def add_message_display(self, parent, message):
+    def add_message_display(self, parent):
         # msg = message['msg_txt']
-        message_text = self.message_text_template.format(timestamp=message.defect_end_ts.strftime(self.dt_format_str),
-                                              len_meters=message.length_of_defect_meters)
+        message_text = self.message_text_template.format(
+            timestamp=self.defect_interface.defect_end_ts.strftime(self.dt_format_str),
+            len_meters=self.defect_interface.length_of_defect_meters)
         label = tk.ttk.Label(parent, text=message_text)
         label.grid(column=0, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="w")
 
-    def add_buttons(self, parent, message):
+    def add_buttons(self, parent):
         """Add the button frames and their widgets to the parent frame.
 
         :param message: dict, the defect_instance dictionary
@@ -113,12 +127,12 @@ class MessagePanel(tk.ttk.LabelFrame):
         """
         # TODO: it may be worthwhile at some point to extract the toggle panel to its own class
         # add the removed foam toggles
-        self._add_foam_removed_toggle_selectors(parent, message)
+        self._add_foam_removed_toggle_selectors(parent)
 
         # add the save button
-        self.add_action_buttons(message, parent)
+        self.add_action_buttons(parent)
 
-    def add_action_buttons(self, message, parent):
+    def add_action_buttons(self, parent):
         """Add the action button frame and buttons.
 
         :param message:
@@ -131,10 +145,11 @@ class MessagePanel(tk.ttk.LabelFrame):
                             'sticky': 'nesw',
                             'columnspan': 2}
         send_button_frame.grid(**send_grid_params)
-        self.add_save_button(send_button_frame, message, send_grid_params)
+        self.add_save_button(send_button_frame, send_grid_params)
 
         # add the prompt for roll count change button
-        num_button = tk.ttk.Button(send_button_frame, style='Accent.TButton', text='# of Rolls', command=self.prompt_for_rolls_count)
+        num_button = tk.ttk.Button(send_button_frame, style='Accent.TButton', text='# of Rolls',
+                                   command=self.prompt_for_rolls_count)
         send_grid_params.update(row=1)
 
         num_button.grid(**send_grid_params)
@@ -146,24 +161,28 @@ class MessagePanel(tk.ttk.LabelFrame):
         if new_count:
             self.change_toggle_count(new_count)
 
-    def add_save_button(self, parent, message, send_grid_params):
+    def add_save_button(self, parent, send_grid_params):
         """Add the save/send button.
 
         :param message:
         :param parent:
         :param send_grid_params:
         """
-        send_btn = tk.ttk.Button(parent, style='Accent.TButton', text='Save')
+        send_btn = tk.ttk.Button(parent, style='Accent.TButton', text='Save', command=self.send_response)
         send_btn.grid(**send_grid_params)
-        setattr(send_btn, 'msg_id', message.defect_id)
+        setattr(send_btn, 'msg_id', self.defect_interface.id)
         setattr(send_btn, 'side', 'send')
 
-    def send_response(self, event):
-        msg_id = self._get_event_info(event)
-        removed_results_dict = self._removed_state_vars[msg_id]
+    def send_response(self, event=None):
+        # msg_id = self._get_event_info(event)
+        # removed_results_dict = self._removed_state_vars[msg_id]
+        lg.debug(self.defect_interface)
+        self.defect_interface.entry_modified_ts = datetime.now()
+        with self.parent.parent.flask_app.app_context():
+            self.defect_interface.save_to_database()
         # TODO: save to sqlite database, then try to send all items unsent in the db
 
-    def _add_foam_removed_toggle_selectors(self, parent, message, number_of_buttons=None):
+    def _add_foam_removed_toggle_selectors(self, parent, number_of_buttons=None):
         """Add the toggle buttons frame to the parent frame.
 
         :param message: dict, the defect_instance dictionary
@@ -177,7 +196,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         # default to the guessed number
         if number_of_buttons is None:
             # number_of_buttons = defect_interface['toggle_count_guess']
-            number_of_buttons = message.rolls_of_product_post_slit
+            number_of_buttons = self.defect_interface.rolls_of_product_post_slit
 
         self.toggle_button_def_dict = self._get_toggle_definitions(number_of_buttons)
 
@@ -185,7 +204,7 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         # add them to the button frame
         for bnum, (btn, btndef) in enumerate(self.toggle_button_def_dict.items()):
-            self._toggle_refs[btn] = self._add_toggle(self.btn_frame, btn, btndef, message, parent)
+            self._toggle_refs[btn] = self._add_toggle(self.btn_frame, btn, btndef, parent)
 
         # add a line separator to make the all button stand out from the side buttons
         sep = ttk.Separator(self.btn_frame, orient='horizontal')
@@ -197,7 +216,7 @@ class MessagePanel(tk.ttk.LabelFrame):
                          'sticky': 'nesw'}
         sep.grid(**sep_grid_dict)
 
-    def _add_toggle(self, btn_frame, btn_side, btndef, defect_interface, parent):
+    def _add_toggle(self, btn_frame, btn_side, btndef, parent):
         """Add a toggle button to the frame using a definition dictionary.
 
         :param btn_frame: tkinter.Frame
@@ -212,7 +231,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         # add some custom attributes to use elsewhere, to keep track of which button is which
         setattr(btn_wgt, 'state_var', btndef['params']['variable'])
         setattr(btn_wgt, 'side', btn_side)
-        setattr(btn_wgt, 'msg_id', defect_interface.defect_id)
+        setattr(btn_wgt, 'msg_id', self.defect_interface.id)
 
         # if it is the 'all' button add the list of buttons to toggle
         if btndef.get('not_all_list') is not None:
@@ -229,7 +248,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         return btn_wgt
 
     def _get_toggle_definitions(self, num_of_buttons=3):
-        """Get the dictionary defining the 'all' and 'left', 'center', and 'right' sides' toggle buttons.
+        """Get the dictionary defining the 'all' and 'left', 'center', and 'right' sides' toggle buttons' attributes.
 
         :return: dict, the definition dictionary.
         """
@@ -293,10 +312,9 @@ class MessagePanel(tk.ttk.LabelFrame):
         msg_id, now_on, side = self._get_event_info(event)
 
         # this is just for development
-        dbg_vars = event, event.widget.msg_id, event.widget.side,\
-                   event.widget.state_var.get(), event.widget.state(), f'new {now_on}'
-        lg.debug('%s, ' * len(dbg_vars), *dbg_vars)
-
+        dbg_vars = (event, event.widget.msg_id, event.widget.side,
+                    event.widget.state_var.get(), event.widget.state(), f'new {now_on}')
+        lg.debug('toggle_changes_event_handler - %s, ' * len(dbg_vars), *dbg_vars)
 
         # evaluate and set the toggles if needed
         if side == 'all':

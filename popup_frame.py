@@ -3,6 +3,7 @@ from pprint import pprint
 from tkinter import ttk
 
 from dev_common import add_show_messages_button, get_message_dict
+from fresk.models.defect import DefectModel
 from log_setup import lg
 # from main_window import hover_enter_factory
 from msg_panel import MessagePanel
@@ -37,9 +38,9 @@ class PopupFrame(ttk.Frame):
 
         self.set_style(kwargs)
 
-        pprint(input_dict)
-        # set things up for the main window
-        self._defdic = input_dict
+        # pprint(input_dict)
+        # # set things up for the main window
+        # self._defdic = input_dict
 
         # self.parent.title(self._defdic['main_win']['title'])  # TODO: this is a bad way to do this
 
@@ -69,8 +70,10 @@ class PopupFrame(ttk.Frame):
 
         # add_show_messages_button(self, self.focus_gained_handler)
 
-        # self.add_message_panels(init_messages)
+        self.current_defects = []
+        self.message_panel_row = 0
 
+        # self.add_message_panels(init_messages)
 
     def set_style(self, kwargs):
         styling = kwargs.get('style_settings')
@@ -80,21 +83,38 @@ class PopupFrame(ttk.Frame):
                 lg.debug(f'PopupFrame add {k}: {v}')
                 setattr(self, k, v)
 
-    def add_message_panels(self, init_messages):
-        if not init_messages:
-            lg.debug('Single defect_instance')
-            msg_frm = tk.ttk.LabelFrame(self, text='Single defect_instance.')
-            msg_frm.grid(row=0, column=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw", columnspan=12,
-                         rowspan=5)
-            single_label = tk.ttk.Label(msg_frm, text='here is some text')
-            single_label.grid(row=0, column=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw", columnspan=12,
-                              rowspan=5)
-            self.messages_frames.append(msg_frm)
-            self.shrink()
+    def update_message_panels(self, init_messages=None):
+        """Check the database for new defects, if there are add new panels.
 
-        else:
-            for mnum, message in enumerate(init_messages):
-                self.add_message_panel(message, mnum)
+        :param init_messages: dict, deprecated
+        """
+        with self.parent.flask_app.app_context():
+            new_defs = DefectModel.find_new()
+
+        lg.debug('new defects: %s', new_defs)
+        for defect in new_defs:
+            if defect not in self.current_defects:
+                self.current_defects.append(defect)
+                self.add_message_panel(defect)
+            else:
+                lg.debug('this defect already in current_defects')
+
+        if not self.current_defects:
+            self.shrink()
+        # if not init_messages:
+        #     lg.debug('Single defect_instance')
+        #     msg_frm = tk.ttk.LabelFrame(self, text='Single defect_instance.')
+        #     msg_frm.grid(row=0, column=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw", columnspan=12,
+        #                  rowspan=5)
+        #     single_label = tk.ttk.Label(msg_frm, text='here is some text')
+        #     single_label.grid(row=0, column=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw", columnspan=12,
+        #                       rowspan=5)
+        #     self.messages_frames.append(msg_frm)
+        #     self.shrink()
+
+        # else:
+        #     for mnum, message in enumerate(init_messages):
+        #         self.add_message_panel(message, mnum)
 
     def get_message_rows(self):
         mrows = [msg_panel.msg_number for msg_panel in self.messages_frames]
@@ -106,9 +126,9 @@ class PopupFrame(ttk.Frame):
 
         get_message_dict(defect_id, 1, 'At {timestamp}\nthere were {len_meters} meters oospec!')
 
-
-    def add_message_panel(self, message, mnum):
-        msg_frm = MessagePanel(self.main_frm, self, message, mnum, dt_format_str=self.dt_format_str,
+    def add_message_panel(self, defect):
+        self.message_panel_row += 1
+        msg_frm = MessagePanel(self.main_frm, self, defect, self.message_panel_row, dt_format_str=self.dt_format_str,
                                pad={'x': self.pad['x'], 'y': self.pad['y']},
                                _wgt_styles=self._wgt_styles)
         self.messages_frames.append(msg_frm)

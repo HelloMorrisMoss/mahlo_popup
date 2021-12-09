@@ -1,6 +1,7 @@
 """To add a popup window to the Mahlo HMI PC at the laminators. Designed to be called from the command line over ssl."""
 
 import argparse
+import datetime
 import json
 import tkinter as tk
 import os
@@ -33,17 +34,17 @@ class Popup(tk.Tk):
         # communication with flask app
         inbound_queue = kwargs.get('inbound_queue')
         if inbound_queue is not None:
-            self.incoming_messages = inbound_queue
+            self.messages_from_flask = inbound_queue
         else:
             lg.warning('No inbound_queue')
 
         outbound_queue = kwargs.get('outbound_queue')
         if outbound_queue is not None:
-            self.outgoing_messages = outbound_queue
+            self.messages_to_flask = outbound_queue
         else:
             lg.warning('No outbound_queue')
 
-        self.outgoing_messages.append({'action': 'get_a_defect'})
+        # self.messages_to_flask.append({'action': 'get_a_defect'})
 
         # styling
         self.tk.call("source", "Azure-ttk-theme-main/Azure-ttk-theme-main/azure.tcl")
@@ -129,9 +130,10 @@ class Popup(tk.Tk):
     def check_for_inbound_messages(self):
         """Check the inbound queue for new defect messages and if there are any, send them to the MessagePanel."""
         
-        while len(self.incoming_messages):
-            self.new_messages.append(self.incoming_messages.pop())
-        if self.new_messages:
+        while len(self.messages_from_flask):
+            self.new_messages.append(self.messages_from_flask.pop())
+        # if self.new_messages:
+        if True:
             lg.debug('new messages: %s', self.new_messages)
 
             # if we haven't gotten the flask app via the queue yet, look for it
@@ -139,30 +141,43 @@ class Popup(tk.Tk):
                 for mindex, msg in enumerate(self.new_messages):
                     if msg.get('flask_app'):
                         self.flask_app = self.new_messages.pop(mindex)['flask_app']
-            else:
-                # if we do have a flask app, use it for the messages
-                # with self.flask_app:
-                # # TODO: this needs to pop the message
-                # defmodel = self.new_messages[0]['defect_model']
-                # session = self.new_messages[0]['session']
-                # app_context = self.new_messages[0]['flask_context']
-                # # pprint(defmodel.json())
-                # defmodel.bursting = False
-                # from pprint import pprint
-                # pprint(dir())
-                #
-                # # with app_context:
-                # #     defmodel.save_to_database()
-                # # with self.flask_app:
-                # #     defmodel.save_to_database()
-                # TODO: now it seems so obvious... once you have access to the flask app, just import the
-                #  model and create the context here
-                #  ps: this is still a context passed through, change it for the app so each time it can
-                #  be a new session - or can the app just be imported?
-                with self.flask_app:
-                    defm = DefectModel.find_by_id(8)
-                    defm.bursting = True
-                    defm.save_to_database()
+                        self.popup_frame.update_message_panels()
+            # else:
+            #     # if we do have a flask app, use it for the messages
+            #     # with self.flask_app:
+            #     # # TODO: this needs to pop the message
+            #     # defmodel = self.new_messages[0]['defect_model']
+            #     # session = self.new_messages[0]['session']
+            #     # app_context = self.new_messages[0]['flask_context']
+            #     # # pprint(defmodel.json())
+            #     # defmodel.bursting = False
+            #     # from pprint import pprint
+            #     # pprint(dir())
+            #     #
+            #     # # with app_context:
+            #     # #     defmodel.save_to_database()
+            #     # # with self.flask_app:
+            #     # #     defmodel.save_to_database()
+            #     # TODO: now it seems so obvious... once you have access to the flask app, just import the
+            #     #  model and create the context here
+            #     #  ps: this is still a context passed through, change it for the app so each time it can
+            #     #  be a new session - or can the app just be imported?
+            #     with self.flask_app.app_context():
+            #         # this is just for testing, it flips the bursting column boolean
+            #         defm = DefectModel.find_by_id(8)
+            #         defm.bursting = not defm.bursting
+            #         defm.save_to_database()
+            #
+            #         # this is effectively getting all the rows as defect models
+            #         # pprint(DefectModel.find_all())
+            #
+            #         # # this is getting all the defects that have not been modified
+            #         # new_defects = DefectModel.find_new()
+            #         # pprint(new_defects)
+            #         # # this is changing one of their modified times so the results change
+            #         # new_defects[0].entry_modified_ts = datetime.datetime.now()
+            #         # new_defects[0].save_to_database()
+            # # self.popup_frame.update_message_panels()
         self.after(5000, self.check_for_inbound_messages)
         # self.popup_frame.add_message_panels(new_messages)
 

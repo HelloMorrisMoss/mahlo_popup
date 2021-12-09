@@ -186,3 +186,20 @@ class DefectMessage(object):
 
     def __str__(self):
         return str(self.__dict__)
+
+
+class StrCol(tk.StringVar):
+    """A tk.StringVar that takes a flask-sqlalchemy Model and a bool column name and sets it with the str"""
+
+    def __init__(self, defect, column):
+        super().__init__()
+        self.defect_interface = defect
+        self.column = column
+
+    def set(self, value):
+        if 'not' not in value.lower():
+            new_bool = True
+        else:
+            new_bool = False
+        setattr(self.defect_interface, self.column, new_bool)
+        super().set(value)

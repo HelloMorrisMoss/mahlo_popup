@@ -53,7 +53,7 @@ def start_flask_app(in_message_queue=None, out_message_queue=None):
         with app_context:
             g.in_message_queue = in_message_queue
             g.out_message_queue = out_message_queue
-            g.out_message_queue.append({'flask_app': app_context})
+            g.out_message_queue.append({'flask_app': app})
             schedule_queue_watcher(in_message_queue, out_message_queue)
     else:
         lg.warning('No inbound defect_instance queue!')

@@ -56,6 +56,15 @@ class DefectModel(fsa.Model):
             return id_df, fsa
         return id_df
 
+    @classmethod
+    def find_new(cls):
+        # return cls.query.filter(DefectModel.entry_created_ts=DefectModel.entry_modified_ts).all()
+        return cls.query.filter(DefectModel.entry_modified_ts == DefectModel.entry_created_ts).all()
+
+    @classmethod
+    def find_all(cls):
+        return cls.query.all()
+
     def save_to_database(self):
         fsa.session.add(self)
         fsa.session.commit()
@@ -89,3 +98,7 @@ class DefectModel(fsa.Model):
         # return {k: str(v) for k, v in self.__dict__['_sa_instance_state']._instance_dict.items() if k in all_args}
         # return {k: getattr(self, k) for k in all_args}
         return jdict
+
+
+def get_defects_list():
+    pass

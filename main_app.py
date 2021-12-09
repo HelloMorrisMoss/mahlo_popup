@@ -1,4 +1,5 @@
 import threading
+import time
 import tkinter
 # import queue
 from collections import deque
@@ -14,30 +15,9 @@ flask_thread = threading.Thread(target=start_flask_app, args=(p2f_queue, f2p_que
 flask_thread.setDaemon(True)
 flask_thread.start()
 
-import  datetime
-import time
-
-# while True:
-#     time.sleep(20)
-#     p2f_queue.append(f'popup sent msg at {datetime.datetime.now()}')
-#     while f2p_queue:
-#         print(f'defect_instance back: {f2p_queue.pop()} at {datetime.datetime.now()}')
-
-
-# root = tkinter.Tk()
-
-# signal_queue = queue.Queue()
-#
-# def new_signal(root_win):
-#     root_win.event_generate('<<MessageGenerated>>')
-#
-#
-# def get_new_signal(root_win, sig_queue):
-#
-#
-#
-#
-# root.bind('<<MessageGenerated>>', lambda e: process(message_queue, e))
+# wait until the flask app has been passed since we'll want to use it right away in the popup
+while not f2p_queue:
+    time.sleep(1)
 
 dev_popup_empty(inbound_queue=f2p_queue, outbound_queue=p2f_queue)
 
