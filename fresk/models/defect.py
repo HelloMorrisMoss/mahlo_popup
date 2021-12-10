@@ -76,8 +76,8 @@ class DefectModel(fsa.Model):
         return cls.query.all()
 
     @classmethod
-    def new_defect(cls):
-        new_def = DefectModel()
+    def new_defect(cls, **kwargs):
+        new_def = DefectModel(**kwargs)
         new_def.save_to_database()
         # nd_db = cls.find_by_id(new_def.id)  # not needed
         return new_def

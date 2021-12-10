@@ -48,8 +48,8 @@ class MessagePanel(tk.ttk.LabelFrame):
         self.add_buttons(self)
 
         # shrink to a button when not the focus window
-        self._mp_root.bind("<FocusOut>", self.focus_lost_handler)
-        self._mp_root.bind("<FocusIn>", self.focus_gained_handler)
+        # self._mp_root.bind("<FocusOut>", self.focus_lost_handler)
+        # self._mp_root.bind("<FocusIn>", self.focus_gained_handler)
 
     def focus_lost_handler(self, event):
         """When the window loses focus (another window is clicked or otherwise switched to).

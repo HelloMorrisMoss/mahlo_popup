@@ -15,7 +15,7 @@ from log_setup import lg
 from dev_common import get_dummy_dict, get_empty_dict, recurse_hover, recurse_tk_structure, add_show_messages_button
 
 # when called by RPC the directory may change and be unable to find the ttk theme file directory
-from popup_frame import PopupFrame
+from popup_frame import DefectMessageFrame
 
 os.chdir(r'C:\Users\lmcglaughlin\PycharmProjects\mahlo_popup')
 
@@ -79,7 +79,7 @@ class Popup(tk.Tk):
         self.rowconfigure(0, weight=1)  # to make the button able to fill the height
 
         # where the messages about defect appear with their toggles/save buttons
-        self.popup_frame = PopupFrame(self, input_dict, **params)
+        self.popup_frame = DefectMessageFrame(self, input_dict, **params)
         self.popup_frame.grid(row=1, column=0, sticky='nesw')
 
         self.hideables.append(self.popup_frame)
@@ -188,11 +188,12 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
 
         def add_new_defect():
             with self.parent.flask_app.app_context():
-                new_defect = DefectModel.new_defect()
+                new_defect = DefectModel.new_defect(record_creation_source='operator')
                 lg.debug(new_defect)
                 popup = self.parent.popup_frame
                 popup.current_defects.append(new_defect)
-                popup.add_message_panel(new_defect)
+                # popup.add_message_panel(new_defect)
+                popup.update_message_panels()
         self.add_defect_button = tk.ttk.Button(self, text='Add removed', command=add_new_defect)
         self.add_defect_button.grid(row=3, column=10)
 

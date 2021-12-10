@@ -9,7 +9,7 @@ from log_setup import lg
 from msg_panel import MessagePanel
 
 
-class PopupFrame(ttk.Frame):
+class DefectMessageFrame(ttk.Frame):
     """A popup window with messages to respond to. Create the window and messages based on a provided dictionary.
 
     """
@@ -94,12 +94,13 @@ class PopupFrame(ttk.Frame):
 
         lg.debug('new defects: %s', new_defs)
         for defect in new_defs:
-            if defect not in self.current_defects:
-                self.current_defects.append(defect)
+            if defect.id not in self.current_defects:
+                lg.debug('New defect found')
                 self.add_message_panel(defect)
             else:
                 lg.debug('this defect already in current_defects')
 
+        # if we have no defects, no need to be big
         if not self.current_defects:
             self.shrink()
 
@@ -115,6 +116,7 @@ class PopupFrame(ttk.Frame):
 
     def add_message_panel(self, defect):
         self.message_panel_row += 1
+        self.current_defects.append(defect.id)
         msg_frm = MessagePanel(self.main_frm, defect, self.message_panel_row, dt_format_str=self.dt_format_str,
                                pad={'x': self.pad['x'], 'y': self.pad['y']},
                                _wgt_styles=self._wgt_styles)

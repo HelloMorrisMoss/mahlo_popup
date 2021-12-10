@@ -124,7 +124,6 @@ def schedule_queue_watcher(in_message_queue, out_message_queue):
                 except IndexError:
                     break  # the deque is empty TODO: the while and try except SHOULD be redundant
                 # time.sleep(10)
-        lg.debug('flask message checker function exiting')
 
     from apscheduler.schedulers.background import BackgroundScheduler
     scheduler = BackgroundScheduler(daemon=True)
