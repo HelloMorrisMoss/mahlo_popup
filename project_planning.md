@@ -79,3 +79,11 @@ popup needs to:
 * update the database when the defects are changed
   * could use sqlalchemy directly
   * could use requests to ask flask server for records
+
+12/10 todo:
+* add defect button works but the window doesn't seem to resize for its message panels
+* defect type selection screen
+* have defect types show in message window
+* popup: on creation single defect is being displayed twice
+* popup: when creating new message panels at creation, extra window showing
+* need to be able to change the length of the defect
