@@ -87,3 +87,4 @@ popup needs to:
 * popup: on creation single defect is being displayed twice
 * popup: when creating new message panels at creation, extra window showing
 * need to be able to change the length of the defect
+* selecting the save and add new defect buttons are triggering the focus lost shrink 

@@ -60,11 +60,11 @@ class Popup(tk.Tk):
 
         self.hideables = []
 
-        def hide_hideables(event=None):
-            for hideable in self.hideables:
-                hideable.grid_remove()
-            self.number_of_messages_button.grid(row=0, column=0)
-            self.geometry('150x150')  # fixed size small window
+
+        # def delayed_hide(delay_ms=100):
+        #
+
+
 
         def show_hideables(event=None):
             for hideable in self.hideables:
@@ -92,7 +92,7 @@ class Popup(tk.Tk):
         if input_dict is None:
             lg.debug('no messages, hiding hideables')
             # lg.debug(input_dict['messages'])
-            hide_hideables()
+            self.hide_hideables()
         else:
             lg.debug('messages, showing hideables')
             show_hideables()
@@ -102,7 +102,7 @@ class Popup(tk.Tk):
         self.attributes('-topmost', True)
         # self.root.after_idle(self.root.attributes, '-topmost', False)
 
-        self.bind("<FocusOut>", hide_hideables)
+        self.bind("<FocusOut>", self.hide_hideables)
         # self.bind("<FocusIn>", show_hideables)
 
         lg.debug(self.hideables)
@@ -122,6 +122,18 @@ class Popup(tk.Tk):
         self.after(1000, self.check_for_inbound_messages)
 
         self.mainloop()
+
+    def hide_hideables(self, event=None):
+        """Hide the components that are supposed to hide when the window 'shrinks'.
+
+        :param event:
+        """
+        # this check is so that the window will not shrink when pressing buttons
+        if event is None or self.focus_get() is None:
+            for hideable in self.hideables:
+                hideable.grid_remove()
+            self.number_of_messages_button.grid(row=0, column=0)
+            self.geometry('150x150')  # fixed size small window
 
     def check_for_inbound_messages(self):
         """Check the inbound queue for new defect messages and if there are any, send them to the MessagePanel."""
