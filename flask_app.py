@@ -1,17 +1,16 @@
 import datetime
 
-from collections import deque
-from threading import Thread
 import flask
 from flask import g
 from flask_restful import Api
 import waitress
 
+from fresk.resources.defect import Defect, DefectList
 from fresk.resources.signal_popup import Popup
 from fresk.sqla_instance import fsa
 
-from fresk.resources.defect import Defect, DefectList
-from db_uri import DATABASE_URI
+
+from untracked_config.db_uri import DATABASE_URI
 # from main import dev_popup
 
 from log_setup import lg
@@ -31,20 +30,32 @@ api = Api(app)
 #
 
 
-@app.before_first_request
-def create_tables():
-    fsa.create_all()
-    # g.popup_thread = Thread(target=dev_popup)
-    # g.popup = dev_popup()
+api.add_resource(Defect, '/defect')
 
 
 # @app.before_first_request
 # def create_popup():
 #     g.popup = dev_popup()
 
-api.add_resource(Defect, '/defect')
 api.add_resource(Popup, '/popup')
 api.add_resource(DefectList, '/defects')
+
+
+@app.before_first_request
+def create_tables():
+    import platform
+    from untracked_config.development_node import dev_node
+    # this section is to remove the old database table if the DefectModel table needs to be changed:
+    node = platform.node()
+    lg.debug(f'node {node=}')
+
+    if node == dev_node:
+        fsa.drop_all()  # TODO: this is for model/table development only and SHOULD NOT be used with production databases!
+
+    # this ensures there is a table there
+    fsa.create_all()
+    # g.popup_thread = Thread(target=dev_popup)
+    # g.popup = dev_popup()
 
 
 def start_flask_app(in_message_queue=None, out_message_queue=None):

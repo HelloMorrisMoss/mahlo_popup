@@ -103,7 +103,7 @@ class Popup(tk.Tk):
         # self.root.after_idle(self.root.attributes, '-topmost', False)
 
         self.bind("<FocusOut>", hide_hideables)
-        self.bind("<FocusIn>", show_hideables)
+        # self.bind("<FocusIn>", show_hideables)
 
         lg.debug(self.hideables)
 

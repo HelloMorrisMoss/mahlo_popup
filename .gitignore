@@ -230,4 +230,5 @@ cython_debug/
 !/main.spec
 /grpc_examples/
 !/db.json
-!/db_uri.py
+!/untracked_config/db_uri.py
+!/untracked_config/development_node.py

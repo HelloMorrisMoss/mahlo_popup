@@ -146,7 +146,7 @@ class DefectMessage(object):
     Create by providing the parameters or by using the class method .from_dict that converts the 'defect_instance' dict
     into the parameters and uses them to instantiate a class object and returns it.
         ex:
-            >srcd = {'msg_id': 'msg123',
+            >srcd = {'msg_id': '123',
                      'msg_txt': {'length_in_meters': 5.55,
                                  'template': 'At {timestamp}\nthere were {len_meters} meters oospec!',
                                  'timestamp': '2021-12-08T10:15:17.161085'},
@@ -158,7 +158,7 @@ class DefectMessage(object):
             >str(dm)
             "{'title': 'Out of spec!', 'message_template': 'At {timestamp}\\nthere were {len_meters} meters oospec!',
             'timestamp': '2021-12-08T10:15:17.161085', 'length_in_meters': 5.55, 'roll_count': 1,
-            'defect_id': 'msg123'}"
+            'defect_id': '123'}"
     """
     def __init__(self, title, message_template, timestamp, length_in_meters, roll_count, defect_id):
         """Instantiate a class object using the provided parameters.

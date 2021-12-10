@@ -25,14 +25,12 @@ class MessagePanel(tk.ttk.LabelFrame):
             setattr(self, k, v)
 
         # self._mp_root = root
-        self._mp_root = tk.Toplevel  # if this works then we don't need to worry about the parameter
+        self._mp_root = tk.Toplevel(self)  # if this works then we don't need to worry about the parameter
         self.defect_interface = defect_instance
-        self.message_text_template = 'At {timestamp}\nthere were {len_meters} meters oospec!'
+        self.message_text_template = 'At {timestamp}\n{len_meters} meters oospec!\ndefect id: {defect_id}'
 
         # self.defect_interface = defect_instance
         # self.defect_interface['msg_txt']['timestamp'] = datetime.fromisoformat(defect_instance['msg_txt']['timestamp'])
-
-
 
         # the toggles selected values
         # self._removed_vals = {'all': tk.StringVar(), 'left': tk.StringVar(), 'left_center': tk.StringVar(), 'center': tk.StringVar(), 'right_center': tk.StringVar(), 'right': tk.StringVar()}
@@ -84,7 +82,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         # msg = message['msg_txt']
         message_text = self.message_text_template.format(
             timestamp=self.defect_interface.defect_end_ts.strftime(self.dt_format_str),
-            len_meters=self.defect_interface.length_of_defect_meters)
+            len_meters=self.defect_interface.length_of_defect_meters, defect_id=self.defect_interface.id)
         label = tk.ttk.Label(parent, text=message_text)
         label.grid(column=0, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="w")
 
