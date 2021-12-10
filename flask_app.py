@@ -1,7 +1,8 @@
 import datetime
+import os
 
 import flask
-from flask import g
+from flask import Flask, g
 from flask_restful import Api
 import waitress
 
@@ -9,12 +10,24 @@ from fresk.resources.defect import Defect, DefectList
 from fresk.resources.signal_popup import Popup
 from fresk.sqla_instance import fsa
 
-
 from untracked_config.db_uri import DATABASE_URI
 # from main import dev_popup
 
 from log_setup import lg
 
+
+# class SubFlaskApp(Flask):
+#     """A Flask subclass that """
+#     def run(self, host=None, port=None, debug=None, load_dotenv=True, **kwargs):
+#         if not self.debug or os.getenv('WERKZEUG_RUN_MAIN') == 'true':
+#             with self.app_context():
+#                 create_tables()
+#         else:
+#             lg.debug('Not running startup script. debug: %s, WERKZEUG_RUN_MAIN: %s', self.debug, os.getenv('WERKZEUG_RUN_MAIN'))
+#         super(SubFlaskApp, self).run(host=host, port=port, debug=debug, load_dotenv=load_dotenv, **kwargs)
+#
+#
+# app = SubFlaskApp(__name__)
 app = flask.Flask(__name__)
 app.config['PROPAGATE_EXCEPTIONS'] = True  # To allow flask propagating exception even if debug is set to false on app
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI
@@ -23,28 +36,14 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'this will be important when security is implemented'
 app.debug = True
 
-api = Api(app)
-
-
-# def start_popup():
-#
-
-
-api.add_resource(Defect, '/defect')
-
 
 # @app.before_first_request
-# def create_popup():
-#     g.popup = dev_popup()
-
-api.add_resource(Popup, '/popup')
-api.add_resource(DefectList, '/defects')
-
-
-@app.before_first_request
 def create_tables():
     import platform
     from untracked_config.development_node import dev_node
+
+    lg.debug('Rebuilding database tables.')
+
     # this section is to remove the old database table if the DefectModel table needs to be changed:
     node = platform.node()
     lg.debug(f'node {node=}')
@@ -54,8 +53,14 @@ def create_tables():
 
     # this ensures there is a table there
     fsa.create_all()
-    # g.popup_thread = Thread(target=dev_popup)
-    # g.popup = dev_popup()
+
+
+# add the restful endpoints
+api = Api(app)
+api.add_resource(Defect, '/defect')
+api.add_resource(Popup, '/popup')
+api.add_resource(DefectList, '/defects')
+
 
 
 def start_flask_app(in_message_queue=None, out_message_queue=None):
@@ -70,6 +75,11 @@ def start_flask_app(in_message_queue=None, out_message_queue=None):
         lg.warning('No inbound defect_instance queue!')
 
     fsa.init_app(app)
+
+    # # recreate the tables
+    # with app.app_context():
+    #     create_tables()
+
     host = '0.0.0.0'
     port = 5000
     waitress.serve(app, host=host, port=port, threads=2)
@@ -84,11 +94,9 @@ def schedule_queue_watcher(in_message_queue, out_message_queue):
         """
     import time
 
-
     def regular_check_function():
         # when it's ready, this will watch for requests from the popup (in_message_queue) and send the responses
         # via the out_message_queue
-
         check_context = app.app_context()
         with check_context:
             while len(in_message_queue):
@@ -115,7 +123,8 @@ def schedule_queue_watcher(in_message_queue, out_message_queue):
                     # out_message_queue.append(f'I got the defect_instance "{msg}"!')
                 except IndexError:
                     break  # the deque is empty TODO: the while and try except SHOULD be redundant
-                time.sleep(10)
+                # time.sleep(10)
+        lg.debug('flask message checker function exiting')
 
     from apscheduler.schedulers.background import BackgroundScheduler
     scheduler = BackgroundScheduler(daemon=True)
