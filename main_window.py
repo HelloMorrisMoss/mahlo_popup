@@ -16,6 +16,7 @@ from dev_common import get_dummy_dict, get_empty_dict, recurse_hover, recurse_tk
 
 # when called by RPC the directory may change and be unable to find the ttk theme file directory
 from popup_frame import DefectMessageFrame
+from publishing_vars import publishing_var
 
 os.chdir(r'C:\Users\lmcglaughlin\PycharmProjects\mahlo_popup')
 
@@ -43,6 +44,11 @@ class Popup(tk.Tk):
             self.messages_to_flask = outbound_queue
         else:
             lg.warning('No outbound_queue')
+
+        # # todo: publishing var (possibly nested) to go from the length(self.current_defects) -> the show button label
+        # self._active__defects_count = property(publishing_var(int)
+
+
 
         # self.messages_to_flask.append({'action': 'get_a_defect'})
 
