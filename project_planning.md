@@ -87,4 +87,22 @@ popup needs to:
 * popup: on creation single defect is being displayed twice
 * popup: when creating new message panels at creation, extra window showing
 * need to be able to change the length of the defect
-* selecting the save and add new defect buttons are triggering the focus lost shrink 
+* selecting the save and add new defect buttons are triggering the focus lost shrink
+* need to test on a laminator
+* need to build the Ignition end of things
+* shrink/grow messages from flask to the popup need to be setup, both ends
+* need to test if new records can populate the defect message window while 'hidden'
+* the show defects button count isn't updating, need to have that as probably a tk.IntVar (if not already) and update it when the defect list updates
+* when the defects save and the defects are removed from the current list, does that have a loop that isn't breaking after finding the defect (not a big deal here, but not ideal)
+
+Ignition end of things brainstorming:
+* need to determine when defects have started and ended
+  * mahlo "out of spec" tag
+* need to create a new defect record, options:
+  * directly in the database
+  * RESTful call to popup/flask server on Mahlo HMI (would this allow not needing start/stop calls? I think no)
+  * call to another flask server on the OEE using the same DefectModel/SQLalchemy
+  * other?
+* need to signal that the laminator is starting and stopping
+  * this is what the flask server was for initially, use post/put to send a json message indicating start or stop
+    * how long between start/stop and the popup shows the change? (I think on the tkinter end the queue check can be scheduled in ms)
