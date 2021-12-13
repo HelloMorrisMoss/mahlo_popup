@@ -1,6 +1,15 @@
 import tkinter
 
 
+def upsert_subscriber(self, subscriber, update_method):
+    for sub_num, subr in enumerate(self._length_subscribers):
+        if subr['subscriber'] is subscriber:
+            self._length_subscribers[sub_num] = {'subscriber': subscriber, 'update_method': update_method}
+            return 'subscriber updated'
+    self._length_subscribers.append({'subscriber': subscriber, 'update_method': update_method})
+    return 'subscriber added'
+
+
 def publishing_var(var_type, *fn_args, **fn_kwargs):
     """Get a tkinter.StringVar or IntVar using the parameters provided that has a publisher pattern included.
 
@@ -31,13 +40,7 @@ def publishing_var(var_type, *fn_args, **fn_kwargs):
             :param update_method: method, method or function to be called and passed the new value when the string is set.
             :return: str, either 'subscriber added' or 'subscriber updated' if the subscriber was already subscribed.
             """
-            for sub_num, subr in enumerate(self._string_subscribers):
-                if subr['subscriber'] is subscriber:
-                    self._string_subscribers[sub_num] = {'subscriber': subscriber, 'update_method': update_method}
-                    return 'subscriber updated'
-
-            self._string_subscribers.append({'subscriber': subscriber, 'update_method': update_method})
-            return 'subscriber added'
+            return upsert_subscriber(self, subscriber, update_method)
 
         def set(self, value):
             """Sets the string value like a normal tkinter.StringVar then publishes to the subscriber list the new value.
@@ -230,29 +233,46 @@ def publishing_var(var_type, *fn_args, **fn_kwargs):
 # #     return publist
 
 
-def wrap_publish(method):
-   def inner(*args, **kwargs):
-       return_val = method(*args, **kwargs)
-       print(f'{return_val=}')
-       return return_val
-   return inner
+
+
 
 
 class MetaWrap(type):
     """TODOcstring"""
     def __new__(cls, name, bases, dct):
-        child = super().__new__(cls, name, bases, dct)
+        wrapped_class = super().__new__(cls, name, bases, dct)
         wrap_methods = 'append', 'insert', 'pop'  # TODO: add the rest
+        setattr(wrapped_class, '_length_subscribers', [])
+
+        def wrap_publish(method):
+            def inner(*args, **kwargs):
+                return_val = method(*args, **kwargs)
+                # print(f'{return_val=} - {args=}, {kwargs=}, {wrapped_class=}')
+                for subr in wrapped_class._length_subscribers:
+                    wc_self = args[0]
+
+                    for subscriber in wc_self._length_subscribers:
+                        subscriber['update_method'](wc_self.__len__())
+                    # print(f'wrapped method {subr} - {wc_self.__len__()}')
+
+                return return_val
+            return inner
+
         for base in bases:
             for field_name, field in base.__dict__.items():
                 if callable(field):
                     if field_name in wrap_methods:
                         # og_method = getattr()
                         # def wrapped_method
-                        setattr(child, field_name, wrap_publish(field))
-        return child
+                        setattr(wrapped_class, field_name, wrap_publish(field))
+        return wrapped_class
+
+
+
 
 class PublishingLengthList(list, metaclass=MetaWrap):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def subscribe(self, subscriber, update_method):
         """Subscribe an object to the string value, to be updated by passing the new value to the method.
@@ -264,27 +284,23 @@ class PublishingLengthList(list, metaclass=MetaWrap):
         :param update_method: method, method or function to be called and passed the new value when the string is set.
         :return: str, either 'subscriber added' or 'subscriber updated' if the subscriber was already subscribed.
         """
-        print(f'adding subscriber')
         try:
             getattr(self, '_length_subscribers')
         except AttributeError:
             self._length_subscribers = []
-        for sub_num, subr in enumerate(self._length_subscribers):
-            if subr['subscriber'] is subscriber:
-                self._length_subscribers[sub_num] = {'subscriber': subscriber, 'update_method': update_method}
-                return 'subscriber updated'
+        return upsert_subscriber(self, subscriber, update_method)
 
-        self._length_subscribers.append({'subscriber': subscriber, 'update_method': update_method})
-        return 'subscriber added'
+
 
 
 if __name__ == '__main__':
     # a_list = make_publist((1, 2, 3))
-    # a_list = PublishingLengthList((1, 2, 3))
-    a_list = PublishingLengthList()
+    a_list = PublishingLengthList((1, 2, 3))
+    # a_list = PublishingLengthList()
     # b_list = PublishingLengthList((5, 6, 7))
     # a_list = MetaWrap.__new__('PublishingLengthList', (list,), {})
     a_list.subscribe(27, lambda x: print(f'updated to length: {x}'))
+    # print(a_list._length_subscribers)
     print(a_list)
     # print(dir(a_list))
     a_list.append(5)
