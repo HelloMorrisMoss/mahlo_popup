@@ -27,6 +27,7 @@ os.chdir(r'C:\Users\lmcglaughlin\PycharmProjects\mahlo_popup')
 
 class Popup(tk.Tk):
     """The main tkinter window that the defect_instance panels, controls, etc reside in."""
+
     def __init__(self, input_dict=None, *args, **kwargs):
         super().__init__()
         self.debugging = kwargs.get('debug')
@@ -46,31 +47,18 @@ class Popup(tk.Tk):
             lg.warning('No outbound_queue')
 
         # # todo: publishing var (possibly nested) to go from the length(self.current_defects) -> the show button label
-        # self._active__defects_count = property(publishing_var(int)
-
-
-
-        # self.messages_to_flask.append({'action': 'get_a_defect'})
 
         # styling
         self.tk.call("source", "Azure-ttk-theme-main/Azure-ttk-theme-main/azure.tcl")
         self.tk.call("set_theme", "dark")
         # frame padding
-        self.pad = dict(
-            x=5,
-            y=3
-        )
+        self.pad = dict(x=5, y=3)
         self._wgt_styles = {'toggle': 'Switch.TCheckbutton', 'labelframe': 'Card.TFrame'}
 
         params = {'style_settings': {'pad': self.pad, '_wgt_styles': self._wgt_styles}}
 
+        # list of components that need to 'hide' when not the lam is running
         self.hideables = []
-
-
-        # def delayed_hide(delay_ms=100):
-        #
-
-
 
         def show_hideables(event=None):
             for hideable in self.hideables:
@@ -115,13 +103,15 @@ class Popup(tk.Tk):
 
         # if working on the code, print the tk structure
         if self.debugging:
-            def recursive_print():
+            def recursive_print(tk_component, repeat=True):
+                """Print the tkinter window/widget structure"""
                 recurse_tk_structure(self)
-                self.after(15000, recursive_print)
+                if repeat:
+                    self.after(15000, recursive_print)
 
             self.after(1000, recursive_print)  # for debugging, prints out the tkinter structure
             recurse_hover(self.popup_frame)  # for debugging, shows widget info when mouse cursor moves over it
-        
+
         # messages from flask
         self.new_messages = []
         self.flask_app = None
@@ -143,11 +133,11 @@ class Popup(tk.Tk):
 
     def check_for_inbound_messages(self):
         """Check the inbound queue for new defect messages and if there are any, send them to the MessagePanel."""
-        
+
         while len(self.messages_from_flask):
             self.new_messages.append(self.messages_from_flask.pop())
         if self.new_messages:
-        # if True:
+            # if True:
             lg.debug('new messages: %s', self.new_messages)
 
             # if we haven't gotten the flask app via the queue yet, look for it
@@ -212,6 +202,7 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
                 popup.current_defects.append(new_defect)
                 # popup.add_message_panel(new_defect)
                 popup.update_message_panels()
+
         self.add_defect_button = tk.ttk.Button(self, text='Add removed', command=add_new_defect)
         self.add_defect_button.grid(row=3, column=10)
 
@@ -241,6 +232,7 @@ def dev_popup_empty(json_str=None, **kwargs):
     pup_dict = json.loads(json_str)
     # pup = Popup(pup_dict)
     Popup(**kwargs)
+
 
 if __name__ == '__main__':
     # if called from the command line (over ssl) parse the json to a dictionary
