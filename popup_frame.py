@@ -2,7 +2,6 @@ import tkinter as tk
 from pprint import pprint
 from tkinter import ttk
 
-from dev_common import add_show_messages_button, get_message_dict
 from fresk.models.defect import DefectModel
 from log_setup import lg
 # from main_window import hover_enter_factory

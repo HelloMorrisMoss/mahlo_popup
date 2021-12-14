@@ -5,7 +5,6 @@ from flask_restful import reqparse, Resource
 
 from log_setup import lg
 from main_window import dev_popup
-from dev_common import get_dummy_dict
 
 
 class Popup(Resource):
@@ -32,7 +31,8 @@ class Popup(Resource):
     #     pass
     #
     def get(self):
-        g.popup = dev_popup(json.dumps(get_dummy_dict(5.6)))
+        # g.popup = dev_popup(json.dumps(get_dummy_dict(5.6)))
+        raise NotImplementedError('This had been built with dicts and has not been remade using sqlalchemy version.')
 
     def put(self):
         parser = reqparse.RequestParser()

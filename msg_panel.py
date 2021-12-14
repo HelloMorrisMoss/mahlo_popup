@@ -4,7 +4,7 @@ from tkinter import ttk
 
 import logging
 
-from dev_common import get_dummy_dict, StrCol
+from dev_common import StrCol
 
 lg = logging.getLogger('mds_popup_window')
 logging.basicConfig()
@@ -417,15 +417,3 @@ class NumberPrompt(tk.Toplevel):
         self.focus_force()
         self.wait_window()
         return self.value.get()
-
-
-if __name__ == '__main__':
-    # testing number change popoup
-    root = tk.Tk()
-
-    msg_dict = get_dummy_dict(10)
-    msg = msg_dict['messages'][0]
-    tsf = msg_dict['main_win']['timestamp_display_format']
-    mp = MessagePanel(root, root, msg, 0, dt_format_str=tsf, pad={'x': 5, 'y': 5},
-                      _wgt_styles={'toggle': 'Switch.TCheckbutton', 'labelframe': 'Card.TFrame'})
-    root.mainloop()

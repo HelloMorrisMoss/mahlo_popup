@@ -1,11 +1,10 @@
 import threading
 import time
 import tkinter
-# import queue
 from collections import deque
 
 from flask_app import start_flask_app
-from main_window import dev_popup, dev_popup_empty
+from main_window import Popup
 
 # allow communication
 f2p_queue = deque()
@@ -19,7 +18,7 @@ flask_thread.start()
 while not f2p_queue:
     time.sleep(1)
 
-dev_popup_empty(inbound_queue=f2p_queue, outbound_queue=p2f_queue)
+Popup(inbound_queue=f2p_queue, outbound_queue=p2f_queue)
 
 # import subprocess
 #

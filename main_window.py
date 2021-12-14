@@ -12,7 +12,7 @@ from fresk.sqla_instance import fsa
 
 from log_setup import lg
 
-from dev_common import get_dummy_dict, get_empty_dict, recurse_hover, recurse_tk_structure, add_show_messages_button
+from dev_common import recurse_hover, recurse_tk_structure, add_show_messages_button
 
 # when called by RPC the directory may change and be unable to find the ttk theme file directory
 from popup_frame import DefectMessageFrame
@@ -60,13 +60,8 @@ class Popup(tk.Tk):
         # list of components that need to 'hide' when not the lam is running
         self.hideables = []
 
-        def show_hideables(event=None):
-            for hideable in self.hideables:
-                hideable.grid()
-            self.number_of_messages_button.grid_remove()
-            self.geometry('')  # grow to whatever size is needed for all the messages and other widgets
-
-        self.number_of_messages_button = add_show_messages_button(self, 0, show_hideables)
+        # self.
+        self.number_of_messages_button = add_show_messages_button(self, 0, self.show_hideables)
         self.number_of_messages_button.grid(row=0, column=0, sticky='nesw')
 
         self.columnconfigure(0, weight=1)  # to make the button able to fill the width
@@ -75,12 +70,11 @@ class Popup(tk.Tk):
         # where the messages about defect appear with their toggles/save buttons
         self.popup_frame = DefectMessageFrame(self, input_dict, **params)
         self.popup_frame.grid(row=1, column=0, sticky='nesw')
-
         self.hideables.append(self.popup_frame)
 
+        # the buttons that aren't for a specific popup (add, settings, etc)
         self.controls_panel = IndependentControlsPanel(self, 'Control Panel')
         self.controls_panel.grid(row=2, column=0, sticky='we')
-
         self.hideables.append(self.controls_panel)
 
         if input_dict is None:
@@ -89,8 +83,9 @@ class Popup(tk.Tk):
             self.hide_hideables()
         else:
             lg.debug('messages, showing hideables')
-            show_hideables()
+            self.show_hideables()
 
+        # TODO: would making the window minimize while the lam is running be good? it seems like it would
         # move the window to the front
         self.lift()
         self.attributes('-topmost', True)
@@ -118,6 +113,13 @@ class Popup(tk.Tk):
         self.after(1000, self.check_for_inbound_messages)
 
         self.mainloop()
+
+    def show_hideables(self, event=None):
+        """Show the defect message panels, control panel, etc."""
+        for hideable in self.hideables:
+            hideable.grid()
+        self.number_of_messages_button.grid_remove()
+        self.geometry('')  # grow to whatever size is needed for all the messages and other widgets
 
     def hide_hideables(self, event=None):
         """Hide the components that are supposed to hide when the window 'shrinks'.
@@ -195,16 +197,22 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         # self.dummy_label.grid(row=3, column=0)
 
         def add_new_defect():
+            """Add a new defect to the database & popup window."""
             with self.parent.flask_app.app_context():
                 new_defect = DefectModel.new_defect(record_creation_source='operator')
                 lg.debug(new_defect)
                 popup = self.parent.popup_frame
                 popup.current_defects.append(new_defect)
-                # popup.add_message_panel(new_defect)
                 popup.update_message_panels()
 
+        # add a new defect button
         self.add_defect_button = tk.ttk.Button(self, text='Add removed', command=add_new_defect)
         self.add_defect_button.grid(row=3, column=10)
+
+        # # hide button
+        # # getting an error claiming the parent doesn't have the method hide_hideables
+        # self.hide_button = tk.ttk.Button(self, text='Hide now', command=self.parent.hide_hideables)
+        # self.add_defect_button.grid(row=3, column=20)
 
 
 # TODO:
@@ -224,14 +232,14 @@ def dev_popup(json_str=None):
     pup = Popup(pup_dict)
 
 
-def dev_popup_empty(json_str=None, **kwargs):
-    # for development, a dummy dict
-    if json_str is None:
-        test_json_dict = get_empty_dict()
-        json_str = json.dumps(test_json_dict)
-    pup_dict = json.loads(json_str)
-    # pup = Popup(pup_dict)
-    Popup(**kwargs)
+# def dev_popup_empty(json_str=None, **kwargs):
+#     # for development, a dummy dict
+#     if json_str is None:
+#         test_json_dict = get_empty_dict()
+#         json_str = json.dumps(test_json_dict)
+#     pup_dict = json.loads(json_str)
+#     # pup = Popup(pup_dict)
+#     Popup(**kwargs)
 
 
 if __name__ == '__main__':

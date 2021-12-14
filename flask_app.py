@@ -126,7 +126,7 @@ def schedule_queue_watcher(in_message_queue, out_message_queue):
                 # time.sleep(10)
 
     from apscheduler.schedulers.background import BackgroundScheduler
-    scheduler = BackgroundScheduler(daemon=True)
+    scheduler = BackgroundScheduler(daemon=True, timezone='America/New_York')
     scheduler.add_job(regular_check_function, 'interval', seconds=10)
     scheduler.start()
 
