@@ -116,12 +116,13 @@ class DefectMessageFrame(ttk.Frame):
     #     get_message_dict(defect_id, 1, 'At {timestamp}\nthere were {len_meters} meters oospec!')
 
     def add_message_panel(self, defect):
-        self.message_panel_row += 1
-        self.current_defects.append(defect)
-        msg_frm = MessagePanel(self.main_frm, defect, self.message_panel_row, dt_format_str=self.dt_format_str,
-                               pad={'x': self.pad['x'], 'y': self.pad['y']},
-                               _wgt_styles=self._wgt_styles)
-        self.messages_frames.append(msg_frm)
+        if defect.id not in tuple(df.id for df in self.current_defects):
+            self.message_panel_row += 1
+            self.current_defects.append(defect)
+            msg_frm = MessagePanel(self.main_frm, defect, self.message_panel_row, dt_format_str=self.dt_format_str,
+                                   pad={'x': self.pad['x'], 'y': self.pad['y']},
+                                   _wgt_styles=self._wgt_styles)
+            self.messages_frames.append(msg_frm)
 
     # def refresh_data(self):
     #     """
