@@ -202,9 +202,9 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
                 new_defect = DefectModel.new_defect(record_creation_source='operator')
                 lg.debug(new_defect)
                 popup = self.parent.popup_frame
-                popup.current_defects.append(new_defect)
                 popup.update_message_panels()
 
+        # TODO: this may be adding multiple defects?
         # add a new defect button
         self.add_defect_button = tk.ttk.Button(self, text='Add removed', command=add_new_defect)
         self.add_defect_button.grid(row=3, column=10)
@@ -220,34 +220,3 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
 #  doing it too soon they wouldn't have a chance and could be disruptive
 #  respond (send it to a database?)
 #  check that this will work over ssl (opening in the normal session) otherwise probably flask
-
-
-def dev_popup(json_str=None):
-    # for development, a dummy dict
-    if json_str is None:
-        oospec_len_meters = 4.3
-        test_json_dict = get_dummy_dict(oospec_len_meters)
-        json_str = json.dumps(test_json_dict)
-    pup_dict = json.loads(json_str)
-    pup = Popup(pup_dict)
-
-
-# def dev_popup_empty(json_str=None, **kwargs):
-#     # for development, a dummy dict
-#     if json_str is None:
-#         test_json_dict = get_empty_dict()
-#         json_str = json.dumps(test_json_dict)
-#     pup_dict = json.loads(json_str)
-#     # pup = Popup(pup_dict)
-#     Popup(**kwargs)
-
-
-if __name__ == '__main__':
-    # if called from the command line (over ssl) parse the json to a dictionary
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--pup_json', help='A json string defining the popups to display.')
-    args = parser.parse_args()
-    json_str = args.pup_json
-
-    # dev_popup()
-    dev_popup_empty()

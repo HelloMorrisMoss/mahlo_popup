@@ -149,16 +149,20 @@ class MessagePanel(tk.ttk.LabelFrame):
         # msg_id = self._get_event_info(event)
         # removed_results_dict = self._removed_state_vars[msg_id]
         lg.debug(self.defect_interface)
-        self.defect_interface.entry_modified_ts = datetime.now()
+        now_ts = datetime.now()
+        self.defect_interface.entry_modified_ts = now_ts
+        self.defect_interface.operator_saved_time = now_ts
+
         # I don't love this parent.parent referencing, if the app changes (from flask being restarted) it would
         # automatically grab the new one if updated in the main window
+        lg.debug(self.parent.current_defects)
         with self.parent.parent.flask_app.app_context():
             self.defect_interface.save_to_database()
+            self.parent.current_defects.pop(self.parent.current_defects.index(self.defect_interface))
         self.destroy()
         lg.debug(self.parent.current_defects)
-        self.parent.current_defects.pop(self.parent.current_defects.index(self.defect_interface))
-        lg.debug(self.parent.current_defects)
-        # TODO: save to sqlite database, then try to send all items unsent in the db
+        # TODO: save to sqlite database, then try to send all items unsent in the db; does it have to be sqlite?
+        #  can we just install postgres on the hmi?
 
     def _add_foam_removed_toggle_selectors(self, parent):
         """Add the toggle buttons frame to the parent frame.

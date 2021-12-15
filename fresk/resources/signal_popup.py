@@ -4,7 +4,6 @@ from flask import g
 from flask_restful import reqparse, Resource
 
 from log_setup import lg
-from main_window import dev_popup
 
 
 class Popup(Resource):

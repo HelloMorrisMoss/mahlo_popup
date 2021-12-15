@@ -106,3 +106,8 @@ Ignition end of things brainstorming:
 * need to signal that the laminator is starting and stopping
   * this is what the flask server was for initially, use post/put to send a json message indicating start or stop
     * how long between start/stop and the popup shows the change? (I think on the tkinter end the queue check can be scheduled in ms)
+
+12/15 todo:
+* new defect needs to get current values from tag history database (or if we get the webdev module, from Ignition)
+* a new defect in an open window, the window needs to resize to accommodate
+* new defect button may be adding multiple new defects?

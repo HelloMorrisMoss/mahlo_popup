@@ -45,6 +45,7 @@ class DefectModel(fsa.Model):
     entry_modified_ts = fsa.Column(fsa.DateTime(timezone=True), server_default='''NOW()''')
     record_creation_source = fsa.Column(fsa.String(), server_default='''None''')
     marked_for_deletion = fsa.Column(fsa.Boolean, server_default='''False''')
+    operator_saved_time = fsa.Column(fsa.DateTime(timezone=True))
 
     flask_sqlalchemy_instance = fsa
 
@@ -64,12 +65,16 @@ class DefectModel(fsa.Model):
 
     @classmethod
     def find_new(cls):
-        """Get a list of DefectModel objects where the creation and modification times are the same.
+        """Get a list of DefectModel objects that are new.
+        New here is defined as the creation and modification times are the same or have no operator_saved_time.
+        They will be ordered from oldest to newest.
 
         :return: list, [<DefectModel 1>, <DefectModel 2>]
         """
-        # return cls.query.filter(DefectModel.entry_created_ts=DefectModel.entry_modified_ts).all()
-        return cls.query.filter(DefectModel.entry_modified_ts == DefectModel.entry_created_ts).all()
+
+        return cls.query.filter(DefectModel.operator_saved_time is None or
+                                DefectModel.entry_modified_ts == DefectModel.entry_created_ts).order_by(
+                                DefectModel.entry_created_ts.desc()).all()
 
     @classmethod
     def find_all(cls):

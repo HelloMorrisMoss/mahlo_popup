@@ -69,6 +69,7 @@ class DefectMessageFrame(ttk.Frame):
 
         # add_show_messages_button(self, self.focus_gained_handler)
 
+        # this is a list of DefectModels
         self.current_defects = []
         self.message_panel_row = 0
 
@@ -93,7 +94,8 @@ class DefectMessageFrame(ttk.Frame):
 
         lg.debug('new defects: %s', new_defs)
         for defect in new_defs:
-            if defect.id not in self.current_defects:
+            # if defect.id not in [deft.id for deft in self.current_defects]:
+            if defect not in self.current_defects:
                 lg.debug('New defect found')
                 self.add_message_panel(defect)
             else:
@@ -115,7 +117,7 @@ class DefectMessageFrame(ttk.Frame):
 
     def add_message_panel(self, defect):
         self.message_panel_row += 1
-        self.current_defects.append(defect.id)
+        self.current_defects.append(defect)
         msg_frm = MessagePanel(self.main_frm, defect, self.message_panel_row, dt_format_str=self.dt_format_str,
                                pad={'x': self.pad['x'], 'y': self.pad['y']},
                                _wgt_styles=self._wgt_styles)
