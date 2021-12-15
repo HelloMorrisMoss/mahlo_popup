@@ -207,7 +207,7 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         # TODO: this may be adding multiple defects?
         # add a new defect button
         self.add_defect_button = tk.ttk.Button(self, text='Add removed', command=add_new_defect)
-        self.add_defect_button.grid(row=3, column=10)
+        self.add_defect_button.grid(row=3, column=10, padx=self.parent.pad['x'], pady=self.parent.pad['y'])
 
         # # hide button
         # # getting an error claiming the parent doesn't have the method hide_hideables
