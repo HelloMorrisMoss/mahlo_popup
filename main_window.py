@@ -57,20 +57,21 @@ class Popup(tk.Tk):
 
         params = {'style_settings': {'pad': self.pad, '_wgt_styles': self._wgt_styles}}
 
-        # list of components that need to 'hide' when not the lam is running
+        # list of components that need to 'hide' when the lam is running
         self.hideables = []
 
-        # self.
-        self.number_of_messages_button = add_show_messages_button(self, 0, self.show_hideables)
-        self.number_of_messages_button.grid(row=0, column=0, sticky='nesw')
-
-        self.columnconfigure(0, weight=1)  # to make the button able to fill the width
-        self.rowconfigure(0, weight=1)  # to make the button able to fill the height
 
         # where the messages about defect appear with their toggles/save buttons
         self.popup_frame = DefectMessageFrame(self, input_dict, **params)
         self.popup_frame.grid(row=1, column=0, sticky='nesw')
         self.hideables.append(self.popup_frame)
+
+        # the button that shows while inactive, displays the number of new defects
+        self.number_of_messages_button = add_show_messages_button(self, 0, self.show_hideables)
+        self.number_of_messages_button.grid(row=0, column=0, sticky='nesw')
+        self.subscribe_message_button_to_defect_display_count()
+        self.columnconfigure(0, weight=1)  # to make the button able to fill the width
+        self.rowconfigure(0, weight=1)  # to make the button able to fill the height
 
         # the buttons that aren't for a specific popup (add, settings, etc)
         self.controls_panel = IndependentControlsPanel(self, 'Control Panel')
@@ -79,13 +80,13 @@ class Popup(tk.Tk):
 
         if input_dict is None:
             lg.debug('no messages, hiding hideables')
-            # lg.debug(input_dict['messages'])
             self.hide_hideables()
         else:
             lg.debug('messages, showing hideables')
             self.show_hideables()
 
-        # TODO: would making the window minimize while the lam is running be good? it seems like it would
+        # TODO: would making the window minimize (not just shrink) while the lam is running be good?
+        #  it seems like it would
         # move the window to the front
         self.lift()
         self.attributes('-topmost', True)
@@ -113,6 +114,14 @@ class Popup(tk.Tk):
         self.after(1000, self.check_for_inbound_messages)
 
         self.mainloop()
+
+    def subscribe_message_button_to_defect_display_count(self):
+        """Subscribes the self.number_of_messages_button to the length of the defect list.
+         The list calls a function to update the text on the button when the number of defects change."""
+        def update_function(value):
+            """Update the number_of_messages_button's text to the number of defects displayed."""
+            self.number_of_messages_button.config(text=str(value))
+        self.popup_frame.current_defects.subscribe(self.number_of_messages_button, update_function)
 
     def show_hideables(self, event=None):
         """Show the defect message panels, control panel, etc."""
@@ -213,7 +222,6 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         # # getting an error claiming the parent doesn't have the method hide_hideables
         # self.hide_button = tk.ttk.Button(self, text='Hide now', command=self.parent.hide_hideables)
         # self.add_defect_button.grid(row=3, column=20)
-
 
 # TODO:
 #  need to talk to some operators about how long until it makes sense to popup

@@ -6,6 +6,7 @@ from fresk.models.defect import DefectModel
 from log_setup import lg
 # from main_window import hover_enter_factory
 from msg_panel import MessagePanel
+from publishing_vars import PublishingLengthList
 
 
 class DefectMessageFrame(ttk.Frame):
@@ -70,7 +71,7 @@ class DefectMessageFrame(ttk.Frame):
         # add_show_messages_button(self, self.focus_gained_handler)
 
         # this is a list of DefectModels
-        self.current_defects = []
+        self.current_defects = PublishingLengthList()
         self.message_panel_row = 0
 
         # self.add_message_panels(init_messages)
