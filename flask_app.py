@@ -6,6 +6,7 @@ from flask import Flask, g
 from flask_restful import Api
 import waitress
 
+from fresk.queuesholder import queues
 from fresk.resources.defect import Defect, DefectList
 from fresk.resources.signal_popup import Popup
 from fresk.sqla_instance import fsa
@@ -62,11 +63,12 @@ api.add_resource(Popup, '/popup')
 api.add_resource(DefectList, '/defects')
 
 
-
 def start_flask_app(in_message_queue=None, out_message_queue=None):
     if in_message_queue is not None:
         app_context = app.app_context()
         with app_context:
+            queues.in_message_queue = in_message_queue
+            queues.out_message_queue = out_message_queue
             g.in_message_queue = in_message_queue
             g.out_message_queue = out_message_queue
             g.out_message_queue.append({'flask_app': app})

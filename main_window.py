@@ -92,7 +92,7 @@ class Popup(tk.Tk):
         self.attributes('-topmost', True)
         # self.root.after_idle(self.root.attributes, '-topmost', False)
 
-        self.bind("<FocusOut>", self.hide_hideables)
+        # self.bind("<FocusOut>", self.hide_hideables)
         # self.bind("<FocusIn>", show_hideables)
 
         lg.debug(self.hideables)
@@ -152,48 +152,56 @@ class Popup(tk.Tk):
             lg.debug('new messages: %s', self.new_messages)
 
             # if we haven't gotten the flask app via the queue yet, look for it
-            if self.flask_app is None:
-                for mindex, msg in enumerate(self.new_messages):
+            for mindex, msg in enumerate(self.new_messages):
+                if self.flask_app is None:
                     if msg.get('flask_app'):
                         self.flask_app = self.new_messages.pop(mindex)['flask_app']
                         self.popup_frame.update_message_panels()
-            else:
-                # if we do have a flask app, use it for the messages
-                # with self.flask_app:
-                # # TODO: this needs to pop the message
-                # defmodel = self.new_messages[0]['defect_model']
-                # session = self.new_messages[0]['session']
-                # app_context = self.new_messages[0]['flask_context']
-                # # pprint(defmodel.json())
-                # defmodel.bursting = False
-                # from pprint import pprint
-                # pprint(dir())
-                #
-                # # with app_context:
-                # #     defmodel.save_to_database()
-                # # with self.flask_app:
-                # #     defmodel.save_to_database()
-                # TODO: now it seems so obvious... once you have access to the flask app, just import the
-                #  model and create the context here
-                #  ps: this is still a context passed through, change it for the app so each time it can
-                #  be a new session - or can the app just be imported?
-                with self.flask_app.app_context():
-                    # this is just for testing, it flips the bursting column boolean
-                    # defm = DefectModel.find_by_id(8)
-                    # defm.bursting = not defm.bursting
-                    # defm.save_to_database()
+                elif msg.get('action'):
+                    action_str = self.new_messages.pop(mindex)['action']
+                    if action_str == 'shrink':
+                        self.hide_hideables()
+                    elif action_str == 'show':
+                        self.show_hideables()
 
-                    # this is effectively getting all the rows as defect models
-                    # pprint(DefectModel.find_all())
-
-                    # # this is getting all the defects that have not been modified
-                    new_defects = DefectModel.find_new()
-                    # pprint(new_defects)
-                    # # this is changing one of their modified times so the results change
-            #         # new_defects[0].entry_modified_ts = datetime.datetime.now()
-            #         # new_defects[0].save_to_database()
-            # # self.popup_frame.update_message_panels()
-        self.after(5000, self.check_for_inbound_messages)
+        # else:
+            #     # if we do have a flask app, use it for the messages
+            #     # with self.flask_app:
+            #     # # TODO: this needs to pop the message
+            #     # defmodel = self.new_messages[0]['defect_model']
+            #     # session = self.new_messages[0]['session']
+            #     # app_context = self.new_messages[0]['flask_context']
+            #     # # pprint(defmodel.json())
+            #     # defmodel.bursting = False
+            #     # from pprint import pprint
+            #     # pprint(dir())
+            #     #
+            #     # # with app_context:
+            #     # #     defmodel.save_to_database()
+            #     # # with self.flask_app:
+            #     # #     defmodel.save_to_database()
+            #     # TODO: now it seems so obvious... once you have access to the flask app, just import the
+            #     #  model and create the context here
+            #     #  ps: this is still a context passed through, change it for the app so each time it can
+            #     #  be a new session - or can the app just be imported?
+            #     # with self.flask_app.app_context():
+            #
+            #         # this is just for testing, it flips the bursting column boolean
+            #         # defm = DefectModel.find_by_id(8)
+            #         # defm.bursting = not defm.bursting
+            #         # defm.save_to_database()
+            #
+            #         # this is effectively getting all the rows as defect models
+            #         # pprint(DefectModel.find_all())
+            #
+            #         # # this is getting all the defects that have not been modified
+            #         # new_defects = DefectModel.find_new()
+            #         # pprint(new_defects)
+            #         # # this is changing one of their modified times so the results change
+            # #         # new_defects[0].entry_modified_ts = datetime.datetime.now()
+            # #         # new_defects[0].save_to_database()
+            # # # self.popup_frame.update_message_panels()
+        self.after(500, self.check_for_inbound_messages)
         # self.popup_frame.add_message_panels(new_messages)
 
 

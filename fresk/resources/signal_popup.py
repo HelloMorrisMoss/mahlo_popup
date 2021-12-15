@@ -4,11 +4,12 @@ from flask import g
 from flask_restful import reqparse, Resource
 
 from log_setup import lg
+from fresk.queuesholder import queues
 
 
 class Popup(Resource):
-    def __init__(self):
-        pass
+    # def __init__(self):
+    #     pass
         # if getattr(g, 'popup') is None:
         #     self.get()
         # self.popup = g.popup
@@ -33,17 +34,17 @@ class Popup(Resource):
         # g.popup = dev_popup(json.dumps(get_dummy_dict(5.6)))
         raise NotImplementedError('This had been built with dicts and has not been remade using sqlalchemy version.')
 
-    def put(self):
+    def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument('action', type=str, required=True, help='You must provide a command action.')
 
         data = parser.parse_args()
 
         if data['action'] == 'shrink':
-            g.popup.shrink()
+            queues.out_message_queue.append({'action': 'shrink'})
             return {'defect_instance': 'Shrinking popup window.'}, 200
 
         elif data['action'] == 'show':
             lg.debug('showing popup')
-            g.popup.show()
+            queues.out_message_queue.append({'action': 'show'})
             return {'defect_instance': 'Showing popup window.'}, 200

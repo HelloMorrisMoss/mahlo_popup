@@ -110,4 +110,4 @@ Ignition end of things brainstorming:
 12/15 todo:
 * new defect needs to get current values from tag history database (or if we get the webdev module, from Ignition)
 * a new defect in an open window, the window needs to resize to accommodate
-* new defect button may be adding multiple new defects?
+* new defect button may be adding multiple new defects? fixed
