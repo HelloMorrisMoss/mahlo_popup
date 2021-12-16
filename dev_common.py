@@ -1,7 +1,7 @@
 """For development helpers, in their own module to avoid circular imports and keep things organized."""
+import os
 import tkinter as tk
 from tkinter import ttk
-from datetime import datetime
 
 
 def recurse_tk_structure(obj: tk.Widget, name='starting_level', indent=0, print_structure=True, apply_function=None,
@@ -104,3 +104,19 @@ class StrCol(tk.StringVar):
             new_bool = False
         setattr(self.defect_interface, self.column, new_bool)
         super().set(value)
+
+
+reasons = (
+    'belt_marks', 'bursting', 'contamination', 'curling', 'delamination', 'lost_edge', 'puckering',
+    'shrinkage',
+    'thickness', 'wrinkles', 'other')
+
+
+def style_component(component, path_override=''):
+    """Add the styling for the component.
+
+    :param component: tkinter.widget
+    """
+    component.tk.call("source", os.path.join(path_override, "Azure-ttk-theme-main/Azure-ttk-theme-main/azure.tcl"))
+    component.tk.call("set_theme", "dark")
+    component._wgt_styles = {'toggle': 'Switch.TCheckbutton', 'labelframe': 'Card.TFrame'}

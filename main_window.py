@@ -3,11 +3,11 @@
 import os
 import tkinter as tk
 
-from dev_common import add_show_messages_button, recurse_hover, recurse_tk_structure
+from dev_common import add_show_messages_button, recurse_hover, recurse_tk_structure, style_component
 from fresk.models.defect import DefectModel
 from log_setup import lg
 # when called by RPC the directory may change and be unable to find the ttk theme file directory
-from msg_panel import SelectDefectAttributes
+from msg_window.defect_attributes import SelectDefectAttributes
 from popup_frame import DefectMessageFrame
 
 os.chdir(r'C:\Users\lmcglaughlin\PycharmProjects\mahlo_popup')
@@ -41,17 +41,14 @@ class Popup(tk.Tk):
         # # todo: publishing var (possibly nested) to go from the length(self.current_defects) -> the show button label
 
         # styling
-        self.tk.call("source", "Azure-ttk-theme-main/Azure-ttk-theme-main/azure.tcl")
-        self.tk.call("set_theme", "dark")
+        style_component(self)
         # frame padding
         self.pad = dict(x=5, y=3)
-        self._wgt_styles = {'toggle': 'Switch.TCheckbutton', 'labelframe': 'Card.TFrame'}
 
         params = {'style_settings': {'pad': self.pad, '_wgt_styles': self._wgt_styles}}
 
         # list of components that need to 'hide' when the lam is running
         self.hideables = []
-
 
         # where the messages about defect appear with their toggles/save buttons
         self.popup_frame = DefectMessageFrame(self, input_dict, **params)
@@ -110,9 +107,11 @@ class Popup(tk.Tk):
     def subscribe_message_button_to_defect_display_count(self):
         """Subscribes the self.number_of_messages_button to the length of the defect list.
          The list calls a function to update the text on the button when the number of defects change."""
+
         def update_function(value):
             """Update the number_of_messages_button's text to the number of defects displayed."""
             self.number_of_messages_button.config(text=str(value))
+
         self.popup_frame.current_defects.subscribe(self.number_of_messages_button, update_function)
 
     def show_hideables(self, event=None):
