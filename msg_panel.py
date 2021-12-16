@@ -136,11 +136,11 @@ class MessagePanel(tk.ttk.LabelFrame):
         self.add_save_button(send_button_frame, send_grid_params)
 
         # add the prompt for roll count change button
-        num_button = tk.ttk.Button(send_button_frame, style='Accent.TButton', text='# of Rolls',
-                                   command=self.prompt_for_rolls_count)
-        send_grid_params.update(row=1)
-
-        num_button.grid(**send_grid_params)
+        # num_button = tk.ttk.Button(send_button_frame, style='Accent.TButton', text='# of Rolls',
+        #                            command=self.prompt_for_rolls_count)
+        # send_grid_params.update(row=1)
+        #
+        # num_button.grid(**send_grid_params)
 
     def prompt_for_rolls_count(self):
         """Prompt for the number of rolls and change the toggles to match. Do nothing if cancel is selected."""

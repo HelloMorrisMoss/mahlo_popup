@@ -39,15 +39,25 @@ class NumberPrompt(tk.ttk.LabelFrame):
     """Show a tk popup window prompting for a number between 1 and 5, returning that value when pressed."""
 
     def __init__(self, parent, defect):
-        super().__init__(parent, text='Number of finished good rolls')
+        super().__init__(parent, text='Number of finished good rolls', style='Card.TFrame')
         row = 0
         self.defect = defect
+        self._style = tk.ttk.Style()
+        self._style.configure('TButton', background='black')
 
         for col in range(1, 6):
             button_label_text = str(col)
-            num_button = tk.ttk.Button(self, text=button_label_text)
+
+            # TODO: this is the way to change the 'active' button, the blue is with the accent style, gray without
+            if col % 2 == 0:
+                num_button = tk.ttk.Button(self, text=button_label_text, style='Accent.TButton')
+            else:
+                num_button = tk.ttk.Button(self, text=button_label_text)
             num_button.bind('<Button-1>', self.return_button_val)
-            num_button.grid(row=row, column=col)
+            num_button.grid(row=row, column=col, padx=2, pady=2)
+            # if col % 2 == 0:
+            #     num_button.active = True
+
         self.value = tk.IntVar()
 
     def return_button_val(self, event):
@@ -96,7 +106,7 @@ class DefectTypePanel(tk.ttk.LabelFrame):
             button_label_text = reason if reason != 0 else 'Cancel'
             reason_button = tk.ttk.Button(self, text=button_label_text)
             reason_button.bind('<Button-1>', self.return_button_val)
-            reason_button.grid(row=row, column=col)
+            reason_button.grid(row=row, column=col, sticky='ew', padx=2, pady=2)
             col += 1
             if col > 5:
                 row += 1
