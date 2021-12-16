@@ -53,7 +53,7 @@ class MessagePanel(tk.ttk.LabelFrame):
     #  change defect length removed
 
         # the label that displays the defect_instance
-        self.message_label = self.add_message_display(self)
+        self.message_label = self.add_message_display_label(self)
         self.update_message_text()
 
         self.add_buttons(self)
@@ -89,14 +89,8 @@ class MessagePanel(tk.ttk.LabelFrame):
     def un_hide(self):
         self.grid()
 
-    def add_message_display(self, parent):
-        # msg = message['msg_txt']
-        def get_removal_reason(defect):
-            for reason in reasons:
-                if getattr(defect, reason):
-                    return reason
+    def add_message_display_label(self, parent):
 
-        # defect_type = get_removal_reason(self.defect_interface)
         # defect_type = self.defect_interface.defect_type
         label = tk.ttk.Label(parent)
         # self.update_message_text(defect_type)
@@ -136,8 +130,7 @@ class MessagePanel(tk.ttk.LabelFrame):
     def add_action_buttons(self, parent):
         """Add the action button frame and buttons.
 
-        :param message:
-        :param parent:
+        :param parent: tkinter container
         """
 
         send_button_frame = tk.ttk.Frame(parent, style=self._wgt_styles['labelframe'])
@@ -166,9 +159,8 @@ class MessagePanel(tk.ttk.LabelFrame):
     def add_save_button(self, parent, send_grid_params):
         """Add the save/send button.
 
-        :param message:
-        :param parent:
-        :param send_grid_params:
+        :param parent: tkinter container
+        :param send_grid_params: dict, kwargs for the buttons .grid method.
         """
         send_btn = tk.ttk.Button(parent, style='Accent.TButton', text='Save', command=self.save_response)
         send_btn.grid(**send_grid_params)

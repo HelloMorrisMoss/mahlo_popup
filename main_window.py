@@ -15,6 +15,7 @@ from log_setup import lg
 from dev_common import recurse_hover, recurse_tk_structure, add_show_messages_button
 
 # when called by RPC the directory may change and be unable to find the ttk theme file directory
+from msg_panel import DefectTypePrompt
 from popup_frame import DefectMessageFrame
 from publishing_vars import publishing_var
 
@@ -163,46 +164,7 @@ class Popup(tk.Tk):
                         self.hide_hideables()
                     elif action_str == 'show':
                         self.show_hideables()
-
-        # else:
-            #     # if we do have a flask app, use it for the messages
-            #     # with self.flask_app:
-            #     # # TODO: this needs to pop the message
-            #     # defmodel = self.new_messages[0]['defect_model']
-            #     # session = self.new_messages[0]['session']
-            #     # app_context = self.new_messages[0]['flask_context']
-            #     # # pprint(defmodel.json())
-            #     # defmodel.bursting = False
-            #     # from pprint import pprint
-            #     # pprint(dir())
-            #     #
-            #     # # with app_context:
-            #     # #     defmodel.save_to_database()
-            #     # # with self.flask_app:
-            #     # #     defmodel.save_to_database()
-            #     # TODO: now it seems so obvious... once you have access to the flask app, just import the
-            #     #  model and create the context here
-            #     #  ps: this is still a context passed through, change it for the app so each time it can
-            #     #  be a new session - or can the app just be imported?
-            #     # with self.flask_app.app_context():
-            #
-            #         # this is just for testing, it flips the bursting column boolean
-            #         # defm = DefectModel.find_by_id(8)
-            #         # defm.bursting = not defm.bursting
-            #         # defm.save_to_database()
-            #
-            #         # this is effectively getting all the rows as defect models
-            #         # pprint(DefectModel.find_all())
-            #
-            #         # # this is getting all the defects that have not been modified
-            #         # new_defects = DefectModel.find_new()
-            #         # pprint(new_defects)
-            #         # # this is changing one of their modified times so the results change
-            # #         # new_defects[0].entry_modified_ts = datetime.datetime.now()
-            # #         # new_defects[0].save_to_database()
-            # # # self.popup_frame.update_message_panels()
         self.after(500, self.check_for_inbound_messages)
-        # self.popup_frame.add_message_panels(new_messages)
 
 
 class IndependentControlsPanel(tk.ttk.LabelFrame):
@@ -210,16 +172,14 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         super().__init__(parent_container, text=text)
         self.parent = parent_container
 
-        # self.dummy_label = tk.ttk.Label(self, text='words on a label')
-        # self.dummy_label.grid(row=3, column=0)
-
         def add_new_defect():
             """Add a new defect to the database & popup window."""
             with self.parent.flask_app.app_context():
-                new_defect = DefectModel.new_defect(record_creation_source='operator')
-                lg.debug(new_defect)
-                popup = self.parent.popup_frame
-                popup.update_message_panels()
+                defect_type = DefectTypePrompt(self).show()
+                if defect_type != 'cancel':
+                    DefectModel.new_defect(record_creation_source='operator', defect_type=defect_type)
+                    popup = self.parent.popup_frame
+                    popup.update_message_panels()
 
         # TODO: this may be adding multiple defects?
         # add a new defect button
