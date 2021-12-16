@@ -12,6 +12,11 @@ lg.setLevel(logging.DEBUG)
 
 lg.debug('logging in msg_panel')
 
+reasons = (
+    'belt_marks', 'bursting', 'contamination', 'curling', 'delamination', 'lost_edge', 'puckering',
+    'shrinkage',
+    'thickness', 'wrinkles', 'other')
+
 
 class MessagePanel(tk.ttk.LabelFrame):
     def __init__(self, parent, defect_instance=None, row=0, **kwargs):
@@ -83,10 +88,6 @@ class MessagePanel(tk.ttk.LabelFrame):
     def add_message_display(self, parent):
         # msg = message['msg_txt']
         def get_removal_reason(defect):
-            reasons = (
-                'belt_marks', 'bursting', 'contamination', 'curling', 'delamination', 'lost_edge', 'puckering',
-                'shrinkage',
-                'thickness', 'wrinkles', 'other')
             for reason in reasons:
                 if getattr(defect, reason):
                     return reason
@@ -137,7 +138,7 @@ class MessagePanel(tk.ttk.LabelFrame):
     def prompt_for_rolls_count(self):
         """Prompt for the number of rolls and change the toggles to match. Do nothing if cancel is selected."""
 
-        new_count = NumberPrompt(self._mp_root).show()
+        new_count = DefectTypePrompt(self._mp_root).show()
         self.defect_interface.rolls_of_product_post_slit = new_count
         if new_count:
             self.change_toggle_count(new_count)
@@ -436,3 +437,51 @@ class NumberPrompt(tk.Toplevel):
         self.focus_force()
         self.wait_window()
         return self.value.get()
+
+
+class DefectTypePrompt(tk.Toplevel):
+    """Show a tk popup window prompting for a defect type, returning that value when pressed. Cancel as 'none'."""
+
+    def __init__(self, parent, prompt=None):
+        tk.Toplevel.__init__(self, parent)
+        row = 0
+        col = 0
+
+        reasons_and_cancel = reasons + ('cancel',)
+
+        for rn, reason in enumerate(reasons_and_cancel):
+            button_label_text = reason if reason != 0 else 'Cancel'
+            reason_button = tk.ttk.Button(self, text=button_label_text)
+            reason_button.bind('<Button-1>', self.return_button_val)
+            reason_button.grid(row=row, column=col)
+            col += 1
+            if col > 2:
+                row += 1
+                col = 0
+
+        self.value = tk.StringVar()
+
+    def return_button_val(self, event):
+        """Set self.value to the widget['text'] value, or 0 if Cancel/anything without and int castable text is pressed.
+
+        :param event: tkinter.Event
+        """
+        try:
+            self.value.set(event.widget['text'])
+        except ValueError:
+            self.value.set('none')
+        self.destroy()
+
+    def show(self):
+        self.wm_deiconify()
+        self.focus_force()
+        self.wait_window()
+        return self.value.get()
+
+
+if __name__ == '__main__':
+    root = tk.Tk()
+    show_button = tk.Button(root, command=lambda: print(DefectTypePrompt(root).show()))
+    show_button.pack()
+    # win = DefectTypePrompt(root)
+    root.mainloop()

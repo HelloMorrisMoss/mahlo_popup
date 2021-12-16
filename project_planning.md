@@ -111,3 +111,7 @@ Ignition end of things brainstorming:
 * new defect needs to get current values from tag history database (or if we get the webdev module, from Ignition)
 * a new defect in an open window, the window needs to resize to accommodate
 * new defect button may be adding multiple new defects? fixed
+
+12/16 todo:
+* replace the message label with a tk.Text so that the important bits can be bolded
+* need the basic functionality for defect reason popup. fixed
