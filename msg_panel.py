@@ -1,8 +1,7 @@
+import logging
 import tkinter as tk
 from datetime import datetime
 from tkinter import ttk
-
-import logging
 
 from dev_common import StrCol
 
@@ -16,6 +15,34 @@ reasons = (
     'belt_marks', 'bursting', 'contamination', 'curling', 'delamination', 'lost_edge', 'puckering',
     'shrinkage',
     'thickness', 'wrinkles', 'other')
+
+
+class LengthButton(tk.ttk.Button):
+    def __init__(self, parent, defect, direction_str, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+        self.defect = defect
+        self.parent = parent
+        if direction_str == 'up':
+            self.increment = 1
+        elif direction_str == 'down':
+            self.increment = -1
+
+        def increment(event=None):
+            defect.length_of_defect_meters += self.increment
+
+        self.bind('<Button-1>', increment)
+
+
+class UpDownButtonFrame(tk.ttk.LabelFrame):
+    def __init__(self, parent, defect, *args, **kwargs):
+        super().__init__(parent, text='Foam Problem')
+        self.defect = defect
+
+        # what's up button? the button that makes the length go up, and down down
+        self.up_button = LengthButton(self, defect, 'up')
+        self.up_button.grid(row=0, column=0)
+        self.down_button = LengthButton(self, defect, 'down')
+        self.down_button.grid(row=1, column=0)
 
 
 class MessagePanel(tk.ttk.LabelFrame):
@@ -49,8 +76,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         self._removed_vals = {k: StrCol(self.defect_interface, col) for k, col in sides_to_defect_columns_dict.items()}
         self._removed_vals.update({'all': tk.StringVar()})
 
-    # TODO: change defect type needs to update text,
-    #  change defect length removed
+        # TODO: change defect length removed
 
         # the label that displays the defect_instance
         self.message_label = self.add_message_display_label(self)
@@ -96,14 +122,14 @@ class MessagePanel(tk.ttk.LabelFrame):
         # self.update_message_text(defect_type)
         label.grid(column=0, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="w")
 
-        # add a popup to change the defect reason when clicking the label
-        def change_reason(event=None):
+        # add a popup to change the defect attributes when clicking the label
+        def change_attributes(event=None):
             lg.debug('changing defect type')
-            new_reason = DefectTypePrompt(self._mp_root).show()
-            self.defect_interface.defect_type = new_reason
+            SelectDefectAttributes(self._mp_root, self.defect_interface).show()
             self.update_message_text()
+            self.change_toggle_count()
 
-        label.bind('<Button-1>', change_reason)
+        label.bind('<Button-1>', change_attributes)
         return label
 
     def update_message_text(self):
@@ -154,7 +180,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         new_count = NumberPrompt(self._mp_root).show()
         self.defect_interface.rolls_of_product_post_slit = new_count
         if new_count:
-            self.change_toggle_count(new_count)
+            self.change_toggle_count()
 
     def add_save_button(self, parent, send_grid_params):
         """Add the save/send button.
@@ -300,11 +326,8 @@ class MessagePanel(tk.ttk.LabelFrame):
         """Destroy the current button framer for this defect_instance panel."""
         self.btn_frame.destroy()
 
-    def change_toggle_count(self, new_count):
-        """Change the number of toggle-buttons on the the foam removed toggles frame.
-
-        :param new_count: int, the number of toggles to use.
-        """
+    def change_toggle_count(self):
+        """Change the number of toggle-buttons on the the foam removed toggles frame."""
         self.destroy_toggle_panel()
         self._add_foam_removed_toggle_selectors(self)
 
@@ -419,12 +442,13 @@ class MessagePanel(tk.ttk.LabelFrame):
         button.bind("<Button-1>", toggle_me)
 
 
-class NumberPrompt(tk.Toplevel):
+class NumberPrompt(tk.ttk.LabelFrame):
     """Show a tk popup window prompting for a number between 1 and 5, returning that value when pressed. Cancel as 0."""
 
-    def __init__(self, parent, prompt=None):
-        tk.Toplevel.__init__(self, parent)
+    def __init__(self, parent, defect):
+        super().__init__(parent, text='Number of finished good rolls')
         row = 0
+        self.defect = defect
 
         for col in range(0, 6):
             button_label_text = str(col) if col != 0 else 'Cancel'
@@ -438,11 +462,24 @@ class NumberPrompt(tk.Toplevel):
 
         :param event: tkinter.Event
         """
-        try:
-            self.value.set(int(event.widget['text']))
-        except ValueError:
-            self.value.set(0)
-        self.destroy()
+        self.defect.rolls_of_product_post_slit = int(event.widget['text'])
+
+
+class SelectDefectAttributes(tk.Toplevel):
+    def __init__(self, parent, defect, *args, **kwargs):
+        tk.Toplevel.__init__(self, parent, *args, **kwargs)  # this is required not super()
+        self.defect = defect
+
+        self.defect_type_panel = DefectTypePanel(self, defect)
+        self.defect_type_panel.grid(row=0, column=1)
+
+        self.rolls_count_selector = NumberPrompt(self, defect)
+        self.rolls_count_selector.grid(row=1, column=1)
+
+        self.length_buttons = UpDownButtonFrame(self, defect)
+        self.length_buttons.grid(row=0, column=0)
+
+        self.value = tk.IntVar()
 
     def show(self):
         self.wm_deiconify()
@@ -451,11 +488,12 @@ class NumberPrompt(tk.Toplevel):
         return self.value.get()
 
 
-class DefectTypePrompt(tk.Toplevel):
+class DefectTypePanel(tk.ttk.LabelFrame):
     """Show a tk popup window prompting for a defect type, returning that value when pressed. Cancel as 'none'."""
 
-    def __init__(self, parent, prompt=None):
-        tk.Toplevel.__init__(self, parent)
+    def __init__(self, parent, defect, *args, **kwargs):
+        super().__init__(parent, text='Defect Type', *args, **kwargs)
+        self.defect = defect
         row = 0
         col = 0
 
@@ -478,22 +516,31 @@ class DefectTypePrompt(tk.Toplevel):
 
         :param event: tkinter.Event
         """
-        try:
-            self.value.set(event.widget['text'])
-        except ValueError:
-            self.value.set('none')
-        self.destroy()
-
-    def show(self):
-        self.wm_deiconify()
-        self.focus_force()
-        self.wait_window()
-        return self.value.get()
+        self.defect.defect_type = event.widget['text']
 
 
 if __name__ == '__main__':
+    class DummyDefect(object):
+        def __init__(self):
+            self.defect_type = ''
+            self.rolls_of_product_post_slit = 3
+            self.length_of_defect_meters = 1
+
+
     root = tk.Tk()
-    show_button = tk.Button(root, command=lambda: print(DefectTypePrompt(root).show()))
+    # show_button = tk.Button(root, command=lambda: print(DefectTypePrompt(root).show()))
+    defect1 = DummyDefect()
+    print(defect1.__dict__)
+
+
+    def show_win():
+        return SelectDefectAttributes(root, defect=defect1).show()
+        # SelectDefectAttributes(root)
+
+
+    show_button = tk.Button(root, command=show_win)
+
     show_button.pack()
     # win = DefectTypePrompt(root)
     root.mainloop()
+    print(defect1.__dict__)

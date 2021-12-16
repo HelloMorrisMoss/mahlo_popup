@@ -1,23 +1,14 @@
 """To add a popup window to the Mahlo HMI PC at the laminators. Designed to be called from the command line over ssl."""
 
-import argparse
-import datetime
-import json
-import tkinter as tk
 import os
-from pprint import pprint
+import tkinter as tk
 
+from dev_common import add_show_messages_button, recurse_hover, recurse_tk_structure
 from fresk.models.defect import DefectModel
-from fresk.sqla_instance import fsa
-
 from log_setup import lg
-
-from dev_common import recurse_hover, recurse_tk_structure, add_show_messages_button
-
 # when called by RPC the directory may change and be unable to find the ttk theme file directory
-from msg_panel import DefectTypePrompt
+from msg_panel import SelectDefectAttributes
 from popup_frame import DefectMessageFrame
-from publishing_vars import publishing_var
 
 os.chdir(r'C:\Users\lmcglaughlin\PycharmProjects\mahlo_popup')
 
@@ -157,7 +148,7 @@ class Popup(tk.Tk):
                 if self.flask_app is None:
                     if msg.get('flask_app'):
                         self.flask_app = self.new_messages.pop(mindex)['flask_app']
-                        self.popup_frame.update_message_panels()
+                        self.after(2000, self.popup_frame.update_message_panels)
                 elif msg.get('action'):
                     action_str = self.new_messages.pop(mindex)['action']
                     if action_str == 'shrink':
@@ -175,9 +166,10 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         def add_new_defect():
             """Add a new defect to the database & popup window."""
             with self.parent.flask_app.app_context():
-                defect_type = DefectTypePrompt(self).show()
+                defect_type = SelectDefectAttributes(self).show()
                 if defect_type != 'cancel':
-                    DefectModel.new_defect(record_creation_source='operator', defect_type=defect_type)
+                    new_defect = DefectModel.new_defect(record_creation_source='operator')
+                    SelectDefectAttributes(self, new_defect).show()
                     popup = self.parent.popup_frame
                     popup.update_message_panels()
 
