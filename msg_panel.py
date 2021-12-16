@@ -49,8 +49,12 @@ class MessagePanel(tk.ttk.LabelFrame):
         self._removed_vals = {k: StrCol(self.defect_interface, col) for k, col in sides_to_defect_columns_dict.items()}
         self._removed_vals.update({'all': tk.StringVar()})
 
+    # TODO: change defect type needs to update text,
+    #  change defect length removed
+
         # the label that displays the defect_instance
-        self.add_message_display(self)
+        self.message_label = self.add_message_display(self)
+        self.update_message_text()
 
         self.add_buttons(self)
 
@@ -93,27 +97,28 @@ class MessagePanel(tk.ttk.LabelFrame):
                     return reason
 
         # defect_type = get_removal_reason(self.defect_interface)
-        defect_type = self.defect_interface.defect_type
-        message_text = self.message_text_template.format(
-            timestamp=self.defect_interface.defect_end_ts.strftime(self.dt_format_str),
-            len_meters=self.defect_interface.length_of_defect_meters,
-            dtype=defect_type, defect_id=self.defect_interface.id)
-        label = tk.ttk.Label(parent, text=message_text)
+        # defect_type = self.defect_interface.defect_type
+        label = tk.ttk.Label(parent)
+        # self.update_message_text(defect_type)
         label.grid(column=0, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="w")
 
+        # add a popup to change the defect reason when clicking the label
         def change_reason(event=None):
             lg.debug('changing defect type')
             new_reason = DefectTypePrompt(self._mp_root).show()
             self.defect_interface.defect_type = new_reason
-            # for reason in reasons:
-            #     if reason != new_reason:
-            #         new_value = False
-            #     else:
-            #         new_value = True
-            #
-            # setattr(self.defect_interface, reason, new_value)
+            self.update_message_text()
 
         label.bind('<Button-1>', change_reason)
+        return label
+
+    def update_message_text(self):
+        """Update the message label with any changes."""
+        msg_text = self.message_text_template.format(
+            timestamp=self.defect_interface.defect_end_ts.strftime(self.dt_format_str),
+            len_meters=self.defect_interface.length_of_defect_meters,
+            dtype=self.defect_interface.defect_type, defect_id=self.defect_interface.id)
+        self.message_label.config(text=msg_text)
 
     def add_buttons(self, parent):
         """Add the button frames and their widgets to the parent frame.
