@@ -92,13 +92,28 @@ class MessagePanel(tk.ttk.LabelFrame):
                 if getattr(defect, reason):
                     return reason
 
-        defect_type = get_removal_reason(self.defect_interface)
+        # defect_type = get_removal_reason(self.defect_interface)
+        defect_type = self.defect_interface.defect_type
         message_text = self.message_text_template.format(
             timestamp=self.defect_interface.defect_end_ts.strftime(self.dt_format_str),
             len_meters=self.defect_interface.length_of_defect_meters,
             dtype=defect_type, defect_id=self.defect_interface.id)
         label = tk.ttk.Label(parent, text=message_text)
         label.grid(column=0, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="w")
+
+        def change_reason(event=None):
+            lg.debug('changing defect type')
+            new_reason = DefectTypePrompt(self._mp_root).show()
+            self.defect_interface.defect_type = new_reason
+            # for reason in reasons:
+            #     if reason != new_reason:
+            #         new_value = False
+            #     else:
+            #         new_value = True
+            #
+            # setattr(self.defect_interface, reason, new_value)
+
+        label.bind('<Button-1>', change_reason)
 
     def add_buttons(self, parent):
         """Add the button frames and their widgets to the parent frame.
@@ -138,7 +153,7 @@ class MessagePanel(tk.ttk.LabelFrame):
     def prompt_for_rolls_count(self):
         """Prompt for the number of rolls and change the toggles to match. Do nothing if cancel is selected."""
 
-        new_count = DefectTypePrompt(self._mp_root).show()
+        new_count = NumberPrompt(self._mp_root).show()
         self.defect_interface.rolls_of_product_post_slit = new_count
         if new_count:
             self.change_toggle_count(new_count)

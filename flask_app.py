@@ -1,12 +1,12 @@
 import datetime
-import os
 
 import flask
-from flask import Flask, g
+from flask import g
 from flask_restful import Api
 import waitress
 
 from fresk.queuesholder import queues
+from fresk.resources.database import Database
 from fresk.resources.defect import Defect, DefectList
 from fresk.resources.signal_popup import Popup
 from fresk.sqla_instance import fsa
@@ -38,29 +38,12 @@ app.secret_key = 'this will be important when security is implemented'
 app.debug = True
 
 
-# @app.before_first_request
-def create_tables():
-    import platform
-    from untracked_config.development_node import dev_node
-
-    lg.debug('Rebuilding database tables.')
-
-    # this section is to remove the old database table if the DefectModel table needs to be changed:
-    node = platform.node()
-    lg.debug(f'node {node=}')
-
-    if node == dev_node:
-        fsa.drop_all()  # TODO: this is for model/table development only and SHOULD NOT be used with production databases!
-
-    # this ensures there is a table there
-    fsa.create_all()
-
-
 # add the restful endpoints
 api = Api(app)
 api.add_resource(Defect, '/defect')
 api.add_resource(Popup, '/popup')
 api.add_resource(DefectList, '/defects')
+api.add_resource(Database, '/database')
 
 
 def start_flask_app(in_message_queue=None, out_message_queue=None):
@@ -78,10 +61,6 @@ def start_flask_app(in_message_queue=None, out_message_queue=None):
 
     fsa.init_app(app)
 
-    # # recreate the tables
-    # with app.app_context():
-    #     create_tables()
-
     host = '0.0.0.0'
     port = 5000
     waitress.serve(app, host=host, port=port, threads=2)
@@ -94,7 +73,6 @@ def schedule_queue_watcher(in_message_queue, out_message_queue):
         :param in_message_queue: collections.deque
         :param out_message_queue: collections.deque
         """
-    import time
 
     def regular_check_function():
         # when it's ready, this will watch for requests from the popup (in_message_queue) and send the responses
