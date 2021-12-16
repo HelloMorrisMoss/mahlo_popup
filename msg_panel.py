@@ -13,7 +13,6 @@ lg.setLevel(logging.DEBUG)
 lg.debug('logging in msg_panel')
 
 
-
 class MessagePanel(tk.ttk.LabelFrame):
     def __init__(self, parent, defect_instance=None, row=0, **kwargs):
         super().__init__(parent, text='Foam Problem')
@@ -27,13 +26,16 @@ class MessagePanel(tk.ttk.LabelFrame):
         # self._mp_root = root
         self._mp_root = tk.Toplevel(self)  # if this works then we don't need to worry about the parameter
         self.defect_interface = defect_instance
-        self.message_text_template = 'At {timestamp}\n{len_meters} meters oospec!\ndefect id: {defect_id}'
+        self.message_text_template = 'At {timestamp}\n{len_meters} meters oospec\n' \
+                                     'due to {dtype}\ndefect id: {defect_id}'
 
         # self.defect_interface = defect_instance
-        # self.defect_interface['msg_txt']['timestamp'] = datetime.fromisoformat(defect_instance['msg_txt']['timestamp'])
+        # self.defect_interface['msg_txt']['timestamp'] = datetime.fromisoformat(defect_instance['msg_txt'][
+        # 'timestamp'])
 
         # the toggles selected values
-        # self._removed_vals = {'all': tk.StringVar(), 'left': tk.StringVar(), 'left_center': tk.StringVar(), 'center': tk.StringVar(), 'right_center': tk.StringVar(), 'right': tk.StringVar()}
+        # self._removed_vals = {'all': tk.StringVar(), 'left': tk.StringVar(), 'left_center': tk.StringVar(),
+        # 'center': tk.StringVar(), 'right_center': tk.StringVar(), 'right': tk.StringVar()}
         sides_to_defect_columns_dict = {'left': 'rem_l', 'left_center': 'rem_lc',
                                         'center': 'rem_c', 'right_center': 'rem_rc', 'right': 'rem_r'}
         # for side, column in sides_to_defect_columns_dict.items():
@@ -80,9 +82,20 @@ class MessagePanel(tk.ttk.LabelFrame):
 
     def add_message_display(self, parent):
         # msg = message['msg_txt']
+        def get_removal_reason(defect):
+            reasons = (
+                'belt_marks', 'bursting', 'contamination', 'curling', 'delamination', 'lost_edge', 'puckering',
+                'shrinkage',
+                'thickness', 'wrinkles', 'other')
+            for reason in reasons:
+                if getattr(defect, reason):
+                    return reason
+
+        defect_type = get_removal_reason(self.defect_interface)
         message_text = self.message_text_template.format(
             timestamp=self.defect_interface.defect_end_ts.strftime(self.dt_format_str),
-            len_meters=self.defect_interface.length_of_defect_meters, defect_id=self.defect_interface.id)
+            len_meters=self.defect_interface.length_of_defect_meters,
+            dtype=defect_type, defect_id=self.defect_interface.id)
         label = tk.ttk.Label(parent, text=message_text)
         label.grid(column=0, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="w")
 
@@ -239,7 +252,8 @@ class MessagePanel(tk.ttk.LabelFrame):
                                                   5: ['left', 'left_center', 'center', 'right_center', 'right']}
         self.not_all_list = number_of_buttons_to_definitions_lists[num_of_buttons]
         side_button_text = {'left': 'Operator Side\n', 'left_center': 'Operator Side of Center\n',
-                            'center': 'Center of Foam\n', 'right_center': 'Foamline Side of Center\n', 'right': 'Foamline Side\n'}
+                            'center': 'Center of Foam\n', 'right_center': 'Foamline Side of Center\n',
+                            'right': 'Foamline Side\n'}
         side_button_dict = {side: {'params':
                                        {'onvalue': f'{side_button_text[side]} WAS removed.',
                                         'offvalue': f'{side_button_text[side]} NOT removed.',
@@ -352,7 +366,8 @@ class MessagePanel(tk.ttk.LabelFrame):
         msg_id = event.widget.msg_id  # the custom id attribute, used to track which defect_instance this relates to
         try:
             side = event.widget.side  # left, right, center, all
-            now_on = 'selected' not in event.widget.state()  # whether the toggle is turning on or off; was selected -> off
+            now_on = 'selected' not in event.widget.state()  # whether the toggle is turning on or off; was selected
+            # -> off
         except AttributeError:
             # TODO: make this function better
             # it must have been the send button

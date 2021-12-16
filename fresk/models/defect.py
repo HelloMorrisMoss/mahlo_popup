@@ -20,9 +20,9 @@ class DefectModel(fsa.Model):
     rolls_of_product_post_slit = fsa.Column(fsa.Integer, default=3)
     defect_start_ts = fsa.Column(fsa.TIMESTAMP(timezone=True), server_default='''NOW()''')
     defect_end_ts = fsa.Column(fsa.TIMESTAMP(timezone=True), server_default='''NOW()''')
-    # defect_start_ts = fsa.Column(Timestamp(timezone=True))
-    # defect_end_ts =  fsa.Column(Timestamp(timezone=True))
     length_of_defect_meters = fsa.Column(fsa.Float(precision=2), server_default='1.0')
+
+    # reason for removal
     belt_marks = fsa.Column(fsa.Boolean, server_default='''False''')
     bursting = fsa.Column(fsa.Boolean, server_default='''False''')
     contamination = fsa.Column(fsa.Boolean, server_default='''False''')

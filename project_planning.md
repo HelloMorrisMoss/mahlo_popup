@@ -81,7 +81,7 @@ popup needs to:
   * could use requests to ask flask server for records
 
 12/10 todo:
-* add defect button works but the window doesn't seem to resize for its message panels
+* add defect button works but the window doesn't seem to resize for its message panels. fixed
 * defect type selection screen
 * have defect types show in message window
 * popup: on creation single defect is being displayed twice
