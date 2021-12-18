@@ -1,11 +1,10 @@
 import tkinter as tk
-from pprint import pprint
 from tkinter import ttk
 
 from fresk.models.defect import DefectModel
 from log_setup import lg
 # from main_window import hover_enter_factory
-from msg_panel import MessagePanel
+from msg_window.msg_panel import MessagePanel
 from publishing_vars import PublishingLengthList
 
 

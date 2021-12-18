@@ -1,9 +1,8 @@
 import threading
 import time
-import tkinter
 from collections import deque
 
-from flask_app import start_flask_app
+from fresk.flask_app import start_flask_app
 from main_window import Popup
 
 # allow communication
