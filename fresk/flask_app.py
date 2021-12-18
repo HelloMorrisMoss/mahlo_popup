@@ -1,20 +1,19 @@
 import datetime
 
 import flask
+import waitress
 from flask import g
 from flask_restful import Api
-import waitress
 
 from fresk.queuesholder import queues
 from fresk.resources.database import Database
 from fresk.resources.defect import Defect, DefectList
 from fresk.resources.signal_popup import Popup
 from fresk.sqla_instance import fsa
-
-from untracked_config.db_uri import DATABASE_URI
-# from main import dev_popup
-
 from log_setup import lg
+from untracked_config.db_uri import DATABASE_URI
+
+# from main import dev_popup
 
 
 # class SubFlaskApp(Flask):

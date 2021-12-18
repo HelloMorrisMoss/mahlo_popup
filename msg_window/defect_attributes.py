@@ -4,35 +4,51 @@ from dev_common import reasons, style_component
 
 
 class LengthButton(tk.ttk.Button):
-    def __init__(self, parent, defect, direction_str, *args, **kwargs):
+    def __init__(self, parent, length_var, direction_str, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
-        self.defect = defect
+        self.length_var = length_var
         self.parent = parent
         if direction_str == 'up':
-            self.increment = 1
+            self.increment_val = 1
         elif direction_str == 'down':
-            self.increment = -1
+            self.increment_val = -1
 
-        def increment(event=None):
-            defect.length_of_defect_meters += self.increment
+        self.bind('<Button-1>', self.increment)
 
-        self.bind('<Button-1>', increment)
+    def increment(self, *args):
+        """Increase or decrease the variable.
+
+        :param args: tuple, unused tkinter params.
+        """
+        self.length_var.set(str(int(float(self.length_var.get())) + self.increment_val))
+        pass
 
 
 class UpDownButtonFrame(tk.ttk.LabelFrame):
+    """A frame with up and down buttons that increments a value displayed on a label."""
     def __init__(self, parent, defect, *args, **kwargs):
         super().__init__(parent, text='Length Removed')
         self.defect = defect
         self.length_var = tk.StringVar()
         self.length_var.set(str(defect.length_of_defect_meters))
+        self.length_var.trace('w', self.update_length)
         self.length_label = tk.ttk.Label(self, text=self.length_var.get())
         self.length_label.grid(row=1, column=0)
+        self.up_button = LengthButton(self, self.length_var, 'up', text='+')
 
         # what's up button? the button that makes the length go up, and down down
-        self.up_button = LengthButton(self, defect, 'up', text='+')
         self.up_button.grid(row=0, column=0, sticky='nsew')
-        self.down_button = LengthButton(self, defect, 'down', text='-')
+        self.down_button = LengthButton(self, self.length_var, 'down', text='-')
         self.down_button.grid(row=2, column=0, sticky='nsew')
+
+    def update_length(self, *args):
+        """Update the label and defect value. TODO: pull the defect parts out of here, make this publish --> reusable.
+
+        :param args: tuple, unused tkinter arguments.
+        """
+        new_val = self.length_var.get()
+        self.length_label.config(text=new_val)
+        self.defect.length_of_defect_meters = int(new_val)
 
 
 class NumberPrompt(tk.ttk.LabelFrame):
@@ -40,23 +56,29 @@ class NumberPrompt(tk.ttk.LabelFrame):
 
     def __init__(self, parent, defect):
         super().__init__(parent, text='Number of finished good rolls', style='Card.TFrame')
-        row = 0
+        self.row = 0
         self.defect = defect
         self._style = tk.ttk.Style()
         self._style.configure('TButton', background='black')
+
+        self._count_value_buttons = []
 
         for col in range(1, 6):
             button_label_text = str(col)
 
             # TODO: this is the way to change the 'active' button, the blue is with the accent style, gray without
-            if col % 2 == 0:
-                num_button = tk.ttk.Button(self, text=button_label_text, style='Accent.TButton')
-            else:
-                num_button = tk.ttk.Button(self, text=button_label_text)
+            #     num_button = tk.ttk.Button(self, text=button_label_text, style='Accent.TButton')
+            # else:
+            #     num_button = tk.ttk.Button(self, text=button_label_text)
+            num_button = tk.ttk.Button(self, text=button_label_text)
             num_button.bind('<Button-1>', self.return_button_val)
-            num_button.grid(row=row, column=col, padx=2, pady=2)
+            num_button.grid(row=self.row, column=col, padx=2, pady=2)
             # if col % 2 == 0:
             #     num_button.active = True
+            # if col % 2 == 0:
+            #     num_button.config(style='Accent.TButton')
+            # if col % 2 == 0:
+            self._count_value_buttons.append(num_button)
 
         self.value = tk.IntVar()
 
@@ -65,6 +87,9 @@ class NumberPrompt(tk.ttk.LabelFrame):
 
         :param event: tkinter.Event
         """
+        for btn in self._count_value_buttons:
+            btn.config(style='')
+        event.widget.config(style='Accent.TButton')
         self.defect.rolls_of_product_post_slit = int(event.widget['text'])
 
 
@@ -102,8 +127,10 @@ class DefectTypePanel(tk.ttk.LabelFrame):
 
         reasons_and_cancel = reasons + ('cancel',)
 
+        self._type_buttons = []
+
         for rn, reason in enumerate(reasons_and_cancel):
-            button_label_text = reason if reason != 0 else 'Cancel'
+            button_label_text = reason  # if reason != 0 else 'Cancel'
             reason_button = tk.ttk.Button(self, text=button_label_text)
             reason_button.bind('<Button-1>', self.return_button_val)
             reason_button.grid(row=row, column=col, sticky='ew', padx=2, pady=2)
@@ -112,6 +139,8 @@ class DefectTypePanel(tk.ttk.LabelFrame):
                 row += 1
                 col = 0
 
+            self._type_buttons.append(reason_button)
+
         self.value = tk.StringVar()
 
     def return_button_val(self, event):
@@ -119,6 +148,9 @@ class DefectTypePanel(tk.ttk.LabelFrame):
 
         :param event: tkinter.Event
         """
+        for btn in self._type_buttons:
+            btn.config(style='')
+        event.widget.config(style='Accent.TButton')
         self.defect.defect_type = event.widget['text']
 
 
