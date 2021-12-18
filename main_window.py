@@ -8,7 +8,7 @@ from fresk.models.defect import DefectModel
 from log_setup import lg
 # when called by RPC the directory may change and be unable to find the ttk theme file directory
 from msg_window.defect_attributes import SelectDefectAttributes
-from popup_frame import DefectMessageFrame
+from msg_window.popup_frame import DefectMessageFrame
 
 os.chdir(r'C:\Users\lmcglaughlin\PycharmProjects\mahlo_popup')
 
@@ -165,14 +165,13 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         def add_new_defect():
             """Add a new defect to the database & popup window."""
             with self.parent.flask_app.app_context():
-                defect_type = SelectDefectAttributes(self).show()
-                if defect_type != 'cancel':
-                    new_defect = DefectModel.new_defect(record_creation_source='operator')
-                    SelectDefectAttributes(self, new_defect).show()
-                    popup = self.parent.popup_frame
-                    popup.update_message_panels()
+                # defect_type = SelectDefectAttributes(self).show()
+                # if defect_type != 'cancel':
+                new_defect = DefectModel.new_defect(record_creation_source='operator')
+                SelectDefectAttributes(self, new_defect).show()
+                popup = self.parent.popup_frame
+                popup.update_message_panels()
 
-        # TODO: this may be adding multiple defects?
         # add a new defect button
         self.add_defect_button = tk.ttk.Button(self, text='Add removed', command=add_new_defect)
         self.add_defect_button.grid(row=3, column=10, padx=self.parent.pad['x'], pady=self.parent.pad['y'])
