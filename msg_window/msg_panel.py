@@ -1,27 +1,25 @@
-import logging
 import tkinter as tk
 from datetime import datetime
 from tkinter import ttk
 
 from dev_common import StrCol
+from log_setup import lg
 from msg_window.defect_attributes import NumberPrompt, SelectDefectAttributes
-
-lg = logging.getLogger('mds_popup_window')
-logging.basicConfig()
-lg.setLevel(logging.DEBUG)
-
-lg.debug('logging in msg_panel')
 
 
 class MessagePanel(tk.ttk.LabelFrame):
     def __init__(self, parent, defect_instance=None, row=0, **kwargs):
-        super().__init__(parent, text='Foam Problem')
+        super().__init__(parent)
+        self.config(text=f'Defect #{defect_instance.id}')
         self.msg_number = row
-        self.grid(column=0, row=row, padx=kwargs['pad']['x'], pady=kwargs['pad']['y'], sticky="nesw")
+        self.grid_params_ = dict(column=0, row=row, padx=kwargs['pad']['x'], pady=kwargs['pad']['y'], sticky="nesw")
+        self.grid(**self.grid_params_)
         self.parent = parent
 
         for k, v in kwargs.items():
             setattr(self, k, v)
+
+        self.hideables = []
 
         # self._mp_root = root
         self._mp_root = tk.Toplevel(self)  # if this works then we don't need to worry about the parameter
@@ -49,6 +47,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         # the label that displays the defect_instance
         self.message_label = self.add_message_display_label(self)
         self.update_message_text()
+        self.hideables.append(self.message_label)
 
         self.add_buttons(self)
 
@@ -72,7 +71,7 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         :param event: tkinter.Event
         """
-        lg.debug(event.widget == self._mp_root)
+
         if event.widget == self._mp_root:
             lg.debug('Focus window!')
             self.grid()
@@ -88,17 +87,37 @@ class MessagePanel(tk.ttk.LabelFrame):
         # defect_type = self.defect_interface.defect_type
         label = tk.ttk.Label(parent)
         # self.update_message_text(defect_type)
-        label.grid(column=0, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="w")
+        grid_params = dict(column=0, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="w")
+        setattr(label, 'grid_params_', grid_params)
+        label.grid(**grid_params)
 
         # add a popup to change the defect attributes when clicking the label
         def change_attributes(event=None):
             lg.debug('changing defect type')
-            SelectDefectAttributes(self._mp_root, self.defect_interface).show()
+            self.defect_panel = SelectDefectAttributes(self, self.defect_interface, self.show_hideables)
+            self.defect_panel.grid(row=0, column=0)
+
+            # self.defect_panel.show()
+            # da.show()
             self.update_message_text()
             self.change_toggle_count()
 
         label.bind('<Button-1>', change_attributes)
         return label
+
+    def hide_hideables(self):
+        """Hide (.remove_grid) on all widgets that have been added to the hideables list."""
+        lg.debug('hideable: %s', self.hideables)
+        for hideable in self.hideables:
+            lg.debug(hideable)
+            hideable.grid_remove()
+            # hideable.destroy()
+
+    def show_hideables(self):
+        """Hide (.remove_grid) on all widgets that have been added to the hideables list."""
+        for hideable in self.hideables:
+            lg.debug(hideable)
+            hideable.grid(**hideable.grid_params_)
 
     def update_message_text(self):
         """Update the message label with any changes."""
@@ -133,6 +152,8 @@ class MessagePanel(tk.ttk.LabelFrame):
                             'sticky': 'nesw',
                             'columnspan': 2}
         send_button_frame.grid(**send_grid_params)
+        setattr(send_button_frame, 'grid_params_', send_grid_params)
+        self.hideables.append(send_button_frame)
         self.add_save_button(send_button_frame, send_grid_params)
 
         # add the prompt for roll count change button
@@ -193,7 +214,11 @@ class MessagePanel(tk.ttk.LabelFrame):
         # the toggle button frame
         self.btn_frame = tk.ttk.Frame(parent,
                                       style=self._wgt_styles['labelframe'])  # is this style hiding the frame?
-        self.btn_frame.grid(column=1, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw")
+        grid_params = dict(column=1, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw")
+
+        setattr(self, 'grid_params)', grid_params)
+        self.btn_frame.grid(**grid_params)
+        self.hideables.append(self)
 
         # default to the guessed number
         # number_of_buttons = defect_interface['toggle_count_guess']

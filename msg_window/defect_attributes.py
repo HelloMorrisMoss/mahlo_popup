@@ -56,29 +56,23 @@ class NumberPrompt(tk.ttk.LabelFrame):
 
     def __init__(self, parent, defect):
         super().__init__(parent, text='Number of finished good rolls', style='Card.TFrame')
+        self.parent = parent
         self.row = 0
         self.defect = defect
         self._style = tk.ttk.Style()
         self._style.configure('TButton', background='black')
 
+        # for iterating over
         self._count_value_buttons = []
 
         for col in range(1, 6):
             button_label_text = str(col)
-
-            # TODO: this is the way to change the 'active' button, the blue is with the accent style, gray without
-            #     num_button = tk.ttk.Button(self, text=button_label_text, style='Accent.TButton')
-            # else:
-            #     num_button = tk.ttk.Button(self, text=button_label_text)
             num_button = tk.ttk.Button(self, text=button_label_text)
             num_button.bind('<Button-1>', self.return_button_val)
             num_button.grid(row=self.row, column=col, padx=2, pady=2)
-            # if col % 2 == 0:
-            #     num_button.active = True
-            # if col % 2 == 0:
-            #     num_button.config(style='Accent.TButton')
-            # if col % 2 == 0:
             self._count_value_buttons.append(num_button)
+
+        add_ok_button(parent, self.parent)
 
         self.value = tk.IntVar()
 
@@ -93,10 +87,27 @@ class NumberPrompt(tk.ttk.LabelFrame):
         self.defect.rolls_of_product_post_slit = int(event.widget['text'])
 
 
-class SelectDefectAttributes(tk.Toplevel):
-    def __init__(self, parent, defect, *args, **kwargs):
-        tk.Toplevel.__init__(self, parent, *args, **kwargs)  # this is required not super()
+def add_ok_button(parent, destroy_on_press=None):
+    destroy_on_press = parent if destroy_on_press is None else destroy_on_press
+    parent.ok_buton = tk.ttk.Button(parent, text='OK')
+
+    def on_destroy(*args):
+        parent.on_destroy()
+        destroy_on_press.destroy()
+
+    parent.ok_buton.bind('<Button-1>', on_destroy)
+    parent.ok_buton.grid(row=1, column=6)
+
+
+# class SelectDefectAttributes(tk.Toplevel):
+#     def __init__(self, parent, defect, *args, **kwargs):
+#         tk.Toplevel.__init__(self, parent, *args, **kwargs)
+class SelectDefectAttributes(tk.ttk.LabelFrame):
+    def __init__(self, parent, defect, on_destroy, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)  # this is required not super()
+        self.parent = parent
         self.defect = defect
+        self.on_destroy = on_destroy
 
         self.defect_type_panel = DefectTypePanel(self, defect)
         self.defect_type_panel.grid(row=0, column=1)
@@ -109,11 +120,11 @@ class SelectDefectAttributes(tk.Toplevel):
 
         self.value = tk.IntVar()
 
-    def show(self):
-        self.wm_deiconify()
-        self.focus_force()
-        self.wait_window()
-        return self.value.get()
+    # def show(self):
+    # self.wm_deiconify()
+    # self.focus_force()
+    # self.wait_window()
+    # return self.value.get()
 
 
 class DefectTypePanel(tk.ttk.LabelFrame):
@@ -171,7 +182,7 @@ if __name__ == '__main__':
 
 
     def show_win():
-        return SelectDefectAttributes(root, defect=defect1).show()
+        return SelectDefectAttributes(root, defect=defect1)  # .show()
 
 
     show_button = tk.Button(root, command=show_win)

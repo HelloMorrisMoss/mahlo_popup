@@ -1,7 +1,66 @@
+# import logging
+#
+#
+# # init the logger
+# lg = logging.getLogger('mds_popup_window')
+# logging.basicConfig()
+# lg.setLevel(logging.DEBUG)
+
 import logging
 
+from logging.handlers import RotatingFileHandler
 
-# init the logger
-lg = logging.getLogger('mds_popup_window')
-logging.basicConfig()
-lg.setLevel(logging.DEBUG)
+
+class BreadcrumbFilter(logging.Filter):
+    """Provides %(breadcrumbs) field for the logger formatter.
+
+    Th breadcrumbs field returns module.funcName.lineno as a single string.
+     example:
+        formatters={
+        'console_format': {'format':
+                           '%(asctime)-30s %(breadcrumbs)-35s %(levelname)s: %(message)s'}
+                   }
+       self.logger.debug('handle_accept() -> %s', client_info[1])
+        2020-11-08 14:04:40,561        echo_server03.handle_accept.24      DEBUG: handle_accept() -> ('127.0.0.1',
+        49515)
+    """
+
+    def filter(self, record):
+        record.breadcrumbs = "{}.{}.{}".format(record.module, record.funcName, record.lineno)
+        return True
+
+
+def setup_logger():
+    # set up the logging
+    logr = logging.getLogger('mahlo_popup')
+    logr.setLevel(logging.DEBUG)
+
+    # console logger
+    c_handler = logging.StreamHandler()
+    c_handler.setLevel(logging.DEBUG)
+    c_format = logging.Formatter('%(asctime)-30s %(breadcrumbs)-45s %(levelname)s: %(message)s')
+    c_handler.setFormatter(c_format)
+    c_handler.addFilter(BreadcrumbFilter())
+    logr.addHandler(c_handler)
+
+    # file logger
+    f_handler = RotatingFileHandler('mahlo_popup.log', maxBytes=2000000)
+    f_handler.setLevel(logging.DEBUG)
+    f_string = '"%(asctime)s","%(name)s", "%(breadcrumbs)s","%(funcName)s","%(lineno)d","%(levelname)s","%(message)s"'
+    f_format = logging.Formatter(f_string)
+    f_handler.addFilter(BreadcrumbFilter())
+    f_handler.setFormatter(f_format)
+
+    # Add handlers to the logger
+
+    logr.addHandler(f_handler)
+    return logr
+
+
+# protect against multiple loggers from importing in multiple files
+lg = setup_logger() if not logging.getLogger().hasHandlers() else logging.getLogger()
+# class devnul:
+#     def debug(self, *args, **kwrgs):
+#         pass
+#
+# lg =devnul()
