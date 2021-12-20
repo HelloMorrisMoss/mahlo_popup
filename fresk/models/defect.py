@@ -1,8 +1,7 @@
 import datetime
-import json
 
-from fresk.sqla_instance import fsa
 from fresk.defect_args import all_args
+from fresk.sqla_instance import fsa
 # from helpers import Timestamp
 from log_setup import lg
 
@@ -85,7 +84,6 @@ class DefectModel(fsa.Model):
     def new_defect(cls, **kwargs):
         new_def = DefectModel(**kwargs)
         new_def.save_to_database()
-        # nd_db = cls.find_by_id(new_def.id)  # not needed
         return new_def
 
     # @classmethod
@@ -107,14 +105,16 @@ class DefectModel(fsa.Model):
             jdict[key] = self.__dict__.get(key)
         return jdict
 
-    def json(self):
-        """Get a json representation of the defect instance.
+    def jsonizable(self):
+        """Get a json serializable representation of the defect instance.
+
+        This is needed due to datetimes, they are converted to ISO 8601 format strings.
 
         :return: dict
         """
         jdict = {}
         for key in all_args:
-            this_val = self.__dict__.get(key)
+            this_val = getattr(self, key)
             if isinstance(this_val, datetime.datetime):
                 try:
                     this_val = this_val.isoformat()

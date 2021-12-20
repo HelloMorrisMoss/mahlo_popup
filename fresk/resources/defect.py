@@ -1,12 +1,14 @@
-from flask import g
 from flask_restful import reqparse, Resource
 
 from fresk.models.defect import DefectModel
 
-from fresk.defect_args import all_args, arg_type_dict, editing_required_args, editing_optional_args
+from fresk.defect_args import all_args, arg_type_dict
 from log_setup import lg
+from flask_restful import reqparse, Resource
 
-
+from fresk.defect_args import all_args, arg_type_dict
+from fresk.models.defect import DefectModel
+from log_setup import lg
 
 
 class Defect(Resource):
@@ -18,7 +20,7 @@ class Defect(Resource):
     def get(self):
 
         data = self.defect_parser.parse_args()
-        from pprint import pprint, pformat
+        from pprint import pprint
         pprint(data)
         id_ = data.get('id')
         lg.debug('id from data: %s', id_)
@@ -26,7 +28,7 @@ class Defect(Resource):
             defect = DefectModel.find_by_id(id_)
 
             if defect:
-                return defect.json(), 200
+                return defect.jsonizable(), 200
             else:
                 return {'defect_instance': f'Defect not found with id: {id_}'}, 404
 
@@ -34,25 +36,27 @@ class Defect(Resource):
 
     def post(self):
         data = self.defect_parser.parse_args()
-        if data.get('create_new_defect_record'):
-            defect = DefectModel.new_defect()
-        else:
-            defect = DefectModel(**data)
-            defect.save_to_database()
 
-        return defect.json(), 201
+        # don't pass the Model empty parameters
+        data = self.remove_empty_parameters(data)
+        defect = DefectModel.new_defect(**data)
+
+        return defect.jsonizable(), 201
+
+    def remove_empty_parameters(self, data):
+        return {key: value for key, value in data.items() if value is not None}
 
     def put(self):
         data = self.defect_parser.parse_args()
-
         # check if there is an id, if there is, try to get the defect record
         id_ = data.get('id')
         if id_:
             defect = DefectModel.find_by_id(id_)
             if defect:
+                # don't pass the Model empty parameters
+                data = self.remove_empty_parameters(data)
                 # update the existing
                 for key, arg in data:
-                    # TODO: should this filter for Nones?
                     setattr(defect, key, arg)
                 return_code = 200
         else:
@@ -62,7 +66,7 @@ class Defect(Resource):
 
         defect.save_to_database()
 
-        return defect.json(), return_code
+        return defect.jsonizable(), return_code
 
 
 class DefectList(Resource):
@@ -75,5 +79,5 @@ class DefectList(Resource):
         results = DefectModel.query.all()
         result_dict = {}
         for row in results:
-            result_dict[row.id] = row.json()
+            result_dict[row.id] = row.jsonizable()
         return result_dict, 200

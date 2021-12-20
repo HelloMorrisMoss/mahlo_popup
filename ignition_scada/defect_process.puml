@@ -1,0 +1,11 @@
+@startuml
+autonumber
+oospec -> mahlo_bad_tag_TRUE
+mahlo_bad_tag_TRUE -> MB_tag_change_script
+MB_tag_change_script -> get_current_mahlo_tags
+MB_tag_change_script -> post_request_new_defect_to_MDS
+mahlo_bad_tag_FALSE -> post_request_update_defect_to_MDS
+lam_running_tag_FALSE -> LR_tag_change_script
+LR_tag_change_script -> post_request_show_popup
+
+@enduml
