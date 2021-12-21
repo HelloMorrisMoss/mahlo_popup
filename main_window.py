@@ -7,7 +7,6 @@ from dev_common import add_show_messages_button, recurse_hover, recurse_tk_struc
 from fresk.models.defect import DefectModel
 from log_setup import lg
 # when called by RPC the directory may change and be unable to find the ttk theme file directory
-from msg_window.defect_attributes import SelectDefectAttributes
 from msg_window.popup_frame import DefectMessageFrame
 
 os.chdir(r'C:\Users\lmcglaughlin\PycharmProjects\mahlo_popup')
@@ -20,7 +19,7 @@ os.chdir(r'C:\Users\lmcglaughlin\PycharmProjects\mahlo_popup')
 class Popup(tk.Tk):
     """The main tkinter window that the defect_instance panels, controls, etc reside in."""
 
-    def __init__(self, input_dict=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__()
         self.debugging = kwargs.get('debug')
         self.attributes('-toolwindow', True)
@@ -38,8 +37,6 @@ class Popup(tk.Tk):
         else:
             lg.warning('No outbound_queue')
 
-        # # todo: publishing var (possibly nested) to go from the length(self.current_defects) -> the show button label
-
         # styling
         style_component(self)
         # frame padding
@@ -51,7 +48,7 @@ class Popup(tk.Tk):
         self.hideables = []
 
         # where the messages about defect appear with their toggles/save buttons
-        self.popup_frame = DefectMessageFrame(self, input_dict, **params)
+        self.popup_frame = DefectMessageFrame(self, **params)
         self.popup_frame.grid(row=1, column=0, sticky='nesw')
         self.hideables.append(self.popup_frame)
 
@@ -67,21 +64,15 @@ class Popup(tk.Tk):
         self.controls_panel.grid(row=2, column=0, sticky='we')
         self.hideables.append(self.controls_panel)
 
-        if input_dict is None:
-            lg.debug('no messages, hiding hideables')
-            self.hide_hideables()
-        else:
-            lg.debug('messages, showing hideables')
-            self.show_hideables()
-
         # TODO: would making the window minimize (not just shrink) while the lam is running be good?
         #  it seems like it would
+
         # move the window to the front
         self.lift()
         self.attributes('-topmost', True)
         # self.root.after_idle(self.root.attributes, '-topmost', False)
 
-        # self.bind("<FocusOut>", self.hide_hideables)
+        self.bind("<FocusOut>", self.hide_hideables)
         # self.bind("<FocusIn>", show_hideables)
 
         lg.debug(self.hideables)
@@ -101,7 +92,7 @@ class Popup(tk.Tk):
         self.new_messages = []
         self.flask_app = None
         self.after(1000, self.check_for_inbound_messages)
-
+        self.hide_hideables()
         self.mainloop()
 
     def subscribe_message_button_to_defect_display_count(self):
@@ -168,8 +159,14 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
                 # defect_type = SelectDefectAttributes(self).show()
                 # if defect_type != 'cancel':
                 new_defect = DefectModel.new_defect(record_creation_source='operator')
-                SelectDefectAttributes(self, new_defect).show()
+
+                def nothing():
+                    pass
+
+                # SelectDefectAttributes(self, new_defect, nothing)  #.show()
                 popup = self.parent.popup_frame
+                panel = popup.add_message_panel(defect=new_defect)
+                panel.change_attributes()
                 popup.update_message_panels()
 
         # add a new defect button

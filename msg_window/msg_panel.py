@@ -4,7 +4,7 @@ from tkinter import ttk
 
 from dev_common import StrCol
 from log_setup import lg
-from msg_window.defect_attributes import NumberPrompt, SelectDefectAttributes
+from msg_window.defect_attributes import SelectDefectAttributes
 
 
 class MessagePanel(tk.ttk.LabelFrame):
@@ -20,9 +20,6 @@ class MessagePanel(tk.ttk.LabelFrame):
             setattr(self, k, v)
 
         self.hideables = []
-
-        # self._mp_root = root
-        self._mp_root = tk.Toplevel(self)  # if this works then we don't need to worry about the parameter
         self.defect_interface = defect_instance
         self.message_text_template = 'At {timestamp}\n{len_meters} meters oospec\n' \
                                      'due to {dtype}\ndefect id: {defect_id}'
@@ -51,59 +48,31 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         self.add_buttons(self)
 
-        # shrink to a button when not the focus window
-        # self._mp_root.bind("<FocusOut>", self.focus_lost_handler)
-        # self._mp_root.bind("<FocusIn>", self.focus_gained_handler)
-
-    def focus_lost_handler(self, event):
-        """When the window loses focus (another window is clicked or otherwise switched to).
-
-        :param event: tkinter.Event
-        """
-        lg.debug(event.widget == self._mp_root)
-        if event.widget == self._mp_root:
-            lg.debug('No longer focus window!')
-            self.grid_remove()
-            self._mp_root.update()
-
-    def focus_gained_handler(self, event):
-        """When the window gains focus.
-
-        :param event: tkinter.Event
-        """
-
-        if event.widget == self._mp_root:
-            lg.debug('Focus window!')
-            self.grid()
-
     def hide(self, *args, **kwargs):
+        lg.debug('msg_window asked to hide')  # don't recall if this is used anymore
         self.grid_remove()
 
     def un_hide(self):
         self.grid()
 
     def add_message_display_label(self, parent):
-
-        # defect_type = self.defect_interface.defect_type
         label = tk.ttk.Label(parent)
-        # self.update_message_text(defect_type)
         grid_params = dict(column=0, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="w")
         setattr(label, 'grid_params_', grid_params)
         label.grid(**grid_params)
 
-        # add a popup to change the defect attributes when clicking the label
-        def change_attributes(event=None):
-            lg.debug('changing defect type')
-            self.defect_panel = SelectDefectAttributes(self, self.defect_interface, self.show_hideables)
-            self.defect_panel.grid(row=0, column=0)
+        # when clicked show the select attributes panel.
+        label.bind('<Button-1>', self.change_attributes)
 
-            # self.defect_panel.show()
-            # da.show()
-            self.update_message_text()
-            self.change_toggle_count()
-
-        label.bind('<Button-1>', change_attributes)
         return label
+
+    # add a popup to change the defect attributes when clicking the label
+    def change_attributes(self, event=None):
+        lg.debug('changing defect type')
+        self.defect_panel = SelectDefectAttributes(self, self.defect_interface, self.show_hideables)
+        self.defect_panel.grid(row=0, column=0)
+        self.update_message_text()
+        self.change_toggle_count()
 
     def hide_hideables(self):
         """Hide (.remove_grid) on all widgets that have been added to the hideables list."""
@@ -155,21 +124,6 @@ class MessagePanel(tk.ttk.LabelFrame):
         setattr(send_button_frame, 'grid_params_', send_grid_params)
         self.hideables.append(send_button_frame)
         self.add_save_button(send_button_frame, send_grid_params)
-
-        # add the prompt for roll count change button
-        # num_button = tk.ttk.Button(send_button_frame, style='Accent.TButton', text='# of Rolls',
-        #                            command=self.prompt_for_rolls_count)
-        # send_grid_params.update(row=1)
-        #
-        # num_button.grid(**send_grid_params)
-
-    def prompt_for_rolls_count(self):
-        """Prompt for the number of rolls and change the toggles to match. Do nothing if cancel is selected."""
-
-        new_count = NumberPrompt(self._mp_root).show()
-        self.defect_interface.rolls_of_product_post_slit = new_count
-        if new_count:
-            self.change_toggle_count()
 
     def add_save_button(self, parent, send_grid_params):
         """Add the save/send button.

@@ -1,6 +1,7 @@
 import tkinter as tk
 
 from dev_common import reasons, style_component
+from log_setup import lg
 
 
 class LengthButton(tk.ttk.Button):
@@ -108,6 +109,7 @@ class SelectDefectAttributes(tk.ttk.LabelFrame):
         self.parent = parent
         self.defect = defect
         self.on_destroy = on_destroy
+        lg.debug('on destroy %s', on_destroy)
 
         self.defect_type_panel = DefectTypePanel(self, defect)
         self.defect_type_panel.grid(row=0, column=1)
@@ -119,12 +121,6 @@ class SelectDefectAttributes(tk.ttk.LabelFrame):
         self.length_buttons.grid(row=0, column=0, rowspan=2, sticky='ns')
 
         self.value = tk.IntVar()
-
-    # def show(self):
-    # self.wm_deiconify()
-    # self.focus_force()
-    # self.wait_window()
-    # return self.value.get()
 
 
 class DefectTypePanel(tk.ttk.LabelFrame):
@@ -178,11 +174,14 @@ if __name__ == '__main__':
     root = tk.Tk()
     style_component(root, '..')
     defect1 = DummyDefect()
-    print(defect1.__dict__)
+    lg.debug(defect1.__dict__)
 
 
     def show_win():
-        return SelectDefectAttributes(root, defect=defect1)  # .show()
+        def nothing():
+            pass
+
+        return SelectDefectAttributes(root, defect=defect1, on_destroy=nothing)
 
 
     show_button = tk.Button(root, command=show_win)

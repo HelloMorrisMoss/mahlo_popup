@@ -13,7 +13,7 @@ class DefectMessageFrame(ttk.Frame):
 
     """
 
-    def __init__(self, parent_container, input_dict=None, *args, **kwargs):
+    def __init__(self, parent_container, *args, **kwargs):
         """
         example_input_dict = {'messages': [{'title': 'Out of spec!',
                                         'msg_txt': {'template': template_str,
@@ -76,6 +76,17 @@ class DefectMessageFrame(ttk.Frame):
         # self.add_message_panels(init_messages)
         self.parent.after(5000, self.update_message_panels)
 
+    def focus_lost_handler(self, event):
+        """When the window loses focus (another window is clicked or otherwise switched to).
+
+        :param event: tkinter.Event
+        """
+
+        if event.widget == self._mp_root:  # if the window itself lost focus
+            lg.debug('No longer focus window!')
+            self.grid_remove()
+            self._mp_root.update()
+
     def set_style(self, kwargs):
         styling = kwargs.get('style_settings')
         if styling:
@@ -84,7 +95,7 @@ class DefectMessageFrame(ttk.Frame):
                 lg.debug(f'PopupFrame add {k}: {v}')
                 setattr(self, k, v)
 
-    def update_message_panels(self, init_messages=None):
+    def update_message_panels(self):
         """Check the database for new defects, if there are add new panels.
 
         :param init_messages: dict, deprecated
@@ -123,6 +134,7 @@ class DefectMessageFrame(ttk.Frame):
                                    pad={'x': self.pad['x'], 'y': self.pad['y']},
                                    _wgt_styles=self._wgt_styles)
             self.messages_frames.append(msg_frm)
+            return msg_frm
 
     # def refresh_data(self):
     #     """

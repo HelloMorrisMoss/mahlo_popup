@@ -123,3 +123,7 @@ Ignition end of things brainstorming:
 
 * the default timestamps may be a specific time when now() ran (table creation) not the function at the time the row is
   created
+
+12/21 todo:
+
+* get rid of the extra windows

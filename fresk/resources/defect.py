@@ -1,11 +1,5 @@
 from flask_restful import reqparse, Resource
 
-from fresk.models.defect import DefectModel
-
-from fresk.defect_args import all_args, arg_type_dict
-from log_setup import lg
-from flask_restful import reqparse, Resource
-
 from fresk.defect_args import all_args, arg_type_dict
 from fresk.models.defect import DefectModel
 from log_setup import lg
@@ -44,8 +38,11 @@ class Defect(Resource):
         return defect.jsonizable(), 201
 
     def remove_empty_parameters(self, data):
+        """Accepts a dictionary and returns a dict with only the key, values where the values are not None."""
+
         return {key: value for key, value in data.items() if value is not None}
 
+    # TODO: once there is an option to edit defects, this may need to be touched up
     def put(self):
         data = self.defect_parser.parse_args()
         # check if there is an id, if there is, try to get the defect record
