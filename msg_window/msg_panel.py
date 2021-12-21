@@ -21,21 +21,13 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         self.hideables = []
         self.defect_interface = defect_instance
+        self.defect_id = self.defect_interface.id
         self.message_text_template = 'At {timestamp}\n{len_meters} meters oospec\n' \
                                      'due to {dtype}\ndefect id: {defect_id}'
 
-        # self.defect_interface = defect_instance
-        # self.defect_interface['msg_txt']['timestamp'] = datetime.fromisoformat(defect_instance['msg_txt'][
-        # 'timestamp'])
-
-        # the toggles selected values
-        # self._removed_vals = {'all': tk.StringVar(), 'left': tk.StringVar(), 'left_center': tk.StringVar(),
-        # 'center': tk.StringVar(), 'right_center': tk.StringVar(), 'right': tk.StringVar()}
         sides_to_defect_columns_dict = {'left': 'rem_l', 'left_center': 'rem_lc',
                                         'center': 'rem_c', 'right_center': 'rem_rc', 'right': 'rem_r'}
-        # for side, column in sides_to_defect_columns_dict.items():
-        #     self._removed_vals[side].set(getattr(self.defect_interface, column))
-        #     setattr(self.defect_interface, column, self._removed_vals[side])
+
         self._removed_vals = {k: StrCol(self.defect_interface, col) for k, col in sides_to_defect_columns_dict.items()}
         self._removed_vals.update({'all': tk.StringVar()})
 
@@ -71,6 +63,8 @@ class MessagePanel(tk.ttk.LabelFrame):
         lg.debug('changing defect type')
         self.defect_panel = SelectDefectAttributes(self, self.defect_interface, self.show_hideables)
         self.defect_panel.grid(row=0, column=0)
+
+    def refresh_panel(self):
         self.update_message_text()
         self.change_toggle_count()
 

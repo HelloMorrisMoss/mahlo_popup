@@ -95,15 +95,15 @@ def add_ok_button(parent, destroy_on_press=None):
     def on_destroy(*args):
         parent.on_destroy()
         destroy_on_press.destroy()
+        parent.parent.refresh_panel()
 
     parent.ok_buton.bind('<Button-1>', on_destroy)
     parent.ok_buton.grid(row=1, column=6)
 
 
-# class SelectDefectAttributes(tk.Toplevel):
-#     def __init__(self, parent, defect, *args, **kwargs):
-#         tk.Toplevel.__init__(self, parent, *args, **kwargs)
 class SelectDefectAttributes(tk.ttk.LabelFrame):
+    """A ttk.LabelFrame with options to change the defect type, length removed, and number of rolls after slitting."""
+
     def __init__(self, parent, defect, on_destroy, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)  # this is required not super()
         self.parent = parent

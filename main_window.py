@@ -138,7 +138,7 @@ class Popup(tk.Tk):
                 if self.flask_app is None:
                     if msg.get('flask_app'):
                         self.flask_app = self.new_messages.pop(mindex)['flask_app']
-                        self.after(2000, self.popup_frame.update_message_panels)
+                        self.after(2000, self.popup_frame.check_for_new_defects)
                 elif msg.get('action'):
                     action_str = self.new_messages.pop(mindex)['action']
                     if action_str == 'shrink':
@@ -156,18 +156,13 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         def add_new_defect():
             """Add a new defect to the database & popup window."""
             with self.parent.flask_app.app_context():
-                # defect_type = SelectDefectAttributes(self).show()
-                # if defect_type != 'cancel':
+                # create a new defect in the database, get the popup frame, make sure it has updated (to include the
+                # new defect), get the panel for the new defect, call the panel's change attributes method
                 new_defect = DefectModel.new_defect(record_creation_source='operator')
-
-                def nothing():
-                    pass
-
-                # SelectDefectAttributes(self, new_defect, nothing)  #.show()
                 popup = self.parent.popup_frame
-                panel = popup.add_message_panel(defect=new_defect)
+                popup.check_for_new_defects()
+                panel = popup.get_panel_by_defect_id(new_defect.id)
                 panel.change_attributes()
-                popup.update_message_panels()
 
         # add a new defect button
         self.add_defect_button = tk.ttk.Button(self, text='Add removed', command=add_new_defect)
