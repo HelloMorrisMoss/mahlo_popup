@@ -94,8 +94,8 @@ def create_wrapper_for_class_methods(the_wrapped_class):
 class PublishListMetaWrap(type):
     """A metaclass that wraps the generated class' methods with a publish wrapper function."""
 
-    def __new__(cls, name, base_classes, dct):
-        wrapped_class = super().__new__(cls, name, base_classes, dct)
+    def __new__(mcs, name, base_classes, dct):
+        wrapped_class = super().__new__(mcs, name, base_classes, dct)
         wrap_methods = ['append', 'insert', 'pop', 'remove', 'extend', 'clear', '__delitem__']
 
         # add needs to return a publishing list or the publishing functionality would be lost, for: +=
@@ -118,7 +118,7 @@ class PublishListMetaWrap(type):
                         setattr(wrapped_class, attribute_name,
                                 wrap_publish(attribute))  # replace with the wrapped method
 
-        wrap_methods += ['__iadd__',]
+        wrap_methods += ['__iadd__']
         setattr(wrapped_class, '_publishing_methods', wrap_methods)  # to make this accessible if needed
         return wrapped_class
 
