@@ -56,6 +56,7 @@ class Defect(Resource):
                 lg.debug('put dict %s', data)
                 # update the existing
                 for key, arg in data.items():
+                    lg.debug('updating %s from %s to %s', key, getattr(defect, key), arg)
                     setattr(defect, key, arg)
                 defect.save_to_database()
                 return_code = 200
