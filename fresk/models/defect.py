@@ -4,11 +4,11 @@ import sqlalchemy
 
 from fresk.defect_args import all_args
 from fresk.sqla_instance import fsa
-# from helpers import Timestamp
 from log_setup import lg
 
 
 class DefectModel(fsa.Model):
+    """A SQLalchemy model for the defect removal record database."""
     __tablename__ = 'laminator_foam_defect_removal_records'
 
     id = fsa.Column(fsa.Integer, primary_key=True)
@@ -16,8 +16,6 @@ class DefectModel(fsa.Model):
     tabcode = fsa.Column(fsa.String, default='')
     recipe = fsa.Column(fsa.String, default='')
     lam_num = fsa.Column(fsa.Integer, default=0)
-    # rolls_of_product_post_slit = fsa.Column(fsa.Integer, server_default='''SELECT rolls_of_product_post_slit ORDER BY
-    # defect_id DESC LIMIT 1''')
     rolls_of_product_post_slit = fsa.Column(fsa.Integer, default=3)
     defect_start_ts = fsa.Column(fsa.TIMESTAMP(timezone=True), server_default=sqlalchemy.func.now())
     defect_end_ts = fsa.Column(fsa.TIMESTAMP(timezone=True), server_default=sqlalchemy.func.now())
@@ -25,17 +23,6 @@ class DefectModel(fsa.Model):
 
     # reason for removal
     defect_type = fsa.Column(fsa.VARCHAR(13))
-    # belt_marks = fsa.Column(fsa.Boolean, server_default='''False''')
-    # bursting = fsa.Column(fsa.Boolean, server_default='''False''')
-    # contamination = fsa.Column(fsa.Boolean, server_default='''False''')
-    # curling = fsa.Column(fsa.Boolean, server_default='''False''')
-    # delamination = fsa.Column(fsa.Boolean, server_default='''False''')
-    # lost_edge = fsa.Column(fsa.Boolean, server_default='''False''')
-    # puckering = fsa.Column(fsa.Boolean, server_default='''False''')
-    # shrinkage = fsa.Column(fsa.Boolean, server_default='''False''')
-    # thickness = fsa.Column(fsa.Boolean, server_default='''False''')
-    # wrinkles = fsa.Column(fsa.Boolean, server_default='''False''')
-    # other = fsa.Column(fsa.Boolean, server_default='''False''')
 
     # the section removed
     rem_l = fsa.Column(fsa.Boolean, server_default='''False''')
@@ -60,8 +47,15 @@ class DefectModel(fsa.Model):
 
     @classmethod
     def find_by_id(cls, id_, get_sqalchemy=False):
+        """Get a DefectModel of a record by its id.
+
+        :param id_: int, the id.
+        :param get_sqalchemy: bool
+        :return: DefectModel
+        """
         id_df = cls.query.filter_by(id=id_).first()
         if get_sqalchemy:
+            lg.debug('returning with sqlalchemy')
             return id_df, fsa
         return id_df
 
@@ -80,20 +74,25 @@ class DefectModel(fsa.Model):
 
     @classmethod
     def find_all(cls):
+        """Get a list of all defect record as DefectModels.
+
+        :return: list
+        """
         return cls.query.all()
 
     @classmethod
     def new_defect(cls, **kwargs):
+        """Create a new defect using any column values provided as keyword parameters.
+
+        :param kwargs: dict, of kwargs['column_name'] = 'value to use'
+        :return: DefectModel
+        """
         new_def = DefectModel(**kwargs)
         new_def.save_to_database()
         return new_def
 
-    # @classmethod
-    # def new_defect(cls):
-    #     cls.query.filter_by(id=0).first()
-    #     # cls.query.insert
-
     def save_to_database(self):
+        """Save the changed to defect to the database."""
         fsa.session.add(self)
         fsa.session.commit()
 
