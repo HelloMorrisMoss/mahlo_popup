@@ -17,6 +17,7 @@ class DefectModel(fsa.Model):
     recipe = fsa.Column(fsa.String, default='')
     lam_num = fsa.Column(fsa.Integer, default=0)
     file_name = fsa.Column(fsa.String, server_default='')
+    flagger_fire = fsa.Column(fsa.TIMESTAMP(timezone=True))
     rolls_of_product_post_slit = fsa.Column(fsa.Integer, default=3)
     defect_start_ts = fsa.Column(fsa.TIMESTAMP(timezone=True), server_default=sqlalchemy.func.now())
     defect_end_ts = fsa.Column(fsa.TIMESTAMP(timezone=True), server_default=sqlalchemy.func.now())

@@ -50,7 +50,7 @@ class Defect(Resource):
         if id_:
             defect = DefectModel.find_by_id(id_)
             if defect:
-                lg.debug('defect exisits, updating')
+                lg.debug('defect exists, updating')
                 # don't pass the Model empty parameters
                 data = self.remove_empty_parameters(data)
                 lg.debug('put dict %s', data)
