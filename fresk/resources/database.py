@@ -1,4 +1,6 @@
 """The resource for working on the database table. FOR DEVELOPMENT."""
+import datetime
+
 from flask_restful import reqparse, Resource
 
 from fresk.sqla_instance import fsa
@@ -33,4 +35,4 @@ class Database(Resource):
         if action == 'reset_database':
             create_tables()
 
-        return {'database reset': 'successful'}, 200
+        return {'database reset': f'successful at {datetime.datetime.now().isoformat()}'}, 200
