@@ -1,10 +1,7 @@
-import json
-
-from flask import g
 from flask_restful import reqparse, Resource
 
-from log_setup import lg
 from fresk.queuesholder import queues
+from log_setup import lg
 
 
 class Popup(Resource):
@@ -39,12 +36,20 @@ class Popup(Resource):
         parser.add_argument('action', type=str, required=True, help='You must provide a command action.')
 
         data = parser.parse_args()
+        lg.debug('action received: %s', data['action'])
 
         if data['action'] == 'shrink':
             queues.out_message_queue.append({'action': 'shrink'})
-            return {'defect_instance': 'Shrinking popup window.'}, 200
+            return {'popup_result': 'Shrinking popup window.'}, 200
 
         elif data['action'] == 'show':
             lg.debug('showing popup')
             queues.out_message_queue.append({'action': 'show'})
-            return {'defect_instance': 'Showing popup window.'}, 200
+            return {'popup_result': 'Showing popup window.'}, 200
+
+        elif data['action'] == 'defects_updated':
+            lg.debug('tell popup there are defect updates')
+            queues.out_message_queue.append({'action': 'check_defect_updates'})
+            return {'popup_result': 'Showing popup window.'}, 200
+        # else:
+        #     return {'popup_result': 'Invalid request.'},

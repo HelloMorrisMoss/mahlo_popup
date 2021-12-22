@@ -145,10 +145,15 @@ class Popup(tk.Tk):
                         self.hide_hideables()
                     elif action_str == 'show':
                         self.show_hideables()
+                    elif action_str == 'check_defect_updates':
+                        lg.debug('check for updates to defects')
+                        self.popup_frame.check_for_new_defects()
+
         self.after(500, self.check_for_inbound_messages)
 
 
 class IndependentControlsPanel(tk.ttk.LabelFrame):
+    """A frame with buttons that are not for specific defects, for the window itself."""
     def __init__(self, parent_container, text='This is the title'):
         super().__init__(parent_container, text=text)
         self.parent = parent_container
