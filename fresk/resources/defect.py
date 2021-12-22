@@ -50,13 +50,17 @@ class Defect(Resource):
         if id_:
             defect = DefectModel.find_by_id(id_)
             if defect:
+                lg.debug('defect exisits, updating')
                 # don't pass the Model empty parameters
                 data = self.remove_empty_parameters(data)
+                lg.debug('put dict %s', data)
                 # update the existing
-                for key, arg in data:
+                for key, arg in data.items():
                     setattr(defect, key, arg)
+                defect.save_to_database()
                 return_code = 200
         else:
+            lg.debug('creating new defect')
             # create a new record
             defect = DefectModel(**data)
             return_code = 201

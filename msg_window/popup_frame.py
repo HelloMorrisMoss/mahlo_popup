@@ -77,12 +77,14 @@ class DefectMessageFrame(ttk.Frame):
                 setattr(self, k, v)
 
     def check_for_new_defects(self):
-        """Check the database for new defects, if there are add new panels.
-
-        :param init_messages: dict, deprecated
-        """
-        with self.parent.flask_app.app_context():
-            new_defs = DefectModel.find_new()
+        """Check the database for new defects, if there are add new panels."""
+        try:
+            with self.parent.flask_app.app_context():
+                new_defs = DefectModel.find_new()
+        except AssertionError:
+            lg.warning('Assertion error for sqlalchemy.')
+            self.after(2000, self.check_for_new_defects)
+            return
 
         lg.debug('new defects: %s', new_defs)
         for defect in new_defs:

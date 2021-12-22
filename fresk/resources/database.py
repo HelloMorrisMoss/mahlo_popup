@@ -1,8 +1,8 @@
 """The resource for working on the database table. FOR DEVELOPMENT."""
+from flask_restful import reqparse, Resource
+
 from fresk.sqla_instance import fsa
 from log_setup import lg
-
-from flask_restful import reqparse, Resource
 
 
 def create_tables():
@@ -32,3 +32,5 @@ class Database(Resource):
         action = data.get('action')
         if action == 'reset_database':
             create_tables()
+
+        return {'database reset': 'successful'}, 200

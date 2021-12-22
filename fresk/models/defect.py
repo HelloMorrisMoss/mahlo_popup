@@ -1,5 +1,7 @@
 import datetime
 
+import sqlalchemy
+
 from fresk.defect_args import all_args
 from fresk.sqla_instance import fsa
 # from helpers import Timestamp
@@ -8,7 +10,7 @@ from log_setup import lg
 
 class DefectModel(fsa.Model):
     __tablename__ = 'laminator_foam_defect_removal_records'
-    
+
     id = fsa.Column(fsa.Integer, primary_key=True)
     source_lot_number = fsa.Column(fsa.String, default='')
     tabcode = fsa.Column(fsa.String, default='')
@@ -17,8 +19,8 @@ class DefectModel(fsa.Model):
     # rolls_of_product_post_slit = fsa.Column(fsa.Integer, server_default='''SELECT rolls_of_product_post_slit ORDER BY
     # defect_id DESC LIMIT 1''')
     rolls_of_product_post_slit = fsa.Column(fsa.Integer, default=3)
-    defect_start_ts = fsa.Column(fsa.TIMESTAMP(timezone=True), server_default='''NOW()''')
-    defect_end_ts = fsa.Column(fsa.TIMESTAMP(timezone=True), server_default='''NOW()''')
+    defect_start_ts = fsa.Column(fsa.TIMESTAMP(timezone=True), server_default=sqlalchemy.func.now())
+    defect_end_ts = fsa.Column(fsa.TIMESTAMP(timezone=True), server_default=sqlalchemy.func.now())
     length_of_defect_meters = fsa.Column(fsa.Float(precision=2), server_default='1.0')
 
     # reason for removal
@@ -41,9 +43,9 @@ class DefectModel(fsa.Model):
     rem_c = fsa.Column(fsa.Boolean, server_default='''False''')
     rem_rc = fsa.Column(fsa.Boolean, server_default='''False''')
     rem_r = fsa.Column(fsa.Boolean, server_default='''False''')
-    entry_created_ts = fsa.Column(fsa.DateTime(timezone=True), server_default='''NOW()''')
-    entry_modified_ts = fsa.Column(fsa.DateTime(timezone=True), server_default='''NOW()''')
-    record_creation_source = fsa.Column(fsa.String(), server_default='''None''')
+    entry_created_ts = fsa.Column(fsa.DateTime(timezone=True), server_default=sqlalchemy.func.now())
+    entry_modified_ts = fsa.Column(fsa.DateTime(timezone=True), server_default=sqlalchemy.func.now())
+    record_creation_source = fsa.Column(fsa.String(), server_default=sqlalchemy.func.now())
     marked_for_deletion = fsa.Column(fsa.Boolean, server_default='''False''')
     operator_saved_time = fsa.Column(fsa.DateTime(timezone=True))
 
