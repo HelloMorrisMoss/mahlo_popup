@@ -82,10 +82,7 @@ class DefectMessageFrame(ttk.Frame):
         lg.debug('new defects: %s', new_defs)
         for defect in new_defs:
             if defect not in self.current_defects:
-                lg.debug('New defect found')
                 self.add_message_panel(defect)
-            else:
-                lg.debug('this defect already in current_defects')
 
         # if we have no defects, no need to be big
         if not self.current_defects:
