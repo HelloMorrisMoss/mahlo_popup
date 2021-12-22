@@ -13,10 +13,10 @@ else:
 	dev_system = system.net.getHostName() == u'MCGLAUGHLINLT10'
 	if dev_system:
 		# these will be used either going out or coming in
-		lam_num = 1  # TODO: set this from the event source tagpath
-		def_id = Ptag(
-			'[default]Miscellaneous Tags/Testing only tags/mahlo_popup/current_defect_id')  # todo each lam should
-		# have its own
+		#		lam_num = 1
+		lam_num = Shared.L.get_num_from_path(event.getTagPath().toString())
+		# todo: each lam should have its own
+		def_id = Ptag('[default]Miscellaneous Tags/Testing only tags/mahlo_popup/current_defect_id')
 		test_host_ip = 'http://localhost:5000'
 		defects_url = test_host_ip + '/defect'
 		hc = system.net.httpClient()
@@ -32,23 +32,20 @@ else:
 						'tabcode': {1: '[default]MAHLO/LAM1/TiRollCount', 2: '[default]MAHLO/LAM2/TiRollCount'}
 						}
 
-		# for testing
-		tagpath_dict = {'source_lot_number': {
-			1: '[default]Miscellaneous Tags/Testing only tags/mahlo_popup/dummy_mahlo_tags/BatchID'},
-						'mahlo_start_length': {
-							1: '[default]Miscellaneous Tags/Testing only '
-							   'tags/mahlo_popup/dummy_mahlo_tags/MdMeterCount'},
-						'mahlo_end_length': {
-							1: '[default]Miscellaneous Tags/Testing only '
-							   'tags/mahlo_popup/dummy_mahlo_tags/MdMeterCount'},
-						'recipe': {
-							1: '[default]Miscellaneous Tags/Testing only tags/mahlo_popup/dummy_mahlo_tags/KeyName'},
-						'file_name': {
-							1: '[default]Miscellaneous Tags/Testing only tags/mahlo_popup/dummy_mahlo_tags/FileName'},
-						'tabcode': {
-							1: '[default]Miscellaneous Tags/Testing only '
-							   'tags/mahlo_popup/dummy_mahlo_tags/TiRollCount'}
-						}
+		#		# for testing
+		#		tagpath_dict = {'source_lot_number': {1: '[default]Miscellaneous Tags/Testing only
+		#		tags/mahlo_popup/dummy_mahlo_tags/BatchID'},
+		#								'mahlo_start_length': {1: '[default]Miscellaneous Tags/Testing only
+		#								tags/mahlo_popup/dummy_mahlo_tags/MdMeterCount'},
+		#								'mahlo_end_length': {1: '[default]Miscellaneous Tags/Testing only
+		#								tags/mahlo_popup/dummy_mahlo_tags/MdMeterCount'},
+		#								'recipe': {1: '[default]Miscellaneous Tags/Testing only
+		#								tags/mahlo_popup/dummy_mahlo_tags/KeyName'},
+		#								'file_name': {1: '[default]Miscellaneous Tags/Testing only
+		#								tags/mahlo_popup/dummy_mahlo_tags/FileName'},
+		#								'tabcode': {1: '[default]Miscellaneous Tags/Testing only
+		#								tags/mahlo_popup/dummy_mahlo_tags/TiRollCount'}
+		#								}
 
 		# the thickness has gone out of spec
 		if newValue.getValue():
@@ -80,10 +77,8 @@ else:
 				print('get current defect result {}'.format(result))
 
 				# we only need the updated values for put
-				current_data_dict = {'id': def_id.val}
-				current_data_dict[
-					'defect_end_ts'] = system.date.now()  # the database is on the same system as the gateway,
-				# so same time source
+				current_data_dict = {'id': def_id.val, 'defect_end_ts': system.date.now()}
+				# the database is on the same system as the gateway, so same time source
 
 				end_length = Ptag(tagpath_dict['mahlo_end_length'][lam_num]).val
 				current_data_dict['mahlo_end_length'] = end_length
