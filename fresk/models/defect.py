@@ -16,10 +16,13 @@ class DefectModel(fsa.Model):
     tabcode = fsa.Column(fsa.String, default='')
     recipe = fsa.Column(fsa.String, default='')
     lam_num = fsa.Column(fsa.Integer, default=0)
+    file_name = fsa.Column(fsa.String, server_default='')
     rolls_of_product_post_slit = fsa.Column(fsa.Integer, default=3)
     defect_start_ts = fsa.Column(fsa.TIMESTAMP(timezone=True), server_default=sqlalchemy.func.now())
     defect_end_ts = fsa.Column(fsa.TIMESTAMP(timezone=True), server_default=sqlalchemy.func.now())
     length_of_defect_meters = fsa.Column(fsa.Float(precision=2), server_default='1.0')
+    mahlo_start_length = fsa.Column(fsa.Float(precision=2), server_default='0.0')
+    mahlo_end_length = fsa.Column(fsa.Float(precision=2), server_default='0.0')
 
     # reason for removal
     defect_type = fsa.Column(fsa.VARCHAR(13))
