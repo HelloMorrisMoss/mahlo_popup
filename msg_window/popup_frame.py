@@ -57,19 +57,12 @@ class DefectMessageFrame(ttk.Frame):
                 return panel
         return None
 
-    def focus_lost_handler(self, event):
-        """When the window loses focus (another window is clicked or otherwise switched to).
+    def set_style(self, style_dict):
+        """Incorporate the style dict parameters into the instance.
 
-        :param event: tkinter.Event
+        :param style_dict: dict
         """
-
-        if event.widget == self._mp_root:  # if the window itself lost focus
-            lg.debug('No longer focus window!')
-            self.grid_remove()
-            self._mp_root.update()
-
-    def set_style(self, kwargs):
-        styling = kwargs.get('style_settings')
+        styling = style_dict.get('style_settings')
         if styling:
             lg.debug('style provided')
             for k, v in styling.items():
@@ -99,10 +92,19 @@ class DefectMessageFrame(ttk.Frame):
             self.parent.hide_hideables()
 
     def get_message_rows(self):
+        """Get a list of the rows that MessagePanels currently occupy.
+
+        :return: list, [int, ...]
+        """
         mrows = [msg_panel.msg_number for msg_panel in self.messages_frames]
         return mrows
 
     def add_message_panel(self, defect):
+        """Add a message panel to the frame.
+
+        :param defect: DefectModel
+        :return: MessagePanel
+        """
         if defect.id not in tuple(df.id for df in self.current_defects):
             self.message_panel_row += 1
             self.current_defects.append(defect)
