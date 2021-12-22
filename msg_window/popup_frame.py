@@ -96,7 +96,7 @@ class DefectMessageFrame(ttk.Frame):
 
         # if we have no defects, no need to be big
         if not self.current_defects:
-            self.shrink()
+            self.parent.hide_hideables()
 
     def get_message_rows(self):
         mrows = [msg_panel.msg_number for msg_panel in self.messages_frames]
