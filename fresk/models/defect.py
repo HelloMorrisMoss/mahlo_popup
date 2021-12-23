@@ -37,7 +37,7 @@ class DefectModel(fsa.Model):
     # TODO: these timestamps are being set to model(table) creation time, unlike the ones above
     entry_created_ts = fsa.Column(fsa.DateTime(timezone=True), server_default=sqlalchemy.func.now())
     entry_modified_ts = fsa.Column(fsa.DateTime(timezone=True), server_default=sqlalchemy.func.now())
-    record_creation_source = fsa.Column(fsa.String(), server_default=sqlalchemy.func.now())
+    record_creation_source = fsa.Column(fsa.String(), server_default='')
     marked_for_deletion = fsa.Column(fsa.Boolean, server_default='''False''')
     operator_saved_time = fsa.Column(fsa.DateTime(timezone=True))
 

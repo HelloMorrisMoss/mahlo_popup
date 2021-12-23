@@ -1,6 +1,5 @@
 """To add a popup window to the Mahlo HMI PC at the laminators. Designed to be called from the command line over ssl."""
 
-import os
 import tkinter as tk
 
 from dev_common import add_show_messages_button, recurse_hover, recurse_tk_structure, style_component
@@ -8,8 +7,6 @@ from fresk.models.defect import DefectModel
 from log_setup import lg
 # when called by RPC the directory may change and be unable to find the ttk theme file directory
 from msg_window.popup_frame import DefectMessageFrame
-
-os.chdir(r'C:\Users\lmcglaughlin\PycharmProjects\mahlo_popup')
 
 
 # TODO: why not just have the popup ask (get request) flask if it has any current messages every second?
