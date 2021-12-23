@@ -81,6 +81,8 @@ def add_show_messages_button(parent_container, current_messages_count, command):
     # the messages received button that shows when the window doesn't have focus
     # parent_container.columnconfigure(0, weight=1)  # to make the button able to fill the width
     # parent_container.rowconfigure(0, weight=1)  # to make the button able to fill the height
+    # button_font = ttk.Style()
+    # button_font.configure('Accent.TButton', font=('Helvetica', 40))
     number_of_messages_button = tk.ttk.Button(parent_container, text=str(current_messages_count),
                                               style='Accent.TButton')
     number_of_messages_button.bind('<Button-1>', command)  # bind the 'show messages' fn
