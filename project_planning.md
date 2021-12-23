@@ -84,16 +84,18 @@ popup needs to:
 * add defect button works but the window doesn't seem to resize for its message panels. fixed
 * defect type selection screen
 * have defect types show in message window
-* popup: on creation single defect is being displayed twice
-* popup: when creating new message panels at creation, extra window showing
-* need to be able to change the length of the defect
-* selecting the save and add new defect buttons are triggering the focus lost shrink
+* popup: on creation single defect is being displayed twice - fixed
+* popup: when creating new message panels at creation, extra window showing - fixed
+* need to be able to change the length of the defect - done
+* selecting the save and add new defect buttons are triggering the focus lost shrink - fixed
 * need to test on a laminator
-* need to build the Ignition end of things
+* need to build the Ignition end of things - done
 * shrink/grow messages from flask to the popup need to be setup, both ends
 * need to test if new records can populate the defect message window while 'hidden'
-* the show defects button count isn't updating, need to have that as probably a tk.IntVar (if not already) and update it when the defect list updates
-* when the defects save and the defects are removed from the current list, does that have a loop that isn't breaking after finding the defect (not a big deal here, but not ideal)
+* the show defects button count isn't updating, need to have that as probably a tk.IntVar (if not already) and update it
+  when the defect list updates
+* when the defects save and the defects are removed from the current list, does that have a loop that isn't breaking
+  after finding the defect (not a big deal here, but not ideal)
 
 Ignition end of things brainstorming:
 * need to determine when defects have started and ended
@@ -111,7 +113,7 @@ Ignition end of things brainstorming:
 12/15 todo:
 
 * new defect needs to get current values from tag history database (or if we get the webdev module, from Ignition)
-* a new defect in an open window, the window needs to resize to accommodate
+* a new defect in an open window, the window needs to resize to accommodate - done
 * new defect button may be adding multiple new defects? fixed
 
 12/16 todo:
@@ -122,8 +124,19 @@ Ignition end of things brainstorming:
 12/20 todo:
 
 * the default timestamps may be a specific time when now() ran (table creation) not the function at the time the row is
-  created
+  created - fixed
 
 12/21 todo:
 
-* get rid of the extra windows
+* get rid of the extra windows- fixed
+
+12/22
+
+* the popup needs to show defects only for that laminator
+* count button needs a larger font
+* install on a mahlo hmi to test
+* select attributes still shows next to rolls/save
+* OK button on select attributes needs to look better
+* the current selection on select attributes need to be 'accent'ed when loading a defect
+* save button should be larger
+* there is a cancel button on the type of defect panel - it needs to be removed
