@@ -127,7 +127,6 @@ class Popup(tk.Tk):
         while len(self.messages_from_flask):
             self.new_messages.append(self.messages_from_flask.pop())
         if self.new_messages:
-            # if True:
             lg.debug('new messages: %s', self.new_messages)
 
             # if we haven't gotten the flask app via the queue yet, look for it
@@ -139,9 +138,11 @@ class Popup(tk.Tk):
                 elif msg.get('action'):
                     action_str = self.new_messages.pop(mindex)['action']
                     if action_str == 'shrink':
+                        self.wm_state('iconic')
                         self.hide_hideables()
                     elif action_str == 'show':
                         self.show_hideables()
+                        self.state('normal')
                         window_topmost(self)
                         raise_above_all(self)
                     elif action_str == 'check_defect_updates':
