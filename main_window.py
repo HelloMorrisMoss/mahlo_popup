@@ -140,6 +140,7 @@ class Popup(tk.Tk):
                         self.hide_hideables()
                     elif action_str == 'show':
                         self.show_hideables()
+                        window_topmost(self)
                     elif action_str == 'check_defect_updates':
                         lg.debug('check for updates to defects')
                         self.popup_frame.check_for_new_defects()
