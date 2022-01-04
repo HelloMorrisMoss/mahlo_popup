@@ -44,7 +44,7 @@ class DefectMessageFrame(ttk.Frame):
         self.current_defects = PublishingLengthList()  # list of DefectModels
         self.message_panel_row = 0  # to keep the panels in order
 
-        self.parent.after(5000, self.check_for_new_defects)  # give SQLalchemy time to connect to the database
+        self.after(5000, self.check_for_new_defects)  # give SQLalchemy time to connect to the database
 
     def get_panel_by_defect_id(self, id_num):
         """Get the panel for the defect with id_num.
@@ -69,24 +69,27 @@ class DefectMessageFrame(ttk.Frame):
                 lg.debug(f'PopupFrame add {k}: {v}')
                 setattr(self, k, v)
 
-    def check_for_new_defects(self):
+    def check_for_new_defects(self, retry_num=0):
         """Check the database for new defects, if there are add new panels."""
         try:
             with self.parent.flask_app.app_context():
                 new_defs = DefectModel.find_new()
+            lg.debug('new defects: %s', new_defs)
+            for defect in new_defs:
+                if defect not in self.current_defects:
+                    self.add_message_panel(defect)
+
+            # if we have no defects, no need to be big
+            if not self.current_defects:
+                self.parent.hide_hideables()
         except AssertionError:
             lg.warning('Assertion error for sqlalchemy.')
-            self.after(2000, self.check_for_new_defects)
-            return
-
-        lg.debug('new defects: %s', new_defs)
-        for defect in new_defs:
-            if defect not in self.current_defects:
-                self.add_message_panel(defect)
-
-        # if we have no defects, no need to be big
-        if not self.current_defects:
-            self.parent.hide_hideables()
+            retry_num += 1
+            if retry_num > 5:
+                raise ConnectionError('Cannot connect to database!')
+            self.after(2000, self.check_for_new_defects, retry_num)
+        except AttributeError:
+            lg.warning('Running without flask.')
 
     def get_message_rows(self):
         """Get a list of the rows that MessagePanels currently occupy.
@@ -102,7 +105,7 @@ class DefectMessageFrame(ttk.Frame):
         :param defect: DefectModel
         :return: MessagePanel
         """
-        if defect.id not in tuple(df.id for df in self.current_defects):
+        if defect.id not in tuple(df.defect_id for df in self.messages_frames):
             self.message_panel_row += 1
             self.current_defects.append(defect)
             msg_frm = MessagePanel(self, defect, self.message_panel_row, dt_format_str=self.dt_format_str,
@@ -115,3 +118,15 @@ class DefectMessageFrame(ttk.Frame):
         """Show the button that has the count of defect messages."""
         self.number_of_messages_button.grid(row=0, column=0, sticky='nesw',
                                             rowspan=9, columnspan=3)
+
+
+if __name__ == '__main__':
+    import tkinter
+
+    root = tkinter.Tk()
+    popup = DefectMessageFrame(root)
+    popup.grid(row=0, column=0)
+    btn = ttk.Button(popup)
+    btn.grid(row=0, column=0)
+
+    root.mainloop()
