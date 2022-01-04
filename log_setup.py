@@ -1,11 +1,3 @@
-# import logging
-#
-#
-# # init the logger
-# lg = logging.getLogger('mds_popup_window')
-# logging.basicConfig()
-# lg.setLevel(logging.DEBUG)
-
 import logging
 
 from logging.handlers import RotatingFileHandler
@@ -59,8 +51,3 @@ def setup_logger():
 
 # protect against multiple loggers from importing in multiple files
 lg = setup_logger() if not logging.getLogger().hasHandlers() else logging.getLogger()
-# class devnul:
-#     def debug(self, *args, **kwrgs):
-#         pass
-#
-# lg =devnul()
