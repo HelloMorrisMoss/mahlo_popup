@@ -34,20 +34,19 @@ class MessagePanel(tk.ttk.LabelFrame):
         # TODO: change defect length removed
 
         # the label that displays the defect_instance
-        self.message_label = self.add_message_display_label(self)
+        self.message_label = self._add_message_display_label(self)
         self.update_message_text()
         self.hideables.append(self.message_label)
 
-        self.add_buttons(self)
+        self._add_buttons(self)
 
-    def hide(self, *args, **kwargs):
-        lg.debug('msg_window asked to hide')  # don't recall if this is used anymore
-        self.grid_remove()
+    def _add_message_display_label(self, parent):
+        """A ttk label displaying information about the defect. Clicking the label will allow changes to be made.
 
-    def un_hide(self):
-        self.grid()
+        :param parent: tkinter container, the parent container to add the label to.
+        :return: tk.ttk.Label
+        """
 
-    def add_message_display_label(self, parent):
         label = tk.ttk.Label(parent)
         grid_params = dict(column=0, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="w")
         setattr(label, 'grid_params_', grid_params)
@@ -66,7 +65,7 @@ class MessagePanel(tk.ttk.LabelFrame):
 
     def refresh_panel(self):
         self.update_message_text()
-        self.change_toggle_count()
+        self._change_toggle_count()
 
     def hide_hideables(self):
         """Hide (.remove_grid) on all widgets that have been added to the hideables list."""
@@ -90,7 +89,7 @@ class MessagePanel(tk.ttk.LabelFrame):
             dtype=self.defect_interface.defect_type, defect_id=self.defect_interface.id)
         self.message_label.config(text=msg_text)
 
-    def add_buttons(self, parent):
+    def _add_buttons(self, parent):
         """Add the button frames and their widgets to the parent frame.
 
         :param message: dict, the defect_instance dictionary
@@ -101,9 +100,9 @@ class MessagePanel(tk.ttk.LabelFrame):
         self._add_foam_removed_toggle_selectors(parent)
 
         # add the save button
-        self.add_action_buttons(parent)
+        self._add_action_buttons(parent)
 
-    def add_action_buttons(self, parent):
+    def _add_action_buttons(self, parent):
         """Add the action button frame and buttons.
 
         :param parent: tkinter container
@@ -151,7 +150,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         self.destroy()
         lg.debug(self.parent.current_defects)
         # TODO: save to sqlite database, then try to send all items unsent in the db; does it have to be sqlite?
-        #  can we just install postgres on the hmi?
+        #  can we just install postgres on the hmi? Retries may suffice, see how connection looks in production
 
     def _add_foam_removed_toggle_selectors(self, parent):
         """Add the toggle buttons frame to the parent frame.
@@ -164,9 +163,9 @@ class MessagePanel(tk.ttk.LabelFrame):
                                       style=self._wgt_styles['labelframe'])  # is this style hiding the frame?
         grid_params = dict(column=1, row=0, padx=self.pad['x'], pady=self.pad['y'], sticky="nesw")
 
-        setattr(self, 'grid_params)', grid_params)
+        setattr(self.btn_frame, 'grid_params_', grid_params)
         self.btn_frame.grid(**grid_params)
-        self.hideables.append(self)
+        self.hideables.append(self.btn_frame)
 
         # default to the guessed number
         # number_of_buttons = defect_interface['toggle_count_guess']
@@ -178,7 +177,7 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         # add them to the button frame
         for bnum, (btn, btndef) in enumerate(self.toggle_button_def_dict.items()):
-            self._toggle_refs[btn] = self._add_toggle(self.btn_frame, btn, btndef, parent)
+            self._toggle_refs[btn] = self._add_toggle(self.btn_frame, btn, btndef)
 
         # add a line separator to make the all button stand out from the side buttons
         sep = ttk.Separator(self.btn_frame, orient='horizontal')
@@ -190,13 +189,12 @@ class MessagePanel(tk.ttk.LabelFrame):
                          'sticky': 'nesw'}
         sep.grid(**sep_grid_dict)
 
-    def _add_toggle(self, btn_frame, btn_side, btndef, parent):
+    def _add_toggle(self, btn_frame, btn_side, btndef):
         """Add a toggle button to the frame using a definition dictionary.
 
         :param btn_frame: tkinter.Frame
         :param btn_side: str, the 'side' for the button.
         :param btndef: dict, definining parameters for the button.
-        :param defect_interface: DefectModel.
         """
         # add a toggle switch
         btn_wgt = ttk.Checkbutton(btn_frame, style=self._wgt_styles['toggle'], **btndef['params'])
@@ -212,7 +210,7 @@ class MessagePanel(tk.ttk.LabelFrame):
             setattr(btn_wgt, 'not_all_list', btndef['not_all_list'])
 
         # add the event handler method
-        btn_wgt.bind('<Button-1>', self.toggle_changes_event_handler)
+        btn_wgt.bind('<Button-1>', self._toggle_changes_event_handler)
 
         # TODO: only the sections that should have been removed to default on (from the 'defect_instance')
         # default to all toggles on
@@ -263,16 +261,17 @@ class MessagePanel(tk.ttk.LabelFrame):
             btndf['params']['variable'] = btndf['params']['textvariable']
         return button_def_dict
 
-    def destroy_toggle_panel(self):
-        """Destroy the current button framer for this defect_instance panel."""
-        self.btn_frame.destroy()
+    def _destroy_toggle_panel(self):
+        """Hide the current button frame for this defect_instance panel."""
+        # self.btn_frame.destroy()
+        self.btn_frame.grid()
 
-    def change_toggle_count(self):
+    def _change_toggle_count(self):
         """Change the number of toggle-buttons on the the foam removed toggles frame."""
-        self.destroy_toggle_panel()
+        self._destroy_toggle_panel()
         self._add_foam_removed_toggle_selectors(self)
 
-    def toggle_changes_event_handler(self, event):
+    def _toggle_changes_event_handler(self, event):
         """Handle the toggle button being changed with regard to its designation and the state of the other toggles.
 
         If the 'all' button is turned on or off set the 'sides' to the same.
@@ -286,7 +285,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         # this is just for development
         dbg_vars = (event, event.widget.msg_id, event.widget.side,
                     event.widget.state_var.get(), event.widget.state(), f'new {now_on}')
-        lg.debug('toggle_changes_event_handler - %s, ' * len(dbg_vars), *dbg_vars)
+        lg.debug('_toggle_changes_event_handler - %s, ' * len(dbg_vars), *dbg_vars)
 
         # evaluate and set the toggles if needed
         if side == 'all':
