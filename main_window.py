@@ -2,7 +2,9 @@
 
 import tkinter as tk
 
-from dev_common import add_show_messages_button, recurse_hover, recurse_tk_structure, style_component, window_topmost
+from dev_common import add_show_messages_button, raise_above_all, recurse_hover, recurse_tk_structure, \
+    style_component, \
+    window_topmost
 from fresk.models.defect import DefectModel
 from log_setup import lg
 # when called by RPC the directory may change and be unable to find the ttk theme file directory
@@ -141,6 +143,7 @@ class Popup(tk.Tk):
                     elif action_str == 'show':
                         self.show_hideables()
                         window_topmost(self)
+                        raise_above_all(self)
                     elif action_str == 'check_defect_updates':
                         lg.debug('check for updates to defects')
                         self.popup_frame.check_for_new_defects()
