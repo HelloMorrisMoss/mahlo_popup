@@ -122,3 +122,9 @@ def style_component(component, path_override=''):
     component.tk.call("source", os.path.join(path_override, "Azure-ttk-theme-main/Azure-ttk-theme-main/azure.tcl"))
     component.tk.call("set_theme", "dark")
     component._wgt_styles = {'toggle': 'Switch.TCheckbutton', 'labelframe': 'Card.TFrame'}
+
+
+def window_topmost(window):
+    window.lift()
+    window.attributes('-topmost', True)
+    # self.root.after_idle(self.root.attributes, '-topmost', False)

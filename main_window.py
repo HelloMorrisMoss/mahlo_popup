@@ -2,7 +2,7 @@
 
 import tkinter as tk
 
-from dev_common import add_show_messages_button, recurse_hover, recurse_tk_structure, style_component
+from dev_common import add_show_messages_button, recurse_hover, recurse_tk_structure, style_component, window_topmost
 from fresk.models.defect import DefectModel
 from log_setup import lg
 # when called by RPC the directory may change and be unable to find the ttk theme file directory
@@ -65,9 +65,7 @@ class Popup(tk.Tk):
         #  it seems like it would
 
         # move the window to the front
-        self.lift()
-        self.attributes('-topmost', True)
-        # self.root.after_idle(self.root.attributes, '-topmost', False)
+        window_topmost(self)
 
         self.bind("<FocusOut>", self.hide_hideables)
         # self.bind("<FocusIn>", show_hideables)
