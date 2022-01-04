@@ -140,3 +140,15 @@ Ignition end of things brainstorming:
 * the current selection on select attributes need to be 'accent'ed when loading a defect
 * save button should be larger
 * there is a cancel button on the type of defect panel - it needs to be removed
+
+12/24 todo:
+
+* reopening the set attribute panel, the ok button errors: .!defectmessageframe.!messagepanel2.!frame - fixed
+
+01/04 todo:
+
+* changes panel is still not hiding the toggles.
+* test on a Mahlo HMI pc
+* save button should be larger
+* count button needs a larger font
+* the popup needs to show defects only for that laminator
