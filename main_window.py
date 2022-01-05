@@ -23,6 +23,10 @@ class Popup(tk.Tk):
         # what to do when hiding
         self._hide_option = tk.StringVar()
         self._hide_option.set('b')  # default to button
+        self.message_button_geometry = '150x150'  # used for the message button and referenced by .show_hideables()
+        # whether to automatically hide/show the window
+        self._auto_hide = tk.IntVar(value=True)
+        self._auto_show = tk.IntVar(value=True)
 
         # communication with flask app
         inbound_queue = kwargs.get('inbound_queue')
@@ -56,13 +60,15 @@ class Popup(tk.Tk):
         # the button that shows while inactive, displays the number of new defects
         self.number_of_messages_button = add_show_messages_button(self, 0, self.show_hideables)
         self.number_of_messages_button.grid(row=0, column=0, sticky='nesw')
+        self.number_of_messages_button.grid_remove()
         self.subscribe_message_button_to_defect_display_count()
         self.columnconfigure(0, weight=1)  # to make the button able to fill the width
         self.rowconfigure(0, weight=1)  # to make the button able to fill the height
 
         # the buttons that aren't for a specific popup (add, settings, etc)
         self.controls_panel = IndependentControlsPanel(self, 'Control Panel', hide_option=self._hide_option,
-                                                       grid_pad=self.pad)
+                                                       grid_pad=self.pad, autohide_var=self._auto_hide,
+                                                       autoshow_var=self._auto_show)
         self.controls_panel.grid(row=2, column=0, sticky='we')
         self.hideables.append(self.controls_panel)
 
@@ -72,8 +78,8 @@ class Popup(tk.Tk):
         # move the window to the front
         window_topmost(self)
 
-        # self.bind("<FocusOut>", self.hide_hideables)
-        # self.bind("<FocusIn>", show_hideables)
+        self.bind("<FocusOut>", self._auto_hide_window)
+        self.bind("<FocusIn>", self._auto_show_window)
 
         lg.debug(self.hideables)
 
@@ -81,9 +87,9 @@ class Popup(tk.Tk):
         if self.debugging:
             def recursive_print(tk_component, repeat=True):
                 """Print the tkinter window/widget structure"""
-                recurse_tk_structure(self)
+                recurse_tk_structure(tk_component)
                 if repeat:
-                    self.after(15000, recursive_print)
+                    self.after(5000, recursive_print)
 
             self.after(1000, recursive_print)  # for debugging, prints out the tkinter structure
             recurse_hover(self.popup_frame)  # for debugging, shows widget info when mouse cursor moves over it
@@ -92,8 +98,23 @@ class Popup(tk.Tk):
         self.new_messages = []
         self.flask_app = None
         self.after(1000, self.check_for_inbound_messages)
-        self.hide_hideables()
+
+        # start the tkinter mainloop
         self.mainloop()
+
+    def _auto_hide_window(self, event):
+        """If auto-hide is selected, hide/shrink the window."""
+
+        if self._auto_hide.get():
+            lg.debug('auto hiding window')
+            self.hide_hideables()
+
+    def _auto_show_window(self, event):
+        """If auto-show is selected, show the window."""
+
+        if self._auto_show.get():
+            lg.debug('auto showing window')
+            self.show_hideables()
 
     def subscribe_message_button_to_defect_display_count(self):
         """Subscribes the self.number_of_messages_button to the length of the defect list.
@@ -107,14 +128,20 @@ class Popup(tk.Tk):
 
     def show_hideables(self, event=None):
         """Show the defect message panels, control panel, etc."""
-        for hideable in self.hideables:
-            hideable.grid()
-        self.number_of_messages_button.grid_remove()
-        self.geometry('')  # grow to whatever size is needed for all the messages and other widgets
-        self.deiconify()
-        self.state('normal')
-        window_topmost(self)
-        raise_above_all(self)
+        # self.window_has_hidden()
+        if not self.winfo_viewable() or self.message_button_geometry in self.geometry():
+            for hideable in self.hideables:
+                hideable.grid()
+            self.number_of_messages_button.grid_remove()  # hide the messages button
+            self.geometry('')  # grow to whatever size is needed for all the messages and other widgets
+            self.deiconify()  # restore from minimized
+            window_topmost(self)
+            raise_above_all(self)
+            self.focus_get()
+
+            # re-hide the minimize/maxmize buttons if using iconify
+            if self._hide_option == 'i':
+                self.attributes('-toolwindow', True)
 
     def hide_hideables(self, event=None):
         """Hide the components that are supposed to hide when the window 'shrinks'.
@@ -122,7 +149,12 @@ class Popup(tk.Tk):
         :param event:
         """
         # this check is so that the window will not shrink when pressing buttons
-        if event is None or self.focus_get() is None:
+
+        event_is_none = event is None
+        focus_is_none = self.focus_get() is None
+        proceed = (event_is_none or focus_is_none) and self.winfo_viewable()
+        lg.debug(f'{event_is_none=} {focus_is_none=} {proceed=} {self._auto_hide=}')
+        if proceed:
             if self._hide_option.get() == 'v':
                 lg.debug('withdrawing')
                 self.withdraw()
@@ -131,10 +163,12 @@ class Popup(tk.Tk):
                 self.iconify()
             elif self._hide_option.get() == 'b':
                 lg.debug('going to message button')
+                self.attributes('-toolwindow', False)
                 for hider in self.hideables:
                     hider.grid_remove()
                 self.number_of_messages_button.grid(row=0, column=0)
-                self.geometry('150x150')  # fixed size small window
+
+                self.geometry(self.message_button_geometry)  # fixed size small window
 
     def check_for_inbound_messages(self):
         """Check the inbound queue for new defect messages and if there are any, send them to the MessagePanel."""
@@ -200,6 +234,13 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
             for i, (option, optn) in enumerate(options):
                 rb = ttk.Radiobutton(self._hide_selector, text=option, value=optn, variable=kwargs['hide_option'])
                 rb.grid(row=3, column=i)
+
+            self._autohide_toggle = ttk.Checkbutton(self._hide_selector, text='Autohide',
+                                                    variable=kwargs['autohide_var'])
+            self._autohide_toggle.grid(row=3, column=self.next_column())
+            self._autoshow_toggle = ttk.Checkbutton(self._hide_selector, text='Autoshow',
+                                                    variable=kwargs['autoshow_var'])
+            self._autoshow_toggle.grid(row=3, column=self.next_column())
 
     def next_column(self):
         """Get an integer representing the next tk grid column to use."""
