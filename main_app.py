@@ -18,14 +18,3 @@ while not f2p_queue:
     time.sleep(1)
 
 Popup(inbound_queue=f2p_queue, outbound_queue=p2f_queue)
-
-# import subprocess
-#
-#
-# proc = subprocess.Popen(
-#     ['cat', '-'],
-#     stdin=subprocess.PIPE,
-#     stdout=subprocess.PIPE,
-# )
-# msg = 'through stdin to stdout'.encode('utf-8')
-# stdout_value = proc.communicate(msg)[0].decode('utf-8')
