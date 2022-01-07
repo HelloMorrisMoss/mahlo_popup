@@ -99,7 +99,7 @@ class Popup(tk.Tk):
         self.flask_app = None
         self.after(1000, self.check_for_inbound_messages)
 
-        self.after(1000, self.watching_focus)
+        # self.after(1000, self.watching_focus)
 
         # start the tkinter mainloop
         self.mainloop()
