@@ -1,5 +1,5 @@
 """To add a popup window to the Mahlo HMI PC at the laminators. Designed to be called from the command line over ssl."""
-
+import tkinter
 import tkinter as tk
 from tkinter import ttk
 
@@ -18,7 +18,7 @@ class Popup(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__()
         self.debugging = kwargs.get('debug')
-        self.attributes('-toolwindow', True)
+        # self.attributes('-toolwindow', True)
 
         # what to do when hiding
         self._hide_option = tk.StringVar()
@@ -78,8 +78,8 @@ class Popup(tk.Tk):
         # move the window to the front
         window_topmost(self)
 
-        self.bind("<FocusOut>", self._auto_hide_window)
-        self.bind("<FocusIn>", self._auto_show_window)
+        self._set_focus_out_event()
+        # self.bind("<FocusIn>", self._auto_show_window)
 
         lg.debug(self.hideables)
 
@@ -99,22 +99,42 @@ class Popup(tk.Tk):
         self.flask_app = None
         self.after(1000, self.check_for_inbound_messages)
 
+        self.after(1000, self.watching_focus)
+
         # start the tkinter mainloop
         self.mainloop()
 
-    def _auto_hide_window(self, event):
+    def watching_focus(self):
+        lg.debug('focus: %s - state: %s', self.focus_displayof(), self.state())
+        self.after(1000, self.watching_focus)
+
+    def _set_focus_out_event(self):
+        self._focus_out_func_id = self.bind("<FocusOut>", self._auto_hide_window)
+
+    def _clear_focus_out_event(self):
+        self.unbind("<FocusOut>", self._focus_out_func_id)
+
+    def _do_without_focus_out(self, callable_):
+        self._clear_focus_out_event()
+        self.update()
+        callable_()
+        self._set_focus_out_event()
+
+    def _auto_hide_window(self, event: tkinter.Event):
         """If auto-hide is selected, hide/shrink the window."""
 
-        if self._auto_hide.get():
+        lg.debug('autohide check if actually has focus %s', self.focus_displayof())
+
+        if self._auto_hide.get() and self.focus_displayof() is None and event.widget is self:
             lg.debug('auto hiding window')
-            self.hide_hideables()
+            self.hide_hideables(event)
 
     def _auto_show_window(self, event):
         """If auto-show is selected, show the window."""
 
         if self._auto_show.get():
             lg.debug('auto showing window')
-            self.show_hideables()
+            self.show_hideables(event)
 
     def subscribe_message_button_to_defect_display_count(self):
         """Subscribes the self.number_of_messages_button to the length of the defect list.
@@ -128,20 +148,21 @@ class Popup(tk.Tk):
 
     def show_hideables(self, event=None):
         """Show the defect message panels, control panel, etc."""
-        # self.window_has_hidden()
+
         if not self.winfo_viewable() or self.message_button_geometry in self.geometry():
             for hideable in self.hideables:
                 hideable.grid()
             self.number_of_messages_button.grid_remove()  # hide the messages button
             self.geometry('')  # grow to whatever size is needed for all the messages and other widgets
-            self.deiconify()  # restore from minimized
+            self._do_without_focus_out(self.deiconify)
+            # self.deiconify()  # restore from minimized
             window_topmost(self)
             raise_above_all(self)
             self.focus_get()
 
             # re-hide the minimize/maxmize buttons if using iconify
-            if self._hide_option == 'i':
-                self.attributes('-toolwindow', True)
+            # if self._hide_option == 'i':
+            # self._do_without_focus_out(lambda: self.attributes('-toolwindow', False))
 
     def hide_hideables(self, event=None):
         """Hide the components that are supposed to hide when the window 'shrinks'.
@@ -150,20 +171,24 @@ class Popup(tk.Tk):
         """
         # this check is so that the window will not shrink when pressing buttons
 
-        event_is_none = event is None
-        focus_is_none = self.focus_get() is None
-        proceed = (event_is_none or focus_is_none) and self.winfo_viewable()
-        lg.debug(f'{event_is_none=} {focus_is_none=} {proceed=} {self._auto_hide=}')
+        event_is_none = event is None  # so the hide_now button works
+        window_not_focus = self.focus_displayof() is None  # so pressing buttons doesn't hide the window
+        window_visible = self.winfo_viewable()  # so
+        proceed = (event_is_none or window_not_focus) and window_visible
+        lg.debug(f'{event=} {window_not_focus=} {proceed=} {self._auto_hide=}')
+
         if proceed:
             if self._hide_option.get() == 'v':
                 lg.debug('withdrawing')
                 self.withdraw()
             elif self._hide_option.get() == 'i':
+                # self.attributes('-toolwindow', False)
                 lg.debug('iconifying')
                 self.iconify()
             elif self._hide_option.get() == 'b':
+                # if not self.attributes('-toolwindow'):
                 lg.debug('going to message button')
-                self.attributes('-toolwindow', False)
+                # self.attributes('-toolwindow', True)  # hide max/minimize buttons
                 for hider in self.hideables:
                     hider.grid_remove()
                 self.number_of_messages_button.grid(row=0, column=0)
