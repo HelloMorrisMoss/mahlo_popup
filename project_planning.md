@@ -152,3 +152,16 @@ Ignition end of things brainstorming:
 * save button should be larger
 * count button needs a larger font
 * the popup needs to show defects only for that laminator
+
+01/10 todo:
+
+* determine if the current defect detection is working, else what needs to be done
+  * length calculation is not, created a new calculation using the lam speed between the defect start/stop, testing
+  * not consistently seeing defect start length match up
+* the MDS sheet is also used to record destroyed rolls, will need something for that in the popup
+* need to talk to production about current scrap recording and what happens with the extra foam at thickness changeover
+  * they record scrap in an excel sheet
+  * there in theory is practically no thickness changeover scrap
+* the **MdValProfilMax** and **MdValProfilMin** Mahlo tags look like they may be the last scan max/min for the Mahlo
+  * can we use those with the primary/secondary/tertiary criteria as per the export project to determine when to auto
+    generate a defect? 
