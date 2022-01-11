@@ -17,6 +17,17 @@ class DefectModelTest(BaseTest):
             # it does exist
             self.assertIsNotNone(DefectModel.find_by_id(0))
 
+    def test_defect_class_method_find_all(self):
+        with self.app_context():
+            # is empty
+            self.assertListEqual(DefectModel.find_all(), [])
+
+            for i in range(3):
+                di = DefectModel()
+                di.save_to_database()
+
+            self.assertEqual(len(DefectModel.find_all()), 3)
+
     def test_create_defect_record_defaults(self):
         with self.app_context():
             # there are no defects
@@ -63,25 +74,31 @@ class DefectModelTest(BaseTest):
                 tstamp = getattr(defect, tstr)
                 self.assertIsInstance(tstamp, datetime)
 
-    def defect_class_method_find_new(self):
+    def test_defect_class_method_find_new(self):
         with self.app_context():
-            # empty table
+            # the table is empty
             self.assertListEqual(DefectModel.find_all(), [])
 
             # create defect records
-            defect0 = DefectModel(0)
+            defect0 = DefectModel()
             defect0.save_to_database()
+            self.assertIsNone(defect0.operator_saved_time)
 
             # this one 'has been confirmed by the operator' and is not new
-            defect1 = DefectModel(1)
+            defect1 = DefectModel()
+            self.assertIsNone(defect1.operator_saved_time)
             defect1.operator_saved_time = datetime.now()
+            defect1.entry_modified_ts = datetime.now()
             defect1.save_to_database()
+            self.assertIsNotNone(defect1.operator_saved_time)
 
             defect2 = DefectModel()
+            self.assertIsNone(defect2.operator_saved_time)
             defect2.save_to_database()
 
+            # there are now only 2 new defects out of the 3
             new_defects = DefectModel.find_new()
-            self.assertEqual(new_defects[0].id, defect0.id)
-            self.assertEqual(new_defects[1].id, defect2.id)
-
+            new_ids = tuple(df.id for df in new_defects)
+            self.assertTrue(new_defects[0].id in new_ids)
+            self.assertTrue(new_defects[1].id in new_ids)
             self.assertEqual(len(new_defects), 2)
