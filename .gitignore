@@ -231,3 +231,4 @@ cython_debug/
 /grpc_examples/
 !/untracked_config/db_uri.py
 !/untracked_config/development_node.py
+!/untracked_config/thickness_specifications.py
