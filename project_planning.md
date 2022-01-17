@@ -164,4 +164,25 @@ Ignition end of things brainstorming:
   * there in theory is practically no thickness changeover scrap
 * the **MdValProfilMax** and **MdValProfilMin** Mahlo tags look like they may be the last scan max/min for the Mahlo
   * can we use those with the primary/secondary/tertiary criteria as per the export project to determine when to auto
-    generate a defect? 
+    generate a defect?
+
+01/14 todo:
+
+* what needs to go into the destroyal panel/record
+  * lot number
+  * reason
+  * length?
+  * thickness?
+* options
+  * create new SQLAlchemy model/Flask resource etc.
+  * use the new defect panel with some modifications and record it as a defect
+
+01/17 todo:
+
+* if using the new defect popup:
+  * need an option to change the lot #, should they desire to record destroying a roll that is not current.
+  * set up for recording that defects have been included in a report
+    * add a column for included_in_report_file_id
+    * add a table for files that a defect has been included in, we may desire it to be included in more than one (end
+      length)
+    
