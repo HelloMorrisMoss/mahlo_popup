@@ -53,7 +53,7 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
 
 
 class NumberPrompt(tk.ttk.LabelFrame):
-    """Show a tk popup window prompting for a number between 1 and 5, returning that value when pressed."""
+    """A ttk.LabelFrame prompting for a number between 1 and 5."""
 
     def __init__(self, parent, defect):
         super().__init__(parent, text='Number of finished good rolls', style='Card.TFrame')
@@ -72,6 +72,8 @@ class NumberPrompt(tk.ttk.LabelFrame):
             num_button.bind('<Button-1>', self.return_button_val)
             num_button.grid(row=self.row, column=col, padx=2, pady=2)
             self._count_value_buttons.append(num_button)
+            if self.defect.rolls_of_product_post_slit == col:
+                num_button.config(style='Accent.TButton')
 
         add_ok_button(parent, self.parent)
 
@@ -104,6 +106,8 @@ def add_ok_button(parent, destroy_on_press=None):
 class SelectDefectAttributes(tk.ttk.LabelFrame):
     """A ttk.LabelFrame with options to change the defect type, length removed, and number of rolls after slitting."""
 
+    # TODO: need to be able to set the lot#, destroy multiple rolls
+
     def __init__(self, parent, defect, on_destroy, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)  # this is required not super()
         self.parent = parent
@@ -124,7 +128,7 @@ class SelectDefectAttributes(tk.ttk.LabelFrame):
 
 
 class DefectTypePanel(tk.ttk.LabelFrame):
-    """Show a tk popup window prompting for a defect type, returning that value when pressed. Cancel as 'none'."""
+    """A ttk.LabelFrame prompting for a defect type."""
 
     def __init__(self, parent, defect, *args, **kwargs):
         super().__init__(parent, text='Defect Type', *args, **kwargs)
@@ -136,11 +140,14 @@ class DefectTypePanel(tk.ttk.LabelFrame):
 
         self._type_buttons = []
 
+        # add the reason for removal buttons
         for rn, reason in enumerate(reasons_and_cancel):
             button_label_text = reason  # if reason != 0 else 'Cancel'
             reason_button = tk.ttk.Button(self, text=button_label_text)
             reason_button.bind('<Button-1>', self.return_button_val)
             reason_button.grid(row=row, column=col, sticky='ew', padx=2, pady=2)
+            if self.defect.defect_type == reason:
+                reason_button.config(style='Accent.TButton')
             col += 1
             if col > 5:
                 row += 1
@@ -155,8 +162,11 @@ class DefectTypePanel(tk.ttk.LabelFrame):
 
         :param event: tkinter.Event
         """
+
+        # clear any 'selected' buttons
         for btn in self._type_buttons:
             btn.config(style='')
+        # accent this button
         event.widget.config(style='Accent.TButton')
         self.defect.defect_type = event.widget['text']
 
@@ -166,10 +176,9 @@ if __name__ == '__main__':
         """For testing the attributes window."""
 
         def __init__(self):
-            self.defect_type = ''
+            self.defect_type = 'puckering'
             self.rolls_of_product_post_slit = 3
             self.length_of_defect_meters = 1
-
 
     root = tk.Tk()
     style_component(root, '..')
@@ -181,7 +190,9 @@ if __name__ == '__main__':
         def nothing():
             pass
 
-        return SelectDefectAttributes(root, defect=defect1, on_destroy=nothing)
+        nwin = tk.Toplevel()
+        sda = SelectDefectAttributes(nwin, defect=defect1, on_destroy=nothing)
+        sda.pack()
 
 
     show_button = tk.Button(root, command=show_win)
