@@ -27,6 +27,7 @@ class LengthButton(tk.ttk.Button):
 
         :param args: tuple, unused tkinter params.
         """
+
         self.length_var.set(str(round(float(self.length_var.get()) + self.increment_val, 2)))
 
 
@@ -45,23 +46,30 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
         self.length_var.set(str(defect.length_of_defect_meters))
         self.length_var.trace('w', self.update_length)
 
+        self.up_frame = tk.ttk.Frame(self)
+        self.up_frame.grid(row=0, column=0, sticky='ew')
+        self.down_frame = tk.ttk.Frame(self)
+        self.down_frame.grid(row=5, column=0, sticky='ew')
+
         # add the increment buttons
         last_column = 0
+        pad_val = 1
 
         for inc_val in incr_vals:
-            self.up_button = LengthButton(self, self.length_var, 'up',
-                                          text=f'{inc_val}', increment_magnitude=inc_val)
-
             # what's up button? the button that makes the length go up, and down down
-            self.up_button.grid(row=1, column=last_column, sticky='nsew')
-            self.down_button = LengthButton(self, self.length_var, 'down',
+            up_button = LengthButton(self.up_frame, self.length_var, 'up',
+                                     text=f'{inc_val}', increment_magnitude=inc_val)
+
+            up_button.grid(row=1, column=last_column, sticky='nsew', padx=pad_val, pady=pad_val)
+
+            self.down_button = LengthButton(self.down_frame, self.length_var, 'down',
                                             text=f'{inc_val}', increment_magnitude=inc_val)
-            self.down_button.grid(row=4, column=last_column, sticky='nsew')
+            self.down_button.grid(row=4, column=last_column, sticky='nsew', padx=pad_val, pady=pad_val)
             last_column += 1
 
         # the '+' label
         col_span = last_column
-        self.up_label = tk.ttk.Label(self, text='+')
+        self.up_label = tk.ttk.Label(self.up_frame, text='+')
         self.up_label.config(font=(None, 18))
         self.up_label.grid(row=0, column=0, columnspan=col_span)
 
@@ -71,7 +79,7 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
         self.length_label.grid(row=2, column=0, columnspan=col_span, rowspan=2)
 
         # the '-' label
-        self.down_label = tk.ttk.Label(self, text='-')
+        self.down_label = tk.ttk.Label(self.down_frame, text='-')
         self.down_label.config(font=(None, 18))
         self.down_label.grid(row=5, column=0, columnspan=col_span)
 
@@ -223,11 +231,13 @@ if __name__ == '__main__':
         def nothing():
             pass
 
-        nwin = tk.Toplevel()
-        sda = SelectDefectAttributes(nwin, defect=defect1, on_destroy=nothing)
+        # nwin = tk.Toplevel()
+        # nwin = None
+        show_button.grid_remove()
+        sda = SelectDefectAttributes(root, defect=defect1, on_destroy=nothing)
         sda.grid(row=0, column=0)
         # udbf = UpDownButtonFrame(nwin, defect=defect1)
-        # udbf.pack()
+        # udbf.grid(row=0, column=0)
 
 
     show_button = tk.Button(root, command=show_win)
