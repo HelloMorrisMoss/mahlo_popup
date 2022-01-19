@@ -11,6 +11,7 @@ class LengthButton(tk.ttk.Button):
         self.increment_magnitude = icr_mag if icr_mag else 1
 
         super().__init__(parent, *args, **kwargs)
+        self.config(width=3)
         self.length_var = length_var
         self.parent = parent
 
@@ -32,7 +33,13 @@ class LengthButton(tk.ttk.Button):
 
 class UpDownButtonFrame(tk.ttk.LabelFrame):
     """A frame with up and down buttons that increments a value displayed on a label."""
+
     def __init__(self, parent, defect, *args, **kwargs):
+        incr_vals = kwargs.pop('increment_values', None)
+        if not incr_vals:
+            lg.debug('using default incr_vals')
+            incr_vals = [1]
+
         super().__init__(parent, text='Length Removed')
         self.defect = defect
         self.length_var = tk.StringVar()
@@ -41,9 +48,6 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
 
         # add the increment buttons
         last_column = 0
-        incr_vals = kwargs.get('increment_values')
-        if incr_vals is None:
-            incr_vals = [1, 5]
 
         for inc_val in incr_vals:
             self.up_button = LengthButton(self, self.length_var, 'up',
@@ -58,7 +62,9 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
 
         # label displaying the value
         self.length_label = tk.ttk.Label(self, text=self.length_var.get())
-        self.length_label.grid(row=1, column=0)
+        # col_span = last_column if last_column else 1
+
+        self.length_label.grid(row=1, column=0)  # , columnspan=last_column + 1)
 
     def update_length(self, *args):
         """Update the label and defect value. TODO: pull the defect parts out of here, make this publish --> reusable.
@@ -139,7 +145,7 @@ class SelectDefectAttributes(tk.ttk.LabelFrame):
         self.rolls_count_selector = NumberPrompt(self, defect)
         self.rolls_count_selector.grid(row=1, column=1)
 
-        self.length_buttons = UpDownButtonFrame(self, defect)
+        self.length_buttons = UpDownButtonFrame(self, defect, increment_values=[0.1, 1, 5, 10])
         self.length_buttons.grid(row=0, column=0, rowspan=2, sticky='ns')
 
         self.value = tk.IntVar()
@@ -209,10 +215,10 @@ if __name__ == '__main__':
             pass
 
         nwin = tk.Toplevel()
-        # sda = SelectDefectAttributes(nwin, defect=defect1, on_destroy=nothing)
-        # sda.pack()
-        udbf = UpDownButtonFrame(nwin, defect=defect1)
-        udbf.pack()
+        sda = SelectDefectAttributes(nwin, defect=defect1, on_destroy=nothing)
+        sda.pack()
+        # udbf = UpDownButtonFrame(nwin, defect=defect1)
+        # udbf.pack()
 
 
     show_button = tk.Button(root, command=show_win)
