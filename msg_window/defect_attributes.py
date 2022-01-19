@@ -27,8 +27,7 @@ class LengthButton(tk.ttk.Button):
 
         :param args: tuple, unused tkinter params.
         """
-        self.length_var.set(str(int(float(self.length_var.get())) + self.increment_val))
-        pass
+        self.length_var.set(str(round(float(self.length_var.get()) + self.increment_val, 2)))
 
 
 class UpDownButtonFrame(tk.ttk.LabelFrame):
