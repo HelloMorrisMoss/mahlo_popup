@@ -46,13 +46,15 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
         self.length_var.set(str(defect.length_of_defect_meters))
         self.length_var.trace('w', self.update_length)
 
+        # todo: this could be its own class
         self.up_frame = tk.ttk.Frame(self)
-        self.up_frame.grid(row=0, column=0, sticky='ew')
+        self.up_frame.grid(row=10, column=10, sticky='ew')
+        # self.up_frame.grid_propagate(0)  # turns off auto sizing based on children, but currently shrinks to nothing
         self.down_frame = tk.ttk.Frame(self)
-        self.down_frame.grid(row=5, column=0, sticky='ew')
+        self.down_frame.grid(row=70, column=10, sticky='ew')
 
         # add the increment buttons
-        last_column = 0
+        last_column = 10
         pad_val = 1
 
         for inc_val in incr_vals:
@@ -60,28 +62,34 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
             up_button = LengthButton(self.up_frame, self.length_var, 'up',
                                      text=f'{inc_val}', increment_magnitude=inc_val)
 
-            up_button.grid(row=1, column=last_column, sticky='nsew', padx=pad_val, pady=pad_val)
+            up_button.grid(row=20, column=last_column, sticky='nsew', padx=pad_val, pady=pad_val)
 
             self.down_button = LengthButton(self.down_frame, self.length_var, 'down',
                                             text=f'{inc_val}', increment_magnitude=inc_val)
-            self.down_button.grid(row=4, column=last_column, sticky='nsew', padx=pad_val, pady=pad_val)
-            last_column += 1
+            self.down_button.grid(row=70, column=last_column, sticky='nsew', padx=pad_val, pady=pad_val)
+            last_column += 10
 
         # the '+' label
         col_span = last_column
         self.up_label = tk.ttk.Label(self.up_frame, text='+')
-        self.up_label.config(font=(None, 18))
-        self.up_label.grid(row=0, column=0, columnspan=col_span)
+        self.up_label.config(font=(None, 14))
+        self.up_label.grid(row=10, column=10, columnspan=col_span)
+
+        self._top_divider = tk.ttk.Separator(self, orient=tk.HORIZONTAL)
+        self._top_divider.grid(row=30, column=10, columnspan=col_span, sticky='ew', padx=2, pady=2)
 
         # label displaying the value
         self.length_label = tk.ttk.Label(self, text=self.length_var.get())
-        self.length_label.config(font=(None, 24))
-        self.length_label.grid(row=2, column=0, columnspan=col_span, rowspan=2)
+        self.length_label.config(font=(None, 20))
+        self.length_label.grid(row=40, column=10, columnspan=col_span, rowspan=2)
+
+        self._bottom_divider = tk.ttk.Separator(self, orient=tk.HORIZONTAL)
+        self._bottom_divider.grid(row=50, column=10, columnspan=col_span, sticky='ew', padx=2, pady=2)
 
         # the '-' label
         self.down_label = tk.ttk.Label(self.down_frame, text='-')
-        self.down_label.config(font=(None, 18))
-        self.down_label.grid(row=5, column=0, columnspan=col_span)
+        self.down_label.config(font=(None, 14))
+        self.down_label.grid(row=80, column=10, columnspan=col_span)
 
     def update_length(self, *args):
         """Update the label and defect value. TODO: pull the defect parts out of here, make this publish --> reusable.
@@ -217,6 +225,7 @@ if __name__ == '__main__':
         """For testing the attributes window."""
 
         def __init__(self):
+            self.id = 99
             self.defect_type = 'puckering'
             self.rolls_of_product_post_slit = 3
             self.length_of_defect_meters = 1.0
