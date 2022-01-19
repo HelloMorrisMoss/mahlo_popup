@@ -6,13 +6,18 @@ from log_setup import lg
 
 class LengthButton(tk.ttk.Button):
     def __init__(self, parent, length_var, direction_str, *args, **kwargs):
+
+        icr_mag = kwargs.pop('increment_magnitude', None)
+        self.increment_magnitude = icr_mag if icr_mag else 1
+
         super().__init__(parent, *args, **kwargs)
         self.length_var = length_var
         self.parent = parent
+
         if direction_str == 'up':
-            self.increment_val = 1
+            self.increment_val = self.increment_magnitude
         elif direction_str == 'down':
-            self.increment_val = -1
+            self.increment_val = -1 * self.increment_magnitude
 
         self.bind('<Button-1>', self.increment)
 
@@ -33,14 +38,27 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
         self.length_var = tk.StringVar()
         self.length_var.set(str(defect.length_of_defect_meters))
         self.length_var.trace('w', self.update_length)
+
+        # add the increment buttons
+        last_column = 0
+        incr_vals = kwargs.get('increment_values')
+        if incr_vals is None:
+            incr_vals = [1, 5]
+
+        for inc_val in incr_vals:
+            self.up_button = LengthButton(self, self.length_var, 'up',
+                                          text=f'+{inc_val}', increment_magnitude=inc_val)
+
+            # what's up button? the button that makes the length go up, and down down
+            self.up_button.grid(row=0, column=last_column, sticky='nsew')
+            self.down_button = LengthButton(self, self.length_var, 'down',
+                                            text=f'-{inc_val}', increment_magnitude=inc_val)
+            self.down_button.grid(row=2, column=last_column, sticky='nsew')
+            last_column += 1
+
+        # label displaying the value
         self.length_label = tk.ttk.Label(self, text=self.length_var.get())
         self.length_label.grid(row=1, column=0)
-        self.up_button = LengthButton(self, self.length_var, 'up', text='+')
-
-        # what's up button? the button that makes the length go up, and down down
-        self.up_button.grid(row=0, column=0, sticky='nsew')
-        self.down_button = LengthButton(self, self.length_var, 'down', text='-')
-        self.down_button.grid(row=2, column=0, sticky='nsew')
 
     def update_length(self, *args):
         """Update the label and defect value. TODO: pull the defect parts out of here, make this publish --> reusable.
@@ -49,7 +67,7 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
         """
         new_val = self.length_var.get()
         self.length_label.config(text=new_val)
-        self.defect.length_of_defect_meters = int(new_val)
+        self.defect.length_of_defect_meters = float(new_val)
 
 
 class NumberPrompt(tk.ttk.LabelFrame):
@@ -178,7 +196,7 @@ if __name__ == '__main__':
         def __init__(self):
             self.defect_type = 'puckering'
             self.rolls_of_product_post_slit = 3
-            self.length_of_defect_meters = 1
+            self.length_of_defect_meters = 1.0
 
     root = tk.Tk()
     style_component(root, '..')
@@ -191,8 +209,10 @@ if __name__ == '__main__':
             pass
 
         nwin = tk.Toplevel()
-        sda = SelectDefectAttributes(nwin, defect=defect1, on_destroy=nothing)
-        sda.pack()
+        # sda = SelectDefectAttributes(nwin, defect=defect1, on_destroy=nothing)
+        # sda.pack()
+        udbf = UpDownButtonFrame(nwin, defect=defect1)
+        udbf.pack()
 
 
     show_button = tk.Button(root, command=show_win)
