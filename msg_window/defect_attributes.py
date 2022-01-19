@@ -50,20 +50,30 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
 
         for inc_val in incr_vals:
             self.up_button = LengthButton(self, self.length_var, 'up',
-                                          text=f'+{inc_val}', increment_magnitude=inc_val)
+                                          text=f'{inc_val}', increment_magnitude=inc_val)
 
             # what's up button? the button that makes the length go up, and down down
-            self.up_button.grid(row=0, column=last_column, sticky='nsew')
+            self.up_button.grid(row=1, column=last_column, sticky='nsew')
             self.down_button = LengthButton(self, self.length_var, 'down',
-                                            text=f'-{inc_val}', increment_magnitude=inc_val)
-            self.down_button.grid(row=2, column=last_column, sticky='nsew')
+                                            text=f'{inc_val}', increment_magnitude=inc_val)
+            self.down_button.grid(row=4, column=last_column, sticky='nsew')
             last_column += 1
+
+        # the '+' label
+        col_span = last_column
+        self.up_label = tk.ttk.Label(self, text='+')
+        self.up_label.config(font=(None, 18))
+        self.up_label.grid(row=0, column=0, columnspan=col_span)
 
         # label displaying the value
         self.length_label = tk.ttk.Label(self, text=self.length_var.get())
-        # col_span = last_column if last_column else 1
+        self.length_label.config(font=(None, 24))
+        self.length_label.grid(row=2, column=0, columnspan=col_span, rowspan=2)
 
-        self.length_label.grid(row=1, column=0)  # , columnspan=last_column + 1)
+        # the '-' label
+        self.down_label = tk.ttk.Label(self, text='-')
+        self.down_label.config(font=(None, 18))
+        self.down_label.grid(row=5, column=0, columnspan=col_span)
 
     def update_length(self, *args):
         """Update the label and defect value. TODO: pull the defect parts out of here, make this publish --> reusable.
@@ -215,13 +225,13 @@ if __name__ == '__main__':
 
         nwin = tk.Toplevel()
         sda = SelectDefectAttributes(nwin, defect=defect1, on_destroy=nothing)
-        sda.pack()
+        sda.grid(row=0, column=0)
         # udbf = UpDownButtonFrame(nwin, defect=defect1)
         # udbf.pack()
 
 
     show_button = tk.Button(root, command=show_win)
-    show_button.pack()
+    show_button.grid(row=0, column=0)
     show_button.focus_force()
     root.mainloop()
     print(defect1.__dict__)
