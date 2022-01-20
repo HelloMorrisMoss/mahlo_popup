@@ -185,4 +185,7 @@ Ignition end of things brainstorming:
     * add a column for included_in_report_file_id
     * add a table for files that a defect has been included in, we may desire it to be included in more than one (end
       length)
-    
+
+01/20 todo:
+
+* web interface for supervisors etc with hyperlinks for show, hide, etc.
