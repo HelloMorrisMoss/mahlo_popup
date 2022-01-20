@@ -76,6 +76,9 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
         self.up_label.grid(row=10, column=10, columnspan=col_span)
 
         self._top_divider = tk.ttk.Separator(self, orient=tk.HORIZONTAL)
+        self._top_divider.grid(row=5, column=10, columnspan=col_span, sticky='ew', padx=2, pady=2)
+
+        self._top_divider = tk.ttk.Separator(self, orient=tk.HORIZONTAL)
         self._top_divider.grid(row=30, column=10, columnspan=col_span, sticky='ew', padx=2, pady=2)
 
         # label displaying the value
@@ -240,8 +243,6 @@ if __name__ == '__main__':
         def nothing():
             pass
 
-        # nwin = tk.Toplevel()
-        # nwin = None
         show_button.grid_remove()
         sda = SelectDefectAttributes(root, defect=defect1, on_destroy=nothing)
         sda.grid(row=0, column=0)
