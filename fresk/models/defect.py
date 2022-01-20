@@ -1,6 +1,7 @@
 import datetime
 
 import sqlalchemy
+from sqlalchemy import func
 
 from fresk.defect_args import all_args
 from fresk.sqla_instance import fsa
@@ -75,7 +76,7 @@ class DefectModel(fsa.Model):
 
         return cls.query.filter(DefectModel.operator_saved_time is None or
                                 DefectModel.entry_modified_ts == DefectModel.entry_created_ts).order_by(
-                                DefectModel.entry_created_ts.desc()).all()
+            DefectModel.entry_created_ts.desc()).all()
 
     @classmethod
     def find_all(cls):
@@ -84,6 +85,18 @@ class DefectModel(fsa.Model):
         :return: list
         """
         return cls.query.all()
+
+    @classmethod
+    def mark_all_confirmed(cls):
+        """Mark all a defect records that have not been confirmed as confirmed at this time.
+
+		:return: list
+		"""
+        unconfirmed = cls.find_new()
+        for defect in unconfirmed:
+            defect.operator_saved_time = func.now()
+            defect.entry_modified_ts = func.now()
+            defect.save_to_database()
 
     @classmethod
     def new_defect(cls, **kwargs):

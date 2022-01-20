@@ -72,9 +72,9 @@ class Defect(Resource):
 
 
 class DefectList(Resource):
-    # parser = reqparse.RequestParser()
+    parser = reqparse.RequestParser()
     #
-    # parser.add_argument('')
+    parser.add_argument('confirm_all', type=bool, required=False, help='This argument is optional.')
 
     # results = DefectModel.query.filter('entry_created_ts' != 'entry_modified_ts').all()
     def get(self):
@@ -83,3 +83,10 @@ class DefectList(Resource):
         for row in results:
             result_dict[row.id] = row.jsonizable()
         return result_dict, 200
+
+    def put(self):
+        data = self.parser.parse_args()
+        if data.get('confirm_all'):
+            DefectModel.mark_all_confirmed()
+
+        return {'completed': True}, 201
