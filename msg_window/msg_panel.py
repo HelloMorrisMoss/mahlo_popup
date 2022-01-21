@@ -22,7 +22,8 @@ class MessagePanel(tk.ttk.LabelFrame):
         self.hideables = []
         self.defect_interface = defect_instance
         self.defect_id = self.defect_interface.id
-        self.message_text_template = 'At {timestamp}\n{len_meters} meters oospec\n' \
+        self.message_text_template = '{timestamp} on lam{lam_num}\n{len_meters} meters oospec\n' \
+                                     'starting at Mahlo {mahlo_start_length}\n' \
                                      'due to {dtype}\ndefect id: {defect_id}'
 
         sides_to_defect_columns_dict = {'left': 'rem_l', 'left_center': 'rem_lc',
@@ -86,7 +87,11 @@ class MessagePanel(tk.ttk.LabelFrame):
         msg_text = self.message_text_template.format(
             timestamp=self.defect_interface.defect_end_ts.strftime(self.dt_format_str),
             len_meters=self.defect_interface.length_of_defect_meters,
-            dtype=self.defect_interface.defect_type, defect_id=self.defect_interface.id)
+            dtype=self.defect_interface.defect_type,
+            defect_id=self.defect_interface.id,
+            mahlo_start_length=self.defect_interface.mahlo_start_length,
+            lam_num=self.defect_interface.lam_num,
+            )
         self.message_label.config(text=msg_text)
 
     def _add_buttons(self, parent):
