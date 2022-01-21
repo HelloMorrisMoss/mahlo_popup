@@ -28,6 +28,8 @@ class Popup(tk.Tk):
         # whether to automatically hide/show the window
         self._auto_hide = tk.IntVar(value=True)
         self._auto_show = tk.IntVar(value=True)
+        self._ghost_hide = tk.IntVar(value=True)
+        self._ghost_fade = tk.IntVar(value=50)
 
         # communication with flask app
         inbound_queue = kwargs.get('inbound_queue')
@@ -151,6 +153,7 @@ class Popup(tk.Tk):
         """Show the defect message panels, control panel, etc."""
 
         if not self.winfo_viewable() or self.message_button_geometry in self.geometry():
+            self.attributes('-alpha', 1)
             for hideable in self.hideables:
                 hideable.grid()
             self.number_of_messages_button.grid_remove()  # hide the messages button
@@ -195,6 +198,8 @@ class Popup(tk.Tk):
                 self.number_of_messages_button.grid(row=0, column=0)
 
                 self.geometry(self.message_button_geometry)  # fixed size small window
+            if self._ghost_hide.get():
+                self.attributes('-alpha', self._ghost_fade.get() / 100.0)
 
     def check_for_inbound_messages(self):
         """Check the inbound queue for new defect messages and if there are any, send them to the MessagePanel."""
