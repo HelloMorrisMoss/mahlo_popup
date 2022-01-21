@@ -71,7 +71,7 @@ class Popup(tk.Tk):
         # the buttons that aren't for a specific popup (add, settings, etc)
         self.controls_panel = IndependentControlsPanel(self, 'Control Panel', hide_option=self._hide_option,
                                                        grid_pad=self.pad, autohide_var=self._auto_hide,
-                                                       autoshow_var=self._auto_show)
+                                                       autoshow_var=self._auto_show, ghost_hide=self._ghost_hide)
         self.controls_panel.grid(row=2, column=0, sticky='we')
         self.hideables.append(self.controls_panel)
 
@@ -261,26 +261,29 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
             self._hide_selector = ttk.LabelFrame(self, text='Hide options')
             self.pad = kwargs.get('grid_pad')
             self._hide_selector.grid(row=3, column=self.next_column(), padx=self.pad['x'], pady=self.pad['y'])
-            options = ('Button', 'b'), ('Icon', 'i'), ('Vanish', 'v')
+            # options = ('Button', 'b'), ('Icon', 'i'), ('Vanish', 'v')  # icon isn't working well yet
+            options = ('Button', 'b'), ('Vanish', 'v')
             for i, (option, optn) in enumerate(options):
                 rb = ttk.Radiobutton(self._hide_selector, text=option, value=optn, variable=kwargs['hide_option'])
                 rb.grid(row=3, column=i)
 
+            # auto hide when losing focus
             self._autohide_toggle = ttk.Checkbutton(self._hide_selector, text='Autohide',
                                                     variable=kwargs['autohide_var'])
             self._autohide_toggle.grid(row=3, column=self.next_column())
+
+            # unhide when gaining focus
             self._autoshow_toggle = ttk.Checkbutton(self._hide_selector, text='Autoshow',
                                                     variable=kwargs['autoshow_var'])
             self._autoshow_toggle.grid(row=3, column=self.next_column())
+
+            # transparency
+            self._ghost_fader = ttk.Checkbutton(self._hide_selector, text='Fade',
+                                                variable=kwargs['ghost_hide'])
+            self._ghost_fader.grid(row=3, column=self.next_column())
 
     def next_column(self):
         """Get an integer representing the next tk grid column to use."""
 
         self._next_column += 10
         return self._next_column
-
-# TODO:
-#  need to talk to some operators about how long until it makes sense to popup
-#  doing it too soon they wouldn't have a chance and could be disruptive
-#  respond (send it to a database?)
-#  check that this will work over ssl (opening in the normal session) otherwise probably flask
