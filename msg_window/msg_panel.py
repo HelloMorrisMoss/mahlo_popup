@@ -32,8 +32,6 @@ class MessagePanel(tk.ttk.LabelFrame):
         self._removed_vals = {k: StrCol(self.defect_interface, col) for k, col in sides_to_defect_columns_dict.items()}
         self._removed_vals.update({'all': tk.StringVar()})
 
-        # TODO: change defect length removed
-
         # the label that displays the defect_instance
         self.message_label = self._add_message_display_label(self)
         self.update_message_text()
@@ -84,6 +82,7 @@ class MessagePanel(tk.ttk.LabelFrame):
 
     def update_message_text(self):
         """Update the message label with any changes."""
+
         msg_text = self.message_text_template.format(
             timestamp=self.defect_interface.defect_end_ts.strftime(self.dt_format_str),
             len_meters=self.defect_interface.length_of_defect_meters,
@@ -100,6 +99,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         :param message: dict, the defect_instance dictionary
         :param parent: tkinter.Frame, or LabelFrame or similar.
         """
+
         # TODO: it may be worthwhile at some point to extract the toggle panel to its own class
         # add the removed foam toggles
         self._add_foam_removed_toggle_selectors(parent)
@@ -129,6 +129,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         :param parent: tkinter container
         :param send_grid_params: dict, kwargs for the buttons .grid method.
         """
+
         send_btn = tk.ttk.Button(parent, style='Accent.TButton', text='Save', command=self.save_response)
         send_btn.grid(**send_grid_params)
         setattr(send_btn, 'msg_id', self.defect_interface.id)
