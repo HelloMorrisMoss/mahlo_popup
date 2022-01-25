@@ -1,7 +1,9 @@
 import tkinter as tk
+from tkinter import ttk
 
 from dev_common import reasons, style_component
 from log_setup import lg
+from widgets.numpad_entry import NumpadEntry
 
 
 class LengthButton(tk.ttk.Button):
@@ -82,9 +84,9 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
         self._top_divider.grid(row=30, column=10, columnspan=col_span, sticky='ew', padx=2, pady=2)
 
         # label displaying the value
-        self.length_label = tk.ttk.Label(self, text=self.length_var.get())
-        self.length_label.config(font=(None, 20))
-        self.length_label.grid(row=40, column=10, columnspan=col_span, rowspan=2)
+        self.length_entry = NumpadEntry(parent=self, textvariable=self.length_var, width=11)
+        self.length_entry.config(font=(None, 20))
+        self.length_entry.grid(row=40, column=10, rowspan=2, columnspan=col_span, padx=(2, 2))
 
         self._bottom_divider = tk.ttk.Separator(self, orient=tk.HORIZONTAL)
         self._bottom_divider.grid(row=50, column=10, columnspan=col_span, sticky='ew', padx=2, pady=2)
@@ -100,8 +102,20 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
         :param args: tuple, unused tkinter arguments.
         """
         new_val = self.length_var.get()
-        self.length_label.config(text=new_val)
-        self.defect.length_of_defect_meters = float(new_val)
+        # self.length_entry.config(text=new_val)
+        try:
+            self.defect.length_of_defect_meters = float(new_val)
+            # self.length_entry.config(style=None)
+        except ValueError:
+            pass
+            # entry_style = ttk.Style()
+            #
+            # entry_style.configure('style.TEntry',
+            #
+            #                   fieldbackground="red"
+            #
+            #                   )
+            # self.length_entry.config(style=entry_style)
 
 
 class NumberPrompt(tk.ttk.LabelFrame):
