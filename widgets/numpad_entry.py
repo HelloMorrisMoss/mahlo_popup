@@ -65,20 +65,23 @@ class NumberPad(tk.Toplevel):
 		                 '4', '5', '6',
 		                 '1', '2', '3',
 		                 '.', '0', '<']
+		# TODO: clear, ok, and cancel buttons here?
 
 		buttons_dict = {}
+		padx = 1
+		pady = padx
 
 		num_cols = 3
 		for row, column, label in [((i // num_cols), (i % num_cols), item) for i, item in enumerate(button_labels)]:
 			command = lambda lambel=label: self.click(lambel)
 			btn = ttk.Button(self, text=label, command=command, takefocus=False)
-			btn.grid(row=row, column=column)
+			btn.grid(row=row, column=column, padx=padx, pady=pady)
 			buttons_dict[label] = btn
 
 		# add the OK button
 		command = lambda lambel='OK': self.click(lambel)
 		ok_button = ttk.Button(self, text='OK', command=command)
-		ok_button.grid(row=row + 1, column=0, columnspan=100)
+		ok_button.grid(row=row + 1, column=0, columnspan=100, padx=padx, pady=pady)
 
 		return buttons_dict
 

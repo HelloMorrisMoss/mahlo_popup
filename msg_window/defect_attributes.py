@@ -66,9 +66,10 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
 
             up_button.grid(row=20, column=last_column, sticky='nsew', padx=pad_val, pady=pad_val)
 
-            self.down_button = LengthButton(self.down_frame, self.length_var, 'down',
-                                            text=f'{inc_val}', increment_magnitude=inc_val)
-            self.down_button.grid(row=70, column=last_column, sticky='nsew', padx=pad_val, pady=pad_val)
+            down_button = LengthButton(self.down_frame, self.length_var, 'down',
+                                       text=f'{inc_val}', increment_magnitude=inc_val)
+            down_button.grid(row=70, column=last_column, sticky='nsew', padx=pad_val, pady=pad_val)
+
             last_column += 10
 
         # the '+' label
@@ -84,7 +85,7 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
         self._top_divider.grid(row=30, column=10, columnspan=col_span, sticky='ew', padx=2, pady=2)
 
         # label displaying the value
-        self.length_entry = NumpadEntry(parent=self, textvariable=self.length_var, width=11)
+        self.length_entry = NumpadEntry(parent=self, textvariable=self.length_var, width=11, justify='center')
         self.length_entry.config(font=(None, 20))
         self.length_entry.grid(row=40, column=10, rowspan=2, columnspan=col_span, padx=(2, 2))
 
