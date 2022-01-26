@@ -193,7 +193,17 @@ Ignition end of things brainstorming:
 01/26 todo:
 
 * need to be able to change more than just length:
-  * mahlo_start_length
-  * mahlo_end_length
-  * length
-  * times?
+  * fields req'd:
+    * mahlo_start_length
+    * mahlo_end_length
+    * length
+    * times?
+  * options
+    * frame that has entry for each, when clicked the others .grid_remove() and the frame displays an UpDownButtonFrame
+      for the value
+      * it would need an ok button for when using the +/- buttons
+      * when using the numpad could 'ok' automatically when closing (guess it would have to have its own OK button)
+    * UpdownButtonFrame's three in a row horizontally
+      * this would be easiest to implement
+      * may not fit nicely
+        * perhaps a label displaying this info, click for the interface to swap out the rest of defect attributes?

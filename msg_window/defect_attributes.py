@@ -3,127 +3,10 @@ from tkinter import ttk
 
 from dev_common import reasons, style_component
 from log_setup import lg
-from widgets.numpad_entry import NumpadEntry
+from widgets.numpad_entry import UpDownButtonFrame
 
 
-class LengthButton(tk.ttk.Button):
-    def __init__(self, parent, length_var, direction_str, *args, **kwargs):
-
-        icr_mag = kwargs.pop('increment_magnitude', None)
-        self.increment_magnitude = icr_mag if icr_mag else 1
-
-        super().__init__(parent, *args, **kwargs)
-        self.config(width=3)
-        self.length_var = length_var
-        self.parent = parent
-
-        if direction_str == 'up':
-            self.increment_val = self.increment_magnitude
-        elif direction_str == 'down':
-            self.increment_val = -1 * self.increment_magnitude
-
-        self.bind('<Button-1>', self.increment)
-
-    def increment(self, *args):
-        """Increase or decrease the variable.
-
-        :param args: tuple, unused tkinter params.
-        """
-
-        self.length_var.set(str(round(float(self.length_var.get()) + self.increment_val, 2)))
-
-
-class UpDownButtonFrame(tk.ttk.LabelFrame):
-    """A frame with up and down buttons that increments a value displayed on a label."""
-
-    def __init__(self, parent, ud_defect, *args, **kwargs):
-        # keywords not intended for the LabelFrame
-        incr_vals = kwargs.pop('increment_values', None)
-        if not incr_vals:
-            lg.debug('using default incr_vals')
-            incr_vals = [1]
-        self._field_name = kwargs.pop('field_name')
-
-        super().__init__(parent, *args, **kwargs)
-        self.defect = ud_defect
-        self.length_var = tk.StringVar()
-        self.length_var.set(str(ud_defect.length_of_defect_meters))
-        self.length_var.trace('w', self.update_length)
-
-        # todo: this could be its own class
-        self.up_frame = tk.ttk.Frame(self)
-        self.up_frame.grid(row=10, column=10, sticky='ew')
-        # self.up_frame.grid_propagate(0)  # turns off auto sizing based on children, but currently shrinks to nothing
-        self.down_frame = tk.ttk.Frame(self)
-        self.down_frame.grid(row=70, column=10, sticky='ew')
-
-        # add the increment buttons
-        last_column = 10
-        pad_val = 1
-
-        for inc_val in incr_vals:
-            # what's up button? the button that makes the length go up, and down down
-            up_button = LengthButton(self.up_frame, self.length_var, 'up',
-                                     text=f'{inc_val}', increment_magnitude=inc_val)
-
-            up_button.grid(row=20, column=last_column, sticky='nsew', padx=pad_val, pady=pad_val)
-
-            down_button = LengthButton(self.down_frame, self.length_var, 'down',
-                                       text=f'{inc_val}', increment_magnitude=inc_val)
-            down_button.grid(row=70, column=last_column, sticky='nsew', padx=pad_val, pady=pad_val)
-
-            last_column += 10
-
-        # the '+' label
-        col_span = last_column
-        self.up_label = tk.ttk.Label(self.up_frame, text='+')
-        self.up_label.config(font=(None, 14))
-        self.up_label.grid(row=10, column=10, columnspan=col_span)
-
-        self._top_divider = tk.ttk.Separator(self, orient=tk.HORIZONTAL)
-        self._top_divider.grid(row=5, column=10, columnspan=col_span, sticky='ew', padx=2, pady=2)
-
-        self._top_divider = tk.ttk.Separator(self, orient=tk.HORIZONTAL)
-        self._top_divider.grid(row=30, column=10, columnspan=col_span, sticky='ew', padx=2, pady=2)
-
-        # label displaying the value
-        self.length_entry = NumpadEntry(parent=self, textvariable=self.length_var, width=11, justify='center')
-        self.length_entry.config(font=(None, 20))
-        self.length_entry.grid(row=40, column=10, rowspan=2, columnspan=col_span, padx=(2, 2))
-
-        self._bottom_divider = tk.ttk.Separator(self, orient=tk.HORIZONTAL)
-        self._bottom_divider.grid(row=50, column=10, columnspan=col_span, sticky='ew', padx=2, pady=2)
-
-        # the '-' label
-        self.down_label = tk.ttk.Label(self.down_frame, text='-')
-        self.down_label.config(font=(None, 14))
-        self.down_label.grid(row=80, column=10, columnspan=col_span)
-
-    def update_length(self, *args):
-        """Update the label and ud_defect value. TODO: pull the ud_defect parts out of here, make this publish -->
-        reusable.
-
-        :param args: tuple, unused tkinter arguments.
-        """
-        new_val = self.length_var.get()
-        setattr(self.defect, self._field_name, float(new_val))
-        # self.defect.length_of_defect_meters = float(new_val)
-        # # self.length_entry.config(text=new_val)
-        # try:
-        #     self.ud_defect.length_of_defect_meters = float(new_val)
-        #     # self.length_entry.config(style=None)
-        # except ValueError:
-        #     pass
-        #     # entry_style = ttk.Style()
-        #     #
-        #     # entry_style.configure('style.TEntry',
-        #     #
-        #     #                   fieldbackground="red"
-        #     #
-        #     #                   )
-        #     # self.length_entry.config(style=entry_style)
-
-
+# TODO: rename this something better, like horizontal number selector
 class NumberPrompt(tk.ttk.LabelFrame):
     """A ttk.LabelFrame prompting for a number between 1 and 5."""
 
@@ -147,7 +30,7 @@ class NumberPrompt(tk.ttk.LabelFrame):
             if self.defect.rolls_of_product_post_slit == col:
                 num_button.config(style='Accent.TButton')
 
-        add_ok_button(parent, self.parent)
+
 
         self.value = tk.IntVar()
 
@@ -162,17 +45,19 @@ class NumberPrompt(tk.ttk.LabelFrame):
         self.defect.rolls_of_product_post_slit = int(event.widget['text'])
 
 
-def add_ok_button(parent, destroy_on_press=None):
-    destroy_on_press = parent if destroy_on_press is None else destroy_on_press
-    parent.ok_buton = tk.ttk.Button(parent, text='OK')
+class OKButton(ttk.Button):
+    def __init__(self, parent, destroy_on_press=None, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+        destroy_on_press = parent if destroy_on_press is None else destroy_on_press
+        parent.ok_buton = tk.ttk.Button(parent, text='OK')
 
-    def on_destroy(*args):
-        parent.on_destroy()
-        destroy_on_press.destroy()
-        parent.parent.refresh_panel()
+        def on_destroy(*args):
+            # parent.on_destroy()
+            # destroy_on_press.destroy()
+            parent.grid_remove()
+            parent.parent.refresh_panel()
 
-    parent.ok_buton.bind('<Button-1>', on_destroy)
-    parent.ok_buton.grid(row=1, column=6)
+        parent.ok_buton.bind('<Button-1>', on_destroy)
 
 
 class SelectDefectAttributes(tk.ttk.LabelFrame):
@@ -185,26 +70,71 @@ class SelectDefectAttributes(tk.ttk.LabelFrame):
         self.parent = parent
         self.defect = defect
         self.on_destroy = on_destroy
+        self._not_length_wdigets = []
         lg.debug('on destroy %s', on_destroy)
 
         self.defect_type_panel = DefectTypePanel(self, defect)
-        self.defect_type_panel.grid(row=0, column=1)
+        self.defect_type_panel.grid(row=0, column=10)
+        self._not_length_wdigets.append(self.defect_type_panel)
 
         self.rolls_count_selector = NumberPrompt(self, defect)
-        self.rolls_count_selector.grid(row=1, column=1)
+        self.rolls_count_selector.grid(row=1, column=10)
+        self._not_length_wdigets.append(self.rolls_count_selector)
 
-        self.length_buttons = UpDownButtonFrame(self, defect, field_name='length_of_defect_meters',
-                                                increment_values=[0.1, 1, 5, 10], text='Length Removed')
-        self.length_buttons.grid(row=0, column=0, rowspan=2, sticky='ns')
+        self._length_set_updown_frames = LengthSetFrames(self, defect)
+        self._length_set_updown_frames.grid(row=0, column=0, sticky='nesw')
 
-        # self.holder_length = HolderFrame(self, 'def_length')
-        # self.holder_length.grid(row=0, column=0)
-        # self.holder_length = HolderFrame(self, 'start_length')
-        # self.holder_length.grid(row=1, column=0)
-        # self.holder_length = HolderFrame(self, 'end_length')
-        # self.holder_length.grid(row=2, column=0)
+        if defect.record_creation_source == 'operator':
+            self._show_all_set_lengths()
+        else:
+            self._hide_all_set_lengths()
+
+        self._ok_button = OKButton(self, self.parent, text='OK')
+        self._ok_button.grid(row=1, column=11)
+        self.bind('<<LengthsSet>>', self._hide_all_set_lengths)
 
         self.value = tk.IntVar()
+
+    def _show_all_set_lengths(self):
+        lg.debug('hiding type and roll, showing lengths')
+        self._length_set_updown_frames._show()
+        self.defect_type_panel.grid_remove()
+        self.rolls_count_selector.grid_remove()
+
+    def _hide_all_set_lengths(self, event=None):
+        lg.debug('showing type and roll, hiding lengths')
+        self._length_set_updown_frames._hide()
+        self.defect_type_panel.grid()
+        self.rolls_count_selector.grid()
+
+
+class LengthSetFrames(ttk.Frame):
+    def __init__(self, parent, ls_defect, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+        self.defect = ls_defect
+        self.parent = parent
+
+        # add the length set frames
+        length_set_tuples = ('length_of_defect_meters', 'Length Removed'), \
+                            ('mahlo_start_length', 'Start Length'), \
+                            ('mahlo_end_length', 'End Length')
+
+        self.length_set_frames = []
+
+        for col, (field_name, text) in enumerate(length_set_tuples):
+            this_frame = UpDownButtonFrame(self, self.defect, field_name=field_name,
+                                           increment_values=[0.1, 1, 5, 10], text=text)
+            this_frame.grid(row=0, column=col, rowspan=2, sticky='ns')
+
+        self._all_length_set_button = ttk.Button(self, text='all set',
+                                                 command=lambda: self.parent.event_generate('<<LengthsSet>>'))
+        self._all_length_set_button.grid(row=0, column=3, rowspan=2)
+
+    def _hide(self):
+        self.grid_remove()
+
+    def _show(self):
+        self.grid()
 
 
 class HolderFrame(ttk.Frame):
@@ -219,6 +149,7 @@ class DefectTypePanel(tk.ttk.LabelFrame):
 
     def __init__(self, parent, defect, *args, **kwargs):
         super().__init__(parent, text='Defect Type', *args, **kwargs)
+        self.parent = parent
         self.defect = defect
         row = 0
         col = 0
@@ -267,6 +198,7 @@ if __name__ == '__main__':
             self.defect_type = 'puckering'
             self.rolls_of_product_post_slit = 3
             self.length_of_defect_meters = 1.0
+            self.record_creation_source = 'operator'
 
     root = tk.Tk()
     style_component(root, '..')
