@@ -39,10 +39,12 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         self._add_buttons(self)
 
+        # the panel for changing the information about the defect
         self.defect_panel = SelectDefectAttributes(self, self.defect_interface, self.show_hideables)
         self.defect_panel.grid(row=0, column=0)
         self.defect_panel.grid_remove()
 
+        # when the OK button is pressed, hide
         def _remove_me(event):
             lg.debug('remove_me called')
             self.grid_remove()
@@ -70,6 +72,7 @@ class MessagePanel(tk.ttk.LabelFrame):
     def change_attributes(self, event=None):
         lg.debug('changing defect type')
         self.defect_panel.grid()
+        self.hide_hideables()
 
     def refresh_panel(self):
         self.update_message_text()
