@@ -36,16 +36,18 @@ class LengthButton(tk.ttk.Button):
 class UpDownButtonFrame(tk.ttk.LabelFrame):
     """A frame with up and down buttons that increments a value displayed on a label."""
 
-    def __init__(self, parent, defect, *args, **kwargs):
+    def __init__(self, parent, ud_defect, *args, **kwargs):
+        # keywords not intended for the LabelFrame
         incr_vals = kwargs.pop('increment_values', None)
         if not incr_vals:
             lg.debug('using default incr_vals')
             incr_vals = [1]
+        self._field_name = kwargs.pop('field_name')
 
-        super().__init__(parent, text='Length Removed')
-        self.defect = defect
+        super().__init__(parent, *args, **kwargs)
+        self.defect = ud_defect
         self.length_var = tk.StringVar()
-        self.length_var.set(str(defect.length_of_defect_meters))
+        self.length_var.set(str(ud_defect.length_of_defect_meters))
         self.length_var.trace('w', self.update_length)
 
         # todo: this could be its own class
@@ -98,25 +100,28 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
         self.down_label.grid(row=80, column=10, columnspan=col_span)
 
     def update_length(self, *args):
-        """Update the label and defect value. TODO: pull the defect parts out of here, make this publish --> reusable.
+        """Update the label and ud_defect value. TODO: pull the ud_defect parts out of here, make this publish -->
+        reusable.
 
         :param args: tuple, unused tkinter arguments.
         """
         new_val = self.length_var.get()
-        # self.length_entry.config(text=new_val)
-        try:
-            self.defect.length_of_defect_meters = float(new_val)
-            # self.length_entry.config(style=None)
-        except ValueError:
-            pass
-            # entry_style = ttk.Style()
-            #
-            # entry_style.configure('style.TEntry',
-            #
-            #                   fieldbackground="red"
-            #
-            #                   )
-            # self.length_entry.config(style=entry_style)
+        setattr(self.defect, self._field_name, float(new_val))
+        # self.defect.length_of_defect_meters = float(new_val)
+        # # self.length_entry.config(text=new_val)
+        # try:
+        #     self.ud_defect.length_of_defect_meters = float(new_val)
+        #     # self.length_entry.config(style=None)
+        # except ValueError:
+        #     pass
+        #     # entry_style = ttk.Style()
+        #     #
+        #     # entry_style.configure('style.TEntry',
+        #     #
+        #     #                   fieldbackground="red"
+        #     #
+        #     #                   )
+        #     # self.length_entry.config(style=entry_style)
 
 
 class NumberPrompt(tk.ttk.LabelFrame):
@@ -188,10 +193,25 @@ class SelectDefectAttributes(tk.ttk.LabelFrame):
         self.rolls_count_selector = NumberPrompt(self, defect)
         self.rolls_count_selector.grid(row=1, column=1)
 
-        self.length_buttons = UpDownButtonFrame(self, defect, increment_values=[0.1, 1, 5, 10])
+        self.length_buttons = UpDownButtonFrame(self, defect, field_name='length_of_defect_meters',
+                                                increment_values=[0.1, 1, 5, 10], text='Length Removed')
         self.length_buttons.grid(row=0, column=0, rowspan=2, sticky='ns')
 
+        # self.holder_length = HolderFrame(self, 'def_length')
+        # self.holder_length.grid(row=0, column=0)
+        # self.holder_length = HolderFrame(self, 'start_length')
+        # self.holder_length.grid(row=1, column=0)
+        # self.holder_length = HolderFrame(self, 'end_length')
+        # self.holder_length.grid(row=2, column=0)
+
         self.value = tk.IntVar()
+
+
+class HolderFrame(ttk.Frame):
+    def __init__(self, parent, text, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+        self._holder_label = ttk.Label(self, text=text)
+        self._holder_label.grid()
 
 
 class DefectTypePanel(tk.ttk.LabelFrame):
@@ -203,7 +223,7 @@ class DefectTypePanel(tk.ttk.LabelFrame):
         row = 0
         col = 0
 
-        reasons_and_cancel = reasons + ('cancel',)
+        reasons_and_cancel = reasons + ('because',)
 
         self._type_buttons = []
 

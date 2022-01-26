@@ -50,7 +50,6 @@ class NumpadEntry(ttk.Entry):
 		np.deiconify()
 
 
-# class NumberPad(simpledialog.Dialog):
 class NumberPad(tk.Toplevel):
 	"""A number pad window that edits the passed Entry widget's value."""
 

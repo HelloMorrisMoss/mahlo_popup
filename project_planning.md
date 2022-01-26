@@ -189,3 +189,11 @@ Ignition end of things brainstorming:
 01/20 todo:
 
 * web interface for supervisors etc with hyperlinks for show, hide, etc.
+
+01/26 todo:
+
+* need to be able to change more than just length:
+  * mahlo_start_length
+  * mahlo_end_length
+  * length
+  * times?
