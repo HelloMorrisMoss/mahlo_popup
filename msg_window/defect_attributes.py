@@ -45,21 +45,6 @@ class NumberPrompt(tk.ttk.LabelFrame):
         self.defect.rolls_of_product_post_slit = int(event.widget['text'])
 
 
-class OKButton(ttk.Button):
-    def __init__(self, parent, destroy_on_press=None, *args, **kwargs):
-        super().__init__(parent, *args, **kwargs)
-        destroy_on_press = parent if destroy_on_press is None else destroy_on_press
-        parent.ok_buton = tk.ttk.Button(parent, text='OK')
-
-        def on_destroy(*args):
-            # parent.on_destroy()
-            # destroy_on_press.destroy()
-            parent.grid_remove()
-            parent.parent.refresh_panel()
-
-        parent.ok_buton.bind('<Button-1>', on_destroy)
-
-
 class SelectDefectAttributes(tk.ttk.LabelFrame):
     """A ttk.LabelFrame with options to change the defect type, length removed, and number of rolls after slitting."""
 
@@ -89,7 +74,7 @@ class SelectDefectAttributes(tk.ttk.LabelFrame):
         else:
             self._hide_all_set_lengths()
 
-        self._ok_button = OKButton(self, self.parent, text='OK')
+        self._ok_button = ttk.Button(self, text='OK', command=lambda: self.parent.event_generate('<<AttributesOK>>'))
         self._ok_button.grid(row=1, column=11)
         self.bind('<<LengthsSet>>', self._hide_all_set_lengths)
 

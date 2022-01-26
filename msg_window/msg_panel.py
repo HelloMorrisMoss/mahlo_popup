@@ -39,6 +39,16 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         self._add_buttons(self)
 
+        self.defect_panel = SelectDefectAttributes(self, self.defect_interface, self.show_hideables)
+        self.defect_panel.grid(row=0, column=0)
+        self.defect_panel.grid_remove()
+
+        def _remove_me(event):
+            lg.debug('remove_me called')
+            self.grid_remove()
+
+        self.bind('<<AttributesOK>>', _remove_me)
+
     def _add_message_display_label(self, parent):
         """A ttk label displaying information about the defect. Clicking the label will allow changes to be made.
 
@@ -59,8 +69,7 @@ class MessagePanel(tk.ttk.LabelFrame):
     # add a popup to change the defect attributes when clicking the label
     def change_attributes(self, event=None):
         lg.debug('changing defect type')
-        self.defect_panel = SelectDefectAttributes(self, self.defect_interface, self.show_hideables)
-        self.defect_panel.grid(row=0, column=0)
+        self.defect_panel.grid()
 
     def refresh_panel(self):
         self.update_message_text()
@@ -173,6 +182,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         self.btn_frame.grid(**grid_params)
         self.hideables.append(self.btn_frame)
 
+        # TODO: move the 'change number of rolls selector' to be with the rolls removed
         # default to the guessed number
         # number_of_buttons = defect_interface['toggle_count_guess']
         number_of_buttons = self.defect_interface.rolls_of_product_post_slit
