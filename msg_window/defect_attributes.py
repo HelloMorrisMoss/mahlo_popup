@@ -68,11 +68,7 @@ class SelectDefectAttributes(tk.ttk.LabelFrame):
 
         self._length_set_updown_frames = LengthSetFrames(self, defect)
         self._length_set_updown_frames.grid(row=0, column=0, sticky='nesw')
-
-        if defect.record_creation_source == 'operator':
-            self._show_all_set_lengths()
-        else:
-            self._hide_all_set_lengths()
+        self._show_all_set_lengths()
 
         self._ok_button = ttk.Button(self, text='OK', command=lambda: self.parent.event_generate('<<AttributesOK>>'))
         self._ok_button.grid(row=1, column=11)
