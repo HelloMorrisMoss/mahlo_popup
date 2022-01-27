@@ -207,3 +207,5 @@ Ignition end of things brainstorming:
       * this would be easiest to implement
       * may not fit nicely
         * perhaps a label displaying this info, click for the interface to swap out the rest of defect attributes?
+  * when two are set, set the third
+  * try to get the current values from the Timescale?

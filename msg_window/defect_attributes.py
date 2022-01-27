@@ -93,6 +93,7 @@ class SelectDefectAttributes(tk.ttk.LabelFrame):
         self.rolls_count_selector.grid()
 
 
+# TODO: when two of these have been changed, set the third
 class LengthSetFrames(ttk.Frame):
     def __init__(self, parent, ls_defect, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
@@ -139,12 +140,10 @@ class DefectTypePanel(tk.ttk.LabelFrame):
         row = 0
         col = 0
 
-        reasons_and_cancel = reasons + ('because',)
-
         self._type_buttons = []
 
         # add the reason for removal buttons
-        for rn, reason in enumerate(reasons_and_cancel):
+        for rn, reason in enumerate(reasons):
             button_label_text = reason  # if reason != 0 else 'Cancel'
             reason_button = tk.ttk.Button(self, text=button_label_text)
             reason_button.bind('<Button-1>', self.return_button_val)

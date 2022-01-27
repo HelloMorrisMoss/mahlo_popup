@@ -111,7 +111,7 @@ class StrCol(tk.StringVar):
 reasons = (
     'belt_marks', 'bursting', 'contamination', 'curling', 'delamination', 'lost_edge', 'puckering',
     'shrinkage',
-    'thickness', 'wrinkles', 'other')
+    'thickness', 'wrinkles', 'recipe_change', 'other')
 
 
 def style_component(component, path_override=''):
