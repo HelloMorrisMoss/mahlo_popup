@@ -125,7 +125,7 @@ class NumberPad(tk.Toplevel):
 class UpDownButtonFrame(tk.ttk.LabelFrame):
 	"""A frame with up and down buttons that increments a value displayed on a label."""
 
-	def __init__(self, parent, ud_defect, *args, **kwargs):
+	def __init__(self, parent, ud_defect, tkvar, *args, **kwargs):
 		# keywords not intended for the LabelFrame
 		incr_vals = kwargs.pop('increment_values', None)
 		if not incr_vals:
@@ -135,7 +135,7 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
 
 		super().__init__(parent, *args, **kwargs)
 		self.defect = ud_defect
-		self.length_var = tk.StringVar()
+		self.length_var = tkvar
 		self.length_var.set(str(ud_defect.length_of_defect_meters))
 		self.length_var.trace('w', self.update_length)
 
@@ -196,21 +196,6 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
 		"""
 		new_val = self.length_var.get()
 		setattr(self.defect, self._field_name, float(new_val))
-		# self.defect.length_of_defect_meters = float(new_val)
-		# # self.length_entry.config(text=new_val)
-		# try:
-		#     self.ud_defect.length_of_defect_meters = float(new_val)
-		#     # self.length_entry.config(style=None)
-		# except ValueError:
-		#     pass
-		#     # entry_style = ttk.Style()
-		#     #
-		#     # entry_style.configure('style.TEntry',
-		#     #
-		#     #                   fieldbackground="red"
-		#     #
-		#     #                   )
-		#     # self.length_entry.config(style=entry_style)
 
 
 class LengthButton(tk.ttk.Button):

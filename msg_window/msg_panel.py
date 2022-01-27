@@ -82,9 +82,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         """Hide (.remove_grid) on all widgets that have been added to the hideables list."""
         lg.debug('hideable: %s', self.hideables)
         for hideable in self.hideables:
-            lg.debug(hideable)
             hideable.grid_remove()
-            # hideable.destroy()
 
     def show_hideables(self):
         """Hide (.remove_grid) on all widgets that have been added to the hideables list."""

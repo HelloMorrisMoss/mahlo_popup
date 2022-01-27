@@ -126,8 +126,7 @@ class Popup(tk.Tk):
     def _auto_hide_window(self, event: tkinter.Event):
         """If auto-hide is selected, hide/shrink the window."""
 
-        lg.debug('autohide check if actually has focus %s', self.focus_displayof())
-
+        # lg.debug('autohide check if actually has focus %s', self.focus_displayof())
         if self._auto_hide.get() and self.focus_displayof() is None and event.widget is self:
             lg.debug('auto hiding window')
             self.hide_hideables(event)

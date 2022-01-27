@@ -1,3 +1,4 @@
+import functools
 import tkinter as tk
 from tkinter import ttk
 
@@ -95,22 +96,81 @@ class LengthSetFrames(ttk.Frame):
         super().__init__(parent, *args, **kwargs)
         self.defect = ls_defect
         self.parent = parent
-
+        self._last_set_lengths = []  # list of the field_name for the most recently changed in order
+        self._internal_update_running = False
         # add the length set frames
-        length_set_tuples = ('length_of_defect_meters', 'Length Removed'), \
-                            ('mahlo_start_length', 'Start Length'), \
-                            ('mahlo_end_length', 'End Length')
+        self._length_set_tuples = ('length_of_defect_meters', 'Length Removed'), \
+                                  ('mahlo_start_length', 'Start Length'), \
+                                  ('mahlo_end_length', 'End Length')
 
-        self.length_set_frames = []
+        self._length_set_frames = {}
 
-        for col, (field_name, text) in enumerate(length_set_tuples):
-            this_frame = UpDownButtonFrame(self, self.defect, field_name=field_name,
+        for col, (field_name, text) in enumerate(self._length_set_tuples):
+            this_var = tk.StringVar()
+            this_frame = UpDownButtonFrame(self, self.defect, tkvar=this_var, field_name=field_name,
                                            increment_values=[0.1, 1, 5, 10], text=text)
             this_frame.grid(row=0, column=col, rowspan=2, sticky='ns')
+            this_var.trace_add('write', functools.partial(self._auto_fill_third_length, field_name))
+            self._length_set_frames.update({field_name: {'frame': this_frame, 'StringVar': this_var}})
 
         self._all_length_set_button = ttk.Button(self, text='all set',
                                                  command=lambda: self.parent.event_generate('<<LengthsSet>>'))
         self._all_length_set_button.grid(row=0, column=3, rowspan=2)
+
+    def _auto_fill_third_length(self, this_length, *args, **kwargs):
+        # if the value was just updated by this, don't run again from the update
+        if self._internal_update_running:
+            self._internal_update_running = False
+            return
+        else:
+            self._internal_update_running = True
+
+        # if there are no previous length changes, save this one and do nothing else
+        if not self._last_set_lengths:
+            self._internal_update_running = False
+            self._last_set_lengths.append(this_length)
+            return
+
+        # if this is not the same length changed as last time, add it to the list
+        if this_length != self._last_set_lengths[-1]:
+            self._last_set_lengths.append(this_length)
+
+        # if there are more than 2, remove the oldest
+        lg.debug('current _last_set_lengths %s', self._last_set_lengths)
+        if len(self._last_set_lengths) > 2:
+            self._last_set_lengths = self._last_set_lengths[-2:]  # get rid of extras
+
+            # case 1: start and end lengths -> subtract end from start, set total to that
+            # case 2: start and total - > add start and total, set end to that
+            # case 3: end and total -> subtract end from total, set start to that
+            # if they changed report in the middle of this then anything with the end could be weird
+
+            # need the field_name from tuples that isn't in last set lengths
+
+        def which_is_missing():
+            for field_name, _ in self._length_set_tuples:
+                if field_name not in self._last_set_lengths:
+                    return field_name
+
+        from operator import add, sub
+
+        missing_value_string = which_is_missing()
+
+        if missing_value_string == 'length_of_defect_meters':
+            field_names = 'mahlo_end_length', 'mahlo_start_length'
+            self.reconcile_values(*field_names, sub, missing_value_string)
+        elif missing_value_string == 'mahlo_end_length':
+            field_names = 'mahlo_start_length', 'length_of_defect_meters'
+            self.reconcile_values(*field_names, add, missing_value_string)
+        elif missing_value_string == 'mahlo_start_length':
+            field_names = 'mahlo_end_length', 'length_of_defect_meters'
+            self.reconcile_values(*field_names, sub, missing_value_string)
+
+    def reconcile_values(self, field_name1, field_name2, operation, missing_field_name):
+        _value1 = float(self._length_set_frames[field_name1]['StringVar'].get())
+        _value2 = float(self._length_set_frames[field_name2]['StringVar'].get())
+        new_value = str(round(operation(_value1, _value2), 2))
+        self._length_set_frames[missing_field_name]['StringVar'].set(new_value)
 
     def _hide(self):
         self.grid_remove()
