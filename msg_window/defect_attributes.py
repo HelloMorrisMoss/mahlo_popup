@@ -71,11 +71,16 @@ class SelectDefectAttributes(tk.ttk.LabelFrame):
         self._length_set_updown_frames.grid(row=0, column=0, sticky='nesw')
         self._show_all_set_lengths()
 
-        self._ok_button = ttk.Button(self, text='OK', command=lambda: self.parent.event_generate('<<AttributesOK>>'))
+        self._ok_button = ttk.Button(self, text='OK', command=self._confirm_all_lengths)
         self._ok_button.grid(row=1, column=11)
+        self._ok_button.grid_remove()
         self.bind('<<LengthsSet>>', self._hide_all_set_lengths)
 
         self.value = tk.IntVar()
+
+    def _confirm_all_lengths(self, event=None):
+        self.grid_remove()
+        self.parent.event_generate('<<AttributesOK>>')
 
     def _show_all_set_lengths(self):
         lg.debug('hiding type and roll, showing lengths')
@@ -88,6 +93,7 @@ class SelectDefectAttributes(tk.ttk.LabelFrame):
         self._length_set_updown_frames._hide()
         self.defect_type_panel.grid()
         self.rolls_count_selector.grid()
+        self._ok_button.grid()
 
 
 # TODO: when two of these have been changed, set the third

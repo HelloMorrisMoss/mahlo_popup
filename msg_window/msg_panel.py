@@ -49,7 +49,7 @@ class MessagePanel(tk.ttk.LabelFrame):
             lg.debug('remove_me called')
             self.grid_remove()
 
-        self.bind('<<AttributesOK>>', _remove_me)
+        self.bind('<<AttributesOK>>', self.show_hideables)
 
     def _add_message_display_label(self, parent):
         """A ttk label displaying information about the defect. Clicking the label will allow changes to be made.
@@ -84,7 +84,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         for hideable in self.hideables:
             hideable.grid_remove()
 
-    def show_hideables(self):
+    def show_hideables(self, event=None):
         """Hide (.remove_grid) on all widgets that have been added to the hideables list."""
         for hideable in self.hideables:
             lg.debug(hideable)
