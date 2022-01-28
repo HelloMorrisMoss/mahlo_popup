@@ -4,7 +4,7 @@ from tkinter import ttk
 
 from dev_common import reasons, style_component
 from log_setup import lg
-from widgets.numpad_entry import UpDownButtonFrame
+from widgets.length_entry import UpDownButtonFrame
 
 
 # TODO: rename this something better, like horizontal number selector

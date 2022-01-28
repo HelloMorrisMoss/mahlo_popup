@@ -1,5 +1,6 @@
 """For development helpers, in their own module to avoid circular imports and keep things organized."""
 import os
+import tkinter
 import tkinter as tk
 from tkinter import ttk
 
@@ -124,7 +125,14 @@ def style_component(component, path_override=''):
     component._wgt_styles = {'toggle': 'Switch.TCheckbutton', 'labelframe': 'Card.TFrame'}
 
 
-def window_topmost(window):
-    window.lift()
-    window.attributes('-topmost', True)
-    # self.root.after_idle(self.root.attributes, '-topmost', False)
+def window_topmost(window: tkinter.Toplevel, set_to=True, lift=True):
+    """Set a tkinter window to remain on top of other windows when losing focus to them and lift to the top.
+
+    :param window: tkinter.TopLevel, the window to work on.
+    :param set_to: bool, whether to set to stay on top or not to stay on top, default=True.
+    :param lift: bool, whether to lif tthe window above other windows.
+    """
+
+    window.attributes('-topmost', set_to)
+    if lift:
+        window.lift()

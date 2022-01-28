@@ -1,3 +1,4 @@
+from pprint import pformat
 from tkinter import ttk
 
 
@@ -7,6 +8,13 @@ class WhereWidget:
 
 	def __init__(self, widget: ttk.Widget):
 		self._widget = widget
+		self.x = None
+		self.y = None
+		self.h = None
+		self.w = None
+		self.update()
+
+	def update(self):
 		self.x = self._widget.winfo_x()
 		self.y = self._widget.winfo_y()
 		self.h = self._widget.winfo_height()
@@ -19,6 +27,9 @@ class WhereWidget:
 		:return: tuple
 		"""
 
-		_winx = self._widget.winfo_rootx()
-		_winy = self._widget.winfo_rooty()
+		_winx = self._widget.winfo_x()
+		_winy = self._widget.winfo_y()
 		return _winx, _winy + self.y + self.h + pad_y
+
+	def __str__(self):
+		return pformat(self.__dict__)
