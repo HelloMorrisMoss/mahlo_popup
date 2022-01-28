@@ -72,7 +72,7 @@ class NumberPad(tk.ttk.Frame):
 		                 '4', '5', '6',
 		                 '1', '2', '3',
 		                 '.', '0', 'backspace',
-		                 '<-', 'OK', '->']
+		                 u'🡸', 'OK', u'🡺']
 		# TODO: clear, undo, and cancel buttons here?
 
 		buttons_dict = {}
@@ -99,13 +99,11 @@ class NumberPad(tk.ttk.Frame):
 			self._entry.delete(current_cursor_index - 1, current_cursor_index)
 		elif label == 'OK':
 			self.close()
-		elif label == '<-':
+		elif label == u'🡸':
 			self._entry.icursor(current_cursor_index - 1)
-		elif label == '->':
+		elif label == u'🡺':
 			self._entry.icursor(current_cursor_index + 1)
 		else:
-			current_text = self._entry.get()
-			# self._entry.delete(0, tk.END)
 			self._entry.insert(current_cursor_index, label)
 
 	def auto_close(self, event):
