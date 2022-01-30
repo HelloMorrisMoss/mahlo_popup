@@ -96,14 +96,17 @@ class NumberPad(tk.ttk.Frame):
 		"""
 		current_cursor_index = self._entry.index(tk.INSERT)
 		if label == 'backspace':
+			# todo: if text is selected, delete it
 			self._entry.delete(current_cursor_index - 1, current_cursor_index)
 		elif label == 'OK':
 			self.close()
 		elif label == u'🡸':
+			# todo: if text is selected, unselect when using arrow keys
 			self._entry.icursor(current_cursor_index - 1)
 		elif label == u'🡺':
 			self._entry.icursor(current_cursor_index + 1)
 		else:
+			# todo: if text is selected, replace selected text with label
 			self._entry.insert(current_cursor_index, label)
 
 	def auto_close(self, event):
