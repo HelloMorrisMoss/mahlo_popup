@@ -46,14 +46,8 @@ class NumpadEntry(ttk.Entry):
 
 		lg.debug('Showing numpad')
 		np = NumberPad(self)
-		ww = WhereWidget(self)
-		x, y = ww.belowcation()
-		lg.debug(f'belowcation: {x=}, {y=} - {str(ww)}')
-		np.position_here(x, y)
-		self.selection_range(tk.END, tk.END)
-	# np.withdraw()
-	# np._root().update()
-	# np.deiconify()
+		np.place(in_=self, relx=0, rely=1)
+		self.after(10, lambda: self.selection_clear())
 
 
 class NumberPad(tk.ttk.Frame):
