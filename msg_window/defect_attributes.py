@@ -11,7 +11,7 @@ from widgets.numpad_entry import NumpadEntry, UpDownButtonFrame
 class NumberPrompt(tk.ttk.LabelFrame):
     """A ttk.LabelFrame prompting for a number between 1 and 5."""
 
-    def __init__(self, parent, defect):
+    def __init__(self, parent, defect, variable=None):
         super().__init__(parent, text='Number of finished good rolls', style='Card.TFrame')
         self.parent = parent
         self.row = 0
@@ -31,9 +31,7 @@ class NumberPrompt(tk.ttk.LabelFrame):
             if self.defect.rolls_of_product_post_slit == col:
                 num_button.config(style='Accent.TButton')
 
-
-
-        self.value = tk.IntVar()
+        self.value = tk.IntVar() if variable is None else variable
 
     def return_button_val(self, event):
         """Set self.value to the widget['text'] value, or 0 if Cancel/anything without and int castable text is pressed.
