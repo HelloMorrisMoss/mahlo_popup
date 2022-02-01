@@ -31,7 +31,7 @@ class NumberPrompt(tk.ttk.LabelFrame):
             if self.defect.rolls_of_product_post_slit == col:
                 num_button.config(style='Accent.TButton')
 
-        self.value = tk.IntVar() if variable is None else variable
+        self.value = variable
 
     def return_button_val(self, event):
         """Set self.value to the widget['text'] value, or 0 if Cancel/anything without and int castable text is pressed.
@@ -41,7 +41,9 @@ class NumberPrompt(tk.ttk.LabelFrame):
         for btn in self._count_value_buttons:
             btn.config(style='')
         event.widget.config(style='Accent.TButton')
-        self.defect.rolls_of_product_post_slit = int(event.widget['text'])
+        intval = int(event.widget['text'])
+        self.defect.rolls_of_product_post_slit = intval
+        self.value.set(intval)
 
 
 class SelectDefectAttributes(tk.ttk.Frame):

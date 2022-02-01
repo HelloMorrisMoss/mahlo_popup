@@ -20,6 +20,17 @@ class RollRemovedToggles(tk.Frame):
         self.removed_vars.update({'all': tk.StringVar()})
         self._add_foam_removed_toggle_selectors()
 
+    def remove_current_toggles(self):
+        for tk, toggle in self._toggle_refs.items():
+            toggle.destroy()
+            del (self.toggle_button_def_dict[tk])
+
+    def update_number_of_toggles(self, *args):
+        lg.debug(f'updating number of toggles {args=}')
+        self.remove_current_toggles()
+        self._add_foam_removed_toggle_selectors()
+        self.update()
+
     def _add_foam_removed_toggle_selectors(self):
         """Add the toggle buttons frame to the parent frame.
 

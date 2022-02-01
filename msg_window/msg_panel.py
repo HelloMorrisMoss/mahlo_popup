@@ -140,6 +140,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         # TODO: it may be worthwhile at some point to extract the toggle panel to its own class
         # add the removed foam toggles
         self._removed_toggles = RollRemovedToggles(parent, self.defect_interface)
+        self.number_of_finished_rolls.trace_add('write', self._removed_toggles.update_number_of_toggles)
         self._removed_toggles.grid(row=0, column=1)
 
         # add the save button
