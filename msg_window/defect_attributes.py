@@ -46,7 +46,7 @@ class NumberPrompt(tk.ttk.LabelFrame):
         self.defect.rolls_of_product_post_slit = int(event.widget['text'])
 
 
-class SelectDefectAttributes(tk.ttk.LabelFrame):
+class SelectDefectAttributes(tk.ttk.Frame):
     """A ttk.LabelFrame with options to change the defect type, length removed, and number of rolls after slitting."""
 
     # TODO: need to be able to set the lot#, destroy multiple rolls
@@ -119,9 +119,9 @@ class LengthSetFrames(ttk.Frame):
             this_var.trace_add('write', functools.partial(self._auto_fill_third_length, field_name))
             self._length_set_frames.update({field_name: {'frame': this_frame, 'StringVar': this_var}})
 
-        self._all_length_set_button = ttk.Button(self, text='all set',
-                                                 command=lambda: self.parent.event_generate('<<LengthsSet>>'))
-        self._all_length_set_button.grid(row=0, column=3, rowspan=2)
+        # self._all_length_set_button = ttk.Button(self, text='all set',
+        #                                          command=lambda: self.parent.event_generate('<<LengthsSet>>'))
+        # self._all_length_set_button.grid(row=0, column=3, rowspan=2)
 
     def _auto_fill_third_length(self, this_length, *args, **kwargs):
         # if the value was just updated by this, don't run again from the update

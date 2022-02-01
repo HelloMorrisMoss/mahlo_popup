@@ -103,7 +103,7 @@ class Popup(tk.Tk):
         self.after(1000, self.check_for_inbound_messages)
 
         # self.after(1000, self.watching_focus)
-
+        self.geometry('+2500+200')  # place it on the second monitor for testing
         # start the tkinter mainloop
         self.mainloop()
 

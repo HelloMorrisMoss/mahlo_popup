@@ -4,7 +4,7 @@ from tkinter import ttk
 
 from dev_common import StrCol
 from log_setup import lg
-from msg_window.defect_attributes import SelectDefectAttributes
+from msg_window.defect_attributes import DefectTypePanel
 
 
 class MessagePanel(tk.ttk.LabelFrame):
@@ -12,6 +12,10 @@ class MessagePanel(tk.ttk.LabelFrame):
         super().__init__(parent)
         self.config(text=f'Defect #{defect_instance.id}')
         self.msg_number = row
+        if not kwargs.get('pad'):
+            kwargs['pad'] = {'x': 2, 'y': 2}
+        if not kwargs.get('dt_format_str'):
+            self.dt_format_str = r'%I:%M %d-%b'
         self.grid_params_ = dict(column=0, row=row, padx=kwargs['pad']['x'], pady=kwargs['pad']['y'], sticky="nesw")
         self.grid(**self.grid_params_)
         self.parent = parent
@@ -32,24 +36,48 @@ class MessagePanel(tk.ttk.LabelFrame):
         self._removed_vals = {k: StrCol(self.defect_interface, col) for k, col in sides_to_defect_columns_dict.items()}
         self._removed_vals.update({'all': tk.StringVar()})
 
-        # the label that displays the defect_instance
-        self.message_label = self._add_message_display_label(self)
+        # add the tabbed frames
+        self._tabframe = ttk.Notebook(self)
+        self._tabframe.grid(row=0, column=0)
+
+        self._lot_rolls_type_frame = ttk.Frame(self)
+        self._lengths_frame = ttk.Frame(self)
+        self._confirm_frame = ttk.Frame(self)
+
+        self._tabframe.add(self._lot_rolls_type_frame, text='lot #, rolls, defect type')
+        self._tabframe.add(self._lengths_frame, text='lengths')
+        self._tabframe.add(self._confirm_frame, text='confirmation')
+
+        # if it's an auto-detected defect, they hopefully only need to confirm it, start there
+        if self.defect_interface.record_creation_source != 'operator':
+            self._tabframe.select(self._tabframe.index('end') - 1)
+
+        # the label that displays the defect_instance info
+        self.message_label = self._add_message_display_label(self._confirm_frame)
         self.update_message_text()
         self.hideables.append(self.message_label)
 
-        self._add_buttons(self)
+        self._add_buttons(self._confirm_frame)
 
         # the panel for changing the information about the defect
-        self.defect_panel = SelectDefectAttributes(self, self.defect_interface, self.show_hideables)
-        self.defect_panel.grid(row=0, column=0)
-        self.defect_panel.grid_remove()
+        # self.defect_panel = SelectDefectAttributes(self._lengths_frame, self.defect_interface, self.show_hideables)
+        self.defect_panel = DefectTypePanel(self._lot_rolls_type_frame, self.defect_interface)
+        self.defect_panel.grid(row=10, column=0)
 
-        # when the OK button is pressed, hide
-        def _remove_me(event):
-            lg.debug('remove_me called')
-            self.grid_remove()
+        # self._roll_count_selector = NumberPrompt(self._lot_rolls_type_frame, self.defect_interface)
+        # self.defect_panel.grid(row=0, column=0)
+        #
+        # # self.length_panel = LengthSetFrames(self._lengths_frame, self.defect_interface)
+        # self.length_panel = LengthSetFrames(self._confirm_frame, self.defect_interface)
+        # self.defect_panel.grid(row=0, column=0, sticky='nesw')
+        # self.defect_panel.grid_remove()
 
-        self.bind('<<AttributesOK>>', self.show_hideables)
+        # # when the OK button is pressed, hide
+        # def _remove_me(event):
+        #     lg.debug('remove_me called')
+        #     self.grid_remove()
+        #
+        # self.bind('<<AttributesOK>>', self.show_hideables)
 
     def _add_message_display_label(self, parent):
         """A ttk label displaying information about the defect. Clicking the label will allow changes to be made.
@@ -398,5 +426,21 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         button.bind("<Button-1>", toggle_me)
 
-
-
+# if __name__ == '__main__':
+#     from fresk.models.defect import DefectModel
+#     from fresk.flask_app import start_flask_app
+#     from threading import Thread
+#     from collections import deque
+#     import time
+#
+#     root = tk.Tk()
+#     in_out_q = deque()
+#     flask_thread = Thread(target=start_flask_app, args=(in_out_q, in_out_q))
+#     flask_thread.start()
+#     while not len(in_out_q):
+#         lg.debug(f'waiting for flask {in_out_q}')
+#         time.sleep(1)
+#     app = in_out_q.pop()['flask_app']
+#     with app.app_context():
+#         dd = DefectModel.new_defect()
+#     MessagePanel(root, dd, 0)

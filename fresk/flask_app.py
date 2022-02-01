@@ -39,14 +39,15 @@ def start_flask_app(in_message_queue=None, out_message_queue=None):
     :param out_message_queue:
     """
     if in_message_queue is not None:
-        app_context = app.app_context()
-        with app_context:
+        lg.debug('message queue found!')
+        with app.app_context():
             queues.in_message_queue = in_message_queue
             queues.out_message_queue = out_message_queue
             g.in_message_queue = in_message_queue
             g.out_message_queue = out_message_queue
             g.out_message_queue.append({'flask_app': app})
             schedule_queue_watcher(in_message_queue, out_message_queue)
+            lg.debug('flask app sent by message queue')
     else:
         lg.warning('No inbound defect_instance queue!')
 
