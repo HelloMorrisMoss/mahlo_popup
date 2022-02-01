@@ -4,7 +4,7 @@ from tkinter import ttk
 
 from dev_common import reasons, style_component
 from log_setup import lg
-from widgets.length_entry import UpDownButtonFrame
+from widgets.numpad_entry import NumpadEntry, UpDownButtonFrame
 
 
 # TODO: rename this something better, like horizontal number selector
@@ -113,7 +113,7 @@ class LengthSetFrames(ttk.Frame):
 
         for col, (field_name, text) in enumerate(self._length_set_tuples):
             this_var = tk.StringVar()
-            this_frame = UpDownButtonFrame(self, self.defect, tkvar=this_var, field_name=field_name,
+            this_frame = UpDownButtonFrame(self, self.defect, variable=this_var, field_name=field_name,
                                            increment_values=[0.1, 1, 5, 10], text=text)
             this_frame.grid(row=0, column=col, rowspan=2, sticky='ns')
             this_var.trace_add('write', functools.partial(self._auto_fill_third_length, field_name))
@@ -226,6 +226,24 @@ class DefectTypePanel(tk.ttk.LabelFrame):
         # accent this button
         event.widget.config(style='Accent.TButton')
         self.defect.defect_type = event.widget['text']
+
+
+class LotNumberEntry(ttk.Labelframe):
+    def __init__(self, parent, defect, *args, **kwargs):
+        super().__init__(parent, text='Lot #', *args, **kwargs)
+        self.parent = parent
+        self.defect = defect
+        self.lot_number_var = tk.StringVar()
+        self.lot_number_var.set(defect.source_lot_number)
+
+        self.lot_number_var.trace_add('write', self.update_lot_number)
+
+        self.numpad_entry = NumpadEntry(self, textvariable=self.lot_number_var)
+        self.numpad_entry.grid()
+
+    def update_lot_number(self, *args):
+        lg.debug(f'{args=}')
+        self.defect.source_lot_number = self.lot_number_var.get()
 
 
 if __name__ == '__main__':

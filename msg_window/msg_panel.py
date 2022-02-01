@@ -4,7 +4,7 @@ from tkinter import ttk
 
 from dev_common import StrCol
 from log_setup import lg
-from msg_window.defect_attributes import DefectTypePanel, LengthSetFrames, NumberPrompt
+from msg_window.defect_attributes import DefectTypePanel, LengthSetFrames, LotNumberEntry, NumberPrompt
 
 
 class MessagePanel(tk.ttk.LabelFrame):
@@ -52,19 +52,24 @@ class MessagePanel(tk.ttk.LabelFrame):
         if self.defect_interface.record_creation_source != 'operator':
             self._tabframe.select(self._tabframe.index('end') - 1)
 
-        # the label that displays the defect_instance info
+        # confirmation frame
         self.message_label = self._add_message_display_label(self._confirm_frame)
         self.update_message_text()
         self.hideables.append(self.message_label)
 
         self._add_buttons(self._confirm_frame)
 
+        # lot #, rolls, defect type panel
+        self.lot_number_selector = LotNumberEntry(self._lot_rolls_type_frame, self.defect_interface)
+        self.lot_number_selector.grid(row=0, column=0, padx=2, pady=2)
+
         self.defect_type_panel = DefectTypePanel(self._lot_rolls_type_frame, self.defect_interface)
-        self.defect_type_panel.grid(row=0, column=0)
+        self.defect_type_panel.grid(row=0, column=1)
 
         self._roll_count_selector = NumberPrompt(self._lot_rolls_type_frame, self.defect_interface)
-        self._roll_count_selector.grid(row=1, column=0)
+        self._roll_count_selector.grid(row=1, column=1)
 
+        # length panel
         self.length_panel = LengthSetFrames(self._lengths_frame, self.defect_interface)
         self.length_panel.grid(row=0, column=0, sticky='nesw')
 
