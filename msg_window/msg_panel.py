@@ -4,7 +4,7 @@ from tkinter import ttk
 
 from dev_common import StrCol
 from log_setup import lg
-from msg_window.defect_attributes import DefectTypePanel
+from msg_window.defect_attributes import DefectTypePanel, LengthSetFrames, NumberPrompt
 
 
 class MessagePanel(tk.ttk.LabelFrame):
@@ -59,25 +59,14 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         self._add_buttons(self._confirm_frame)
 
-        # the panel for changing the information about the defect
-        # self.defect_panel = SelectDefectAttributes(self._lengths_frame, self.defect_interface, self.show_hideables)
-        self.defect_panel = DefectTypePanel(self._lot_rolls_type_frame, self.defect_interface)
-        self.defect_panel.grid(row=10, column=0)
+        self.defect_type_panel = DefectTypePanel(self._lot_rolls_type_frame, self.defect_interface)
+        self.defect_type_panel.grid(row=0, column=0)
 
-        # self._roll_count_selector = NumberPrompt(self._lot_rolls_type_frame, self.defect_interface)
-        # self.defect_panel.grid(row=0, column=0)
-        #
-        # # self.length_panel = LengthSetFrames(self._lengths_frame, self.defect_interface)
-        # self.length_panel = LengthSetFrames(self._confirm_frame, self.defect_interface)
-        # self.defect_panel.grid(row=0, column=0, sticky='nesw')
-        # self.defect_panel.grid_remove()
+        self._roll_count_selector = NumberPrompt(self._lot_rolls_type_frame, self.defect_interface)
+        self._roll_count_selector.grid(row=1, column=0)
 
-        # # when the OK button is pressed, hide
-        # def _remove_me(event):
-        #     lg.debug('remove_me called')
-        #     self.grid_remove()
-        #
-        # self.bind('<<AttributesOK>>', self.show_hideables)
+        self.length_panel = LengthSetFrames(self._lengths_frame, self.defect_interface)
+        self.length_panel.grid(row=0, column=0, sticky='nesw')
 
     def _add_message_display_label(self, parent):
         """A ttk label displaying information about the defect. Clicking the label will allow changes to be made.
@@ -99,7 +88,7 @@ class MessagePanel(tk.ttk.LabelFrame):
     # add a popup to change the defect attributes when clicking the label
     def change_attributes(self, event=None):
         lg.debug('changing defect type')
-        self.defect_panel.grid()
+        self.defect_type_panel.grid()
         self.hide_hideables()
 
     def refresh_panel(self):
@@ -444,3 +433,29 @@ class MessagePanel(tk.ttk.LabelFrame):
 #     with app.app_context():
 #         dd = DefectModel.new_defect()
 #     MessagePanel(root, dd, 0)
+if __name__ == '__main__':
+    from dev_common import style_component
+
+
+    class DummyDefect(object):
+        """For testing the attributes window."""
+
+        def __init__(self):
+            self.id = 99
+            self.defect_type = 'puckering'
+            self.rolls_of_product_post_slit = 3
+            self.length_of_defect_meters = 1.0
+            self.record_creation_source = 'operator'
+
+
+    root = tk.Tk()
+    style_component(root, '..')
+    defect1 = DummyDefect()
+    lg.debug(defect1.__dict__)
+
+    for frame in ((DefectTypePanel, 'type'), (LengthSetFrames, 'length'), (NumberPrompt, 'number')):
+        frm = frame[0](root, defect1)
+        frm.grid()
+
+    root.mainloop()
+    print(defect1.__dict__)

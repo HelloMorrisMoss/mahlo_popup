@@ -185,13 +185,6 @@ class LengthSetFrames(ttk.Frame):
         self.grid()
 
 
-class HolderFrame(ttk.Frame):
-    def __init__(self, parent, text, *args, **kwargs):
-        super().__init__(parent, *args, **kwargs)
-        self._holder_label = ttk.Label(self, text=text)
-        self._holder_label.grid()
-
-
 class DefectTypePanel(tk.ttk.LabelFrame):
     """A ttk.LabelFrame prompting for a defect type."""
 
@@ -246,25 +239,15 @@ if __name__ == '__main__':
             self.length_of_defect_meters = 1.0
             self.record_creation_source = 'operator'
 
+
     root = tk.Tk()
     style_component(root, '..')
     defect1 = DummyDefect()
     lg.debug(defect1.__dict__)
 
+    for frame in ((DefectTypePanel, 'type'), (LengthSetFrames, 'length'), (NumberPrompt, 'number')):
+        frm = frame[0](root, defect1)
+        frm.grid()
 
-    def show_win():
-        def nothing():
-            pass
-
-        show_button.grid_remove()
-        sda = SelectDefectAttributes(root, defect=defect1, on_destroy=nothing)
-        sda.grid(row=0, column=0)
-        # udbf = UpDownButtonFrame(nwin, defect=defect1)
-        # udbf.grid(row=0, column=0)
-
-
-    show_button = tk.Button(root, command=show_win)
-    show_button.grid(row=0, column=0)
-    show_button.focus_force()
     root.mainloop()
     print(defect1.__dict__)
