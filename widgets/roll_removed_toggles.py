@@ -143,7 +143,7 @@ class RollRemovedToggles(tk.Frame):
             lg.debug('args', args)
             lg.debug('kwargs', kwargs)
             # button = button
-            button = args[0].widget
+            button = args[0].widget  # avoid late binding?
             lg.debug(f'button background was {button.cget("background")}')
             if button.active:
                 lg.debug(f'{button.side} button was active, now setting to inactive')
@@ -167,6 +167,7 @@ class RollRemovedToggles(tk.Frame):
 
         :param event: tkinter.Event, for the toggle button being pressed.
         """
+
         msg_id, now_on, side = self._get_event_info(event)
 
         # this is just for development
@@ -215,9 +216,8 @@ class RemovedToggle(ttk.Checkbutton):
         :param btndef: dict, definining parameters for the button.
         """
 
-        text = btndef['params'].pop('text', None)
         self.defect_interface = btndef.pop('defect_interface')
-        super().__init__(parent, text=text, style='Switch.TCheckbutton', *args, **kwargs)
+        super().__init__(parent, style='Switch.TCheckbutton', *args, **btndef['params'], **kwargs)
 
         # add some custom attributes to use elsewhere, to keep track of which button is which
         setattr(self, 'state_var', btndef['params']['variable'])
