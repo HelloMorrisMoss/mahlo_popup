@@ -90,8 +90,8 @@ class MessagePanel(tk.ttk.LabelFrame):
         setattr(label, 'grid_params_', grid_params)
         label.grid(**grid_params)
 
-        # when clicked show the select attributes panel.
-        label.bind('<Button-1>', self.change_attributes)
+        # # when clicked show the select attributes panel.
+        # label.bind('<Button-1>', self.change_attributes)
 
         return label
 
