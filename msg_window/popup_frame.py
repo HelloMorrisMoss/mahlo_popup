@@ -46,6 +46,9 @@ class DefectMessageFrame(ttk.Frame):
 
         self.after(5000, self.check_for_new_defects)  # give SQLalchemy time to connect to the database
 
+    def current_defect_count(self):
+        return len(self.current_defects)
+
     def get_panel_by_defect_id(self, id_num):
         """Get the panel for the defect with id_num.
 

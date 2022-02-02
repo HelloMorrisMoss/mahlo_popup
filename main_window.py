@@ -135,8 +135,11 @@ class Popup(tk.Tk):
         """If auto-show is selected, show the window."""
 
         if self._auto_show.get():
-            lg.debug('auto showing window')
-            self.show_hideables(event)
+            if self.popup_frame.current_defect_count():
+                lg.debug('auto showing window')
+                self.show_hideables(event)
+            else:
+                lg.debug('No defects to show. Staying hidden.')
 
     def subscribe_message_button_to_defect_display_count(self):
         """Subscribes the self.number_of_messages_button to the length of the defect list.
@@ -220,6 +223,8 @@ class Popup(tk.Tk):
                     if action_str == 'shrink':
                         self.hide_hideables()
                     elif action_str == 'show':
+                        self._auto_show_window(event=None)
+                    elif action_str == 'show_force':
                         self.show_hideables()
                     elif action_str == 'check_defect_updates':
                         lg.debug('check for updates to defects')
