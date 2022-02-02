@@ -104,7 +104,7 @@ class NumberPad(tk.ttk.Frame):
 		                 '1', '2', '3',
 		                 '.', '0', 'backspace',
 		                 u'🡸', 'OK', u'🡺',
-		                 'clear', 'undo', 'revert',
+		                 'undo', 'revert', 'clear',
 		                 'today']
 		# TODO: clear, undo, and cancel buttons here?
 
