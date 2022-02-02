@@ -104,7 +104,8 @@ class NumberPad(tk.ttk.Frame):
 		                 '1', '2', '3',
 		                 '.', '0', 'backspace',
 		                 u'🡸', 'OK', u'🡺',
-		                 'clear', 'undo', 'revert']
+		                 'clear', 'undo', 'revert',
+		                 'today']
 		# TODO: clear, undo, and cancel buttons here?
 
 		buttons_dict = {}
@@ -144,6 +145,10 @@ class NumberPad(tk.ttk.Frame):
 			self._entry.icursor(tk.END)
 		elif label == 'undo':
 			self._entry.undo()
+		elif label == 'today':
+			import datetime
+			datetime.datetime.today()
+			self.replace_all(datetime.datetime.today().isoformat()[:10].replace('-', ''))
 		else:
 			# todo: if text is selected, replace selected text with label
 			self._entry.insert(current_cursor_index, label)
@@ -176,7 +181,6 @@ class NumberPad(tk.ttk.Frame):
 		self.winfo_toplevel().focus_force()
 		self._entry.focus_force()
 		self.winfo_toplevel().unbind_all("<Button-1>")
-		# self._entry.event_generate('<<NumPadClosed>>')
 		self.destroy()
 
 
