@@ -235,15 +235,30 @@ class LotNumberEntry(ttk.Labelframe):
         self.defect = defect
         self.lot_number_var = tk.StringVar()
         self.lot_number_var.set(defect.source_lot_number)
-
         self.lot_number_var.trace_add('write', self.update_lot_number)
 
+        self._display_var = tk.StringVar()
+        self._display_label = ttk.Label(self, textvariable=self._display_var)
+        self._display_label.grid(row=0, column=0)
+        self._display_format = '{value:_}'
+
         self.numpad_entry = NumpadEntry(self, textvariable=self.lot_number_var)
-        self.numpad_entry.grid()
+        self.numpad_entry.grid(row=1, column=0)
+
+    def _update_display(self):
+        new_val = self.lot_number_var.get()
+        if new_val:
+            display_string = ''
+            display_pieces = (4, 7, 10)
+            for dp in display_pieces:
+                if len(new_val) >= dp:
+                    new_val = new_val[:dp] + '_' + new_val[dp:]
+        self._display_var.set(new_val)
 
     def update_lot_number(self, *args):
         lg.debug(f'{args=}')
         self.defect.source_lot_number = self.lot_number_var.get()
+        self._update_display()
 
 
 if __name__ == '__main__':
@@ -256,6 +271,7 @@ if __name__ == '__main__':
             self.rolls_of_product_post_slit = 3
             self.length_of_defect_meters = 1.0
             self.record_creation_source = 'operator'
+            self.source_lot_number = ''
 
 
     root = tk.Tk()
@@ -263,7 +279,8 @@ if __name__ == '__main__':
     defect1 = DummyDefect()
     lg.debug(defect1.__dict__)
 
-    for frame in ((DefectTypePanel, 'type'), (LengthSetFrames, 'length'), (NumberPrompt, 'number')):
+    for frame in (
+    (LotNumberEntry, 'lot'), (DefectTypePanel, 'type'), (LengthSetFrames, 'length'), (NumberPrompt, 'number')):
         frm = frame[0](root, defect1)
         frm.grid()
 
