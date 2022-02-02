@@ -53,7 +53,7 @@ class RollRemovedToggles(tk.Frame):
             self._toggle_refs[btn] = RemovedToggle(self, btn, btndef)
             self.add_toggle(self._toggle_refs[btn], btn)
             # add the event handler method
-            self._toggle_refs[btn].bind('<Button-1>', self._toggle_changes_event_handler)  # TODO
+            self._toggle_refs[btn].bind('<Button-1>', self._toggle_changes_event_handler)
 
         # add a line separator to make the all button stand out from the side buttons
         sep = ttk.Separator(self, orient='horizontal')
