@@ -249,7 +249,7 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
                 popup = self.parent.popup_frame  # TODO: replace this with a passed in method call
                 popup.check_for_new_defects()
                 panel = popup.get_panel_by_defect_id(new_defect.id)
-                panel.change_attributes()
+                # panel.change_attributes()
 
         # add a new defect button
         self.add_defect_button = tk.ttk.Button(self, text='New defect', command=add_new_defect)
