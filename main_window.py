@@ -213,6 +213,7 @@ class Popup(tk.Tk):
                 if self.flask_app is None:
                     if msg.get('flask_app'):
                         self.flask_app = self.new_messages.pop(mindex)['flask_app']
+                        lg.debug('Flask App received.')
                         self.after(2000, self.popup_frame.check_for_new_defects)
                 elif msg.get('action'):
                     action_str = self.new_messages.pop(mindex)['action']

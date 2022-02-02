@@ -7,17 +7,28 @@ from tkinter import ttk
 
 from dev_common import style_component
 from log_setup import lg
-from widgets.helpers import WhereWidget
 
 
 class NumpadEntry(ttk.Entry):
 	"""A tkinter.ttk.Entry that, when double_clicked, will show a number pad to edit the value."""
 
-	def __init__(self, parent=None, **kw):
-		super().__init__(parent, **kw)
+	def __init__(self, parent, textvariable=None, *args, **kwargs):
+		if textvariable is None:
+			kwargs['textvariable'] = tk.StringVar()
+		else:
+			kwargs['textvariable'] = textvariable
+		super().__init__(parent, *args, **kwargs)
+		self.textvariable = kwargs['textvariable']
 		self.parent = parent
 		self.bind('<Button-1>', self._quick_clicking)
 		self._quick_clicks = 0
+		self._previous_value = self.get()
+
+	def numpad_closed(self, event):
+		"""If there are no entered numbers, but there had been before, clear the numbers."""
+		self.winfo_toplevel().focus_force()
+		if self.get() == '' and self._previous_value != '':
+			self.insert(0, self._previous_value)
 
 	def _quick_clicking(self, event=None):
 		"""Count the recent repeated and rapid clicks on the _entry, if it was double_clicked open the number pad.
@@ -44,6 +55,10 @@ class NumpadEntry(ttk.Entry):
 	def show_numpad(self):
 		"""Show a new window with a number pad to edit the _entry's value."""
 
+		# save and clear the current value
+		self._previous_value = self.get()
+		# self.delete(0, tk.END)
+
 		np = NumberPad(self)
 		np.place(in_=self, relx=0, rely=1)
 		self.after(10, lambda: self.selection_clear())
@@ -56,16 +71,19 @@ class NumberPad(tk.ttk.Frame):
 		super().__init__(entry.winfo_toplevel())
 		self._button_dict = self.add_buttons()
 		self._entry = entry
-		self.bind("<FocusOut>", self.auto_close)
+		self.focus_force()
+		self.bind_all("<FocusOut>", self.auto_close)
+		self.previous_values = []
+		self._original_value = self._entry.get()
 
-	# todo: make the frame resize to the entry?
-
+	# todo: make the frame resize to the entry? place(...relwidth=1) just truncated the buttons
 	def add_buttons(self):
 		button_labels = ['7', '8', '9',
 		                 '4', '5', '6',
 		                 '1', '2', '3',
 		                 '.', '0', 'backspace',
-		                 u'🡸', 'OK', u'🡺']
+		                 u'🡸', 'OK', u'🡺',
+		                 'clear', 'undo', 'revert']
 		# TODO: clear, undo, and cancel buttons here?
 
 		buttons_dict = {}
@@ -98,9 +116,24 @@ class NumberPad(tk.ttk.Frame):
 			self._entry.icursor(current_cursor_index - 1)
 		elif label == u'🡺':
 			self._entry.icursor(current_cursor_index + 1)
+		elif label == 'clear':
+			self.clear()
+		elif label == 'revert':
+			self.replace_all(self._original_value)
+			self._entry.icursor(tk.END)
+		elif label == 'undo':
+			if self.previous_values:
+				self.replace_all(self.previous_values.pop(-1))
 		else:
 			# todo: if text is selected, replace selected text with label
 			self._entry.insert(current_cursor_index, label)
+
+	def replace_all(self, new_value):
+		self.clear()
+		self._entry.insert(0, new_value)
+
+	def clear(self):
+		self._entry.delete(0, tk.END)
 
 	def auto_close(self, event):
 		"""If the window lost focus and does not have it, close the window.
@@ -109,17 +142,22 @@ class NumberPad(tk.ttk.Frame):
 
 		:param event: tkinter.Event
 		"""
-		if self.focus_displayof() is None and event.widget is self:
+		# if self.focus_displayof() is None:
+		# 	lg.debug(f'focus_displayof is none')
+		if event.widget is self:
+			lg.debug(f'{event.widget=}')
 			self.close()
 
 	def close(self):
 		"""Close the NumPad window."""
-		self.destroy()
 
-	def position_here(self, x, y):
-		"""Move the NumPad window to (x, y) on the screen."""
-		npw = WhereWidget(self)
-		self.geometry(f'{npw.w}x{npw.h}+{x}+{y}')
+		# if nothing has been entered, but there was a value before, revert
+		if self._entry.get() == '' and self._original_value != '':
+			self.replace_all(self._original_value)
+		self.winfo_toplevel().focus_force()
+		self._entry.focus_force()
+		# self._entry.event_generate('<<NumPadClosed>>')
+		self.destroy()
 
 
 class UpDownButtonFrame(tk.ttk.LabelFrame):
@@ -228,9 +266,14 @@ class LengthButton(tk.ttk.Button):
 if __name__ == '__main__':
 	# the most basic of testing
 	root = tk.Tk()
-	root.geometry("200x200")
+	root.geometry("300x300")
 	style_component(root, r'..')
 	txt_var = tk.StringVar()
 	test_entry = NumpadEntry(root, textvariable=txt_var)
 	test_entry.grid(row=0, column=0)
+
+	txt_var2 = tk.StringVar()
+	test_entry2 = NumpadEntry(root, textvariable=txt_var2)
+	test_entry2.grid(row=0, column=1)
+	root.bind_all("<1>", lambda event: event.widget.focus_set())
 	root.mainloop()
