@@ -12,7 +12,7 @@ from log_setup import lg
 class NumpadEntry(ttk.Entry):
 	"""A tkinter.ttk.Entry that, when double_clicked, will show a number pad to edit the value."""
 
-	def __init__(self, parent, textvariable=None, *args, **kwargs):
+	def __init__(self, parent, textvariable: tk.StringVar = None, *args, **kwargs):
 		if textvariable is None:
 			kwargs['textvariable'] = tk.StringVar()
 		else:
@@ -22,7 +22,28 @@ class NumpadEntry(ttk.Entry):
 		self.parent = parent
 		self.bind('<Button-1>', self._quick_clicking)
 		self._quick_clicks = 0
-		self._previous_value = self.get()
+		self._previous_value = self.get()  # the last value
+		self.previous_values = [self._previous_value]  # all previous values (for undo)
+		self._last_button_pressed = 'None'
+		self.textvariable.trace_add('write', self._add_to_undo_list)
+		self._undoing = False
+
+	def _add_to_undo_list(self, *args):
+		if not self._undoing:
+			new_value = self.get()
+			self.previous_values.append(new_value)
+			self._previous_value = new_value
+
+	def undo(self, *args):
+		self._undoing = True
+		while self.previous_values:
+			undoed_value = self.previous_values.pop()
+			if undoed_value != self._previous_value:
+				self.textvariable.set(undoed_value)
+				self._previous_value = undoed_value
+				self.icursor(tk.END)
+				break
+		self._undoing = False
 
 	def numpad_closed(self, event):
 		"""If there are no entered numbers, but there had been before, clear the numbers."""
@@ -67,14 +88,14 @@ class NumpadEntry(ttk.Entry):
 class NumberPad(tk.ttk.Frame):
 	"""A number pad window that edits the passed Entry widget's value."""
 
-	def __init__(self, entry: ttk.Entry, prompt=None, **kwargs):
+	def __init__(self, entry: NumpadEntry, prompt=None, **kwargs):
 		super().__init__(entry.winfo_toplevel())
 		self._button_dict = self.add_buttons()
 		self._entry = entry
-		self.focus_force()
-		self.bind_all("<FocusOut>", self.auto_close)
-		self.previous_values = []
 		self._original_value = self._entry.get()
+
+		# this works but limits the reusability
+		self.winfo_toplevel().bind_all("<Button-1>", self.auto_close)  # close the number pad when losing focus
 
 	# todo: make the frame resize to the entry? place(...relwidth=1) just truncated the buttons
 	def add_buttons(self):
@@ -110,7 +131,7 @@ class NumberPad(tk.ttk.Frame):
 			# todo: if text is selected, delete it
 			self._entry.delete(current_cursor_index - 1, current_cursor_index)
 		elif label == 'OK':
-			self.close()
+			self.close_numpad()
 		elif label == u'🡸':
 			# todo: if text is selected, unselect when using arrow keys
 			self._entry.icursor(current_cursor_index - 1)
@@ -122,8 +143,7 @@ class NumberPad(tk.ttk.Frame):
 			self.replace_all(self._original_value)
 			self._entry.icursor(tk.END)
 		elif label == 'undo':
-			if self.previous_values:
-				self.replace_all(self.previous_values.pop(-1))
+			self._entry.undo()
 		else:
 			# todo: if text is selected, replace selected text with label
 			self._entry.insert(current_cursor_index, label)
@@ -142,13 +162,12 @@ class NumberPad(tk.ttk.Frame):
 
 		:param event: tkinter.Event
 		"""
-		# if self.focus_displayof() is None:
-		# 	lg.debug(f'focus_displayof is none')
-		if event.widget is self:
-			lg.debug(f'{event.widget=}')
-			self.close()
 
-	def close(self):
+		# if it's not the numpad or descendants
+		if not str(event.widget).startswith(str(self)):
+			self.close_numpad()
+
+	def close_numpad(self):
 		"""Close the NumPad window."""
 
 		# if nothing has been entered, but there was a value before, revert
@@ -156,6 +175,7 @@ class NumberPad(tk.ttk.Frame):
 			self.replace_all(self._original_value)
 		self.winfo_toplevel().focus_force()
 		self._entry.focus_force()
+		self.winfo_toplevel().unbind_all("<Button-1>")
 		# self._entry.event_generate('<<NumPadClosed>>')
 		self.destroy()
 
@@ -266,7 +286,7 @@ class LengthButton(tk.ttk.Button):
 if __name__ == '__main__':
 	# the most basic of testing
 	root = tk.Tk()
-	root.geometry("300x300")
+	root.geometry('400x400+2500+200')  # place it on the second monitor for testing
 	style_component(root, r'..')
 	txt_var = tk.StringVar()
 	test_entry = NumpadEntry(root, textvariable=txt_var)
@@ -275,5 +295,5 @@ if __name__ == '__main__':
 	txt_var2 = tk.StringVar()
 	test_entry2 = NumpadEntry(root, textvariable=txt_var2)
 	test_entry2.grid(row=0, column=1)
-	root.bind_all("<1>", lambda event: event.widget.focus_set())
+	# root.bind_all("<1>", lambda event: event.widget.focus_set())
 	root.mainloop()
