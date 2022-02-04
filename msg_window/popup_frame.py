@@ -1,4 +1,7 @@
+import tkinter as tk
 from tkinter import ttk
+
+from ttkwidgets.frames import ScrolledFrame
 
 from fresk.models.defect import DefectModel
 from log_setup import lg
@@ -6,7 +9,7 @@ from msg_window.msg_panel import MessagePanel
 from publishing_vars import PublishingLengthList
 
 
-class DefectMessageFrame(ttk.Frame):
+class DefectMessageFrame(ScrolledFrame):
     """A popup window with messages to respond to. Create the window and messages based on a provided dictionary.
 
     """
@@ -31,8 +34,8 @@ class DefectMessageFrame(ttk.Frame):
         """
 
         self.parent = parent_container
-        super().__init__(self.parent)
-
+        super().__init__(self.parent, compound=tk.RIGHT, canvasheight=200)
+        setattr(self.interior, 'parent', self)
         self.set_style(kwargs)
 
         self.dt_format_str = r'%I:%M %d-%b'  # the format for the datetime strftime to use for display
@@ -111,9 +114,10 @@ class DefectMessageFrame(ttk.Frame):
         if defect.id not in tuple(df.defect_id for df in self.messages_frames):
             self.message_panel_row += 1
             self.current_defects.append(defect)
-            msg_frm = MessagePanel(self, defect, self.message_panel_row, dt_format_str=self.dt_format_str,
+            msg_frm = MessagePanel(self.interior, self.current_defects, defect, self.message_panel_row,
+                                   dt_format_str=self.dt_format_str,
                                    pad={'x': self.pad['x'], 'y': self.pad['y']},
-                                   _wgt_styles=self._wgt_styles)
+                                   _wgt_styles=self._wgt_styles, sticky='nesw')
             self.messages_frames.append(msg_frm)
             return msg_frm
 

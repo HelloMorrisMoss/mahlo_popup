@@ -10,10 +10,13 @@ from widgets.roll_removed_toggles import RollRemovedToggles
 
 
 class MessagePanel(tk.ttk.LabelFrame):
-    def __init__(self, parent, defect_instance=None, row=0, **kwargs):
+    def __init__(self, parent, current_defects, defect_instance=None, row=0, **kwargs):
         super().__init__(parent)
         self.config(text=f'Defect #{defect_instance.id}')
         self.msg_number = row
+
+        self.current_defects = current_defects
+
         if not kwargs.get('pad'):
             kwargs['pad'] = {'x': 2, 'y': 2}
         if not kwargs.get('dt_format_str'):
@@ -103,7 +106,7 @@ class MessagePanel(tk.ttk.LabelFrame):
 
     def refresh_panel(self):
         self.update_message_text()
-        self._change_toggle_count()
+        # self._change_toggle_count()
 
     def hide_hideables(self):
         """Hide (.remove_grid) on all widgets that have been added to the hideables list."""
@@ -188,22 +191,18 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         # I don't love this parent.parent referencing, if the app changes (from flask being restarted) it would
         # automatically grab the new one if updated in the main window
-        lg.debug(self.parent.current_defects)
-        with self.parent.parent.flask_app.app_context():
+        lg.debug(self.current_defects)
+        with self.winfo_toplevel().flask_app.app_context():
             self.defect_interface.save_to_database()
-            self.parent.current_defects.pop(self.parent.current_defects.index(self.defect_interface))
+            self.current_defects.pop(self.current_defects.index(self.defect_interface))
         self.destroy()
-        lg.debug(self.parent.current_defects)
-        # TODO: save to sqlite database, then try to send all items unsent in the db; does it have to be sqlite?
-        #  can we just install postgres on the hmi? Retries may suffice, see how connection looks in production
+        lg.debug(self.parent.parent.current_defects)
 
-
-
-    def _change_toggle_count(self):
-        """Change the number of toggle-buttons on the the foam removed toggles frame."""
-        # self._destroy_toggle_panel()
-        # self._add_foam_removed_toggle_selectors(self)
-        pass
+    # def _change_toggle_count(self):
+    #     """Change the number of toggle-buttons on the the foam removed toggles frame."""
+    #     # self._destroy_toggle_panel()
+    #     # self._add_foam_removed_toggle_selectors(self)
+    #     pass
 
 
 # if __name__ == '__main__':

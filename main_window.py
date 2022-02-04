@@ -25,6 +25,8 @@ class Popup(tk.Tk):
         self._hide_option = tk.StringVar()
         self._hide_option.set('b')  # default to button
         self.message_button_geometry = '150x150'  # used for the message button and referenced by .show_hideables()
+        self.full_window_geometry = '1150x400'
+        self.full_sized()
         # whether to automatically hide/show the window
         self._auto_hide = tk.IntVar(value=True)
         self._auto_show = tk.IntVar(value=True)
@@ -57,7 +59,7 @@ class Popup(tk.Tk):
 
         # where the messages about defect appear with their toggles/save buttons
         self.popup_frame = DefectMessageFrame(self, **grid_style_params)
-        self.popup_frame.grid(row=1, column=0, sticky='nesw')
+        self.popup_frame.grid(row=0, column=0, sticky='nesw')
         self.hideables.append(self.popup_frame)
 
         # the button that shows while inactive, displays the number of new defects
@@ -159,7 +161,8 @@ class Popup(tk.Tk):
             for hideable in self.hideables:
                 hideable.grid()
             self.number_of_messages_button.grid_remove()  # hide the messages button
-            self.geometry('')  # grow to whatever size is needed for all the messages and other widgets
+            # self.geometry('')  # grow to whatever size is needed for all the messages and other widgets
+            self.full_sized()
             self._do_without_focus_out(self.deiconify)
             # self.deiconify()  # restore from minimized
             window_topmost(self)
@@ -169,6 +172,16 @@ class Popup(tk.Tk):
             # re-hide the minimize/maxmize buttons if using iconify
             # if self._hide_option == 'i':
             # self._do_without_focus_out(lambda: self.attributes('-toolwindow', False))
+
+    def full_sized(self):
+        """Show the full sized window."""
+
+        self.geometry(self.full_window_geometry)
+
+    def button_sized(self):
+        """Show the window button sized."""
+
+        self.geometry(self.message_button_geometry)  # fixed size small window
 
     def hide_hideables(self, event=None):
         """Hide the components that are supposed to hide when the window 'shrinks'.
@@ -199,7 +212,7 @@ class Popup(tk.Tk):
                     hider.grid_remove()
                 self.number_of_messages_button.grid(row=0, column=0)
 
-                self.geometry(self.message_button_geometry)  # fixed size small window
+                self.button_sized()
             if self._ghost_hide.get():
                 self.attributes('-alpha', self._ghost_fade.get() / 100.0)
 
