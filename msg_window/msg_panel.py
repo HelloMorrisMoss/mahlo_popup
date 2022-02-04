@@ -47,7 +47,7 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         # add the tabbed frames
         self._tabframe = ttk.Notebook(self)
-        self._tabframe.grid(row=0, column=0)
+        self._tabframe.grid(row=0, column=0, sticky='nesw')
 
         self._lot_rolls_type_frame = ttk.Frame(self)
         self._lengths_frame = ttk.Frame(self)
@@ -56,6 +56,9 @@ class MessagePanel(tk.ttk.LabelFrame):
         self._tabframe.add(self._lot_rolls_type_frame, text='lot #, rolls, defect type')
         self._tabframe.add(self._lengths_frame, text='lengths')
         self._tabframe.add(self._confirm_frame, text='confirmation')
+
+        # update the label text when changing tabs
+        self._tabframe.bind('<<NotebookTabChanged>>', self.update_message_text)
 
         # if it's an auto-detected defect, they hopefully only need to confirm it, start there
         if self.defect_interface.record_creation_source != 'operator':
@@ -124,7 +127,7 @@ class MessagePanel(tk.ttk.LabelFrame):
             lg.debug(hideable)
             hideable.grid(**hideable.grid_params_)
 
-    def update_message_text(self):
+    def update_message_text(self, *args):
         """Update the message label with any changes."""
 
         msg_text = self.message_text_template.format(
