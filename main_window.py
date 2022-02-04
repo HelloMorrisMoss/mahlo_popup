@@ -245,7 +245,9 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
             with self.parent.flask_app.app_context():  # TODO: add a get_flask method to parent and pass that in
                 # create a new defect in the database, get the popup frame, make sure it has updated (to include the
                 # new defect), get the panel for the new defect, call the panel's change attributes method
-                new_defect = DefectModel.new_defect(record_creation_source='operator')
+                from scada_tag_query import get_current_lam1_lot_number
+                lot_num = get_current_lam1_lot_number()
+                new_defect = DefectModel.new_defect(source_lot_number=lot_num, record_creation_source='operator')
                 popup = self.parent.popup_frame  # TODO: replace this with a passed in method call
                 popup.check_for_new_defects()
                 # panel = popup.get_panel_by_defect_id(new_defect.id)
