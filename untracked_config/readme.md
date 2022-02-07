@@ -18,3 +18,19 @@ Contains a variable with the string used by sqlalchemy to connect to the databas
 
 Contains a "constant" integer LAM_NUM. It is either 0, 1, or 2. This is a reference to a machine number and is used by
 the popup to limit display information to that which is relevant to the machine.
+
+## th_creds.py
+
+Contains a dictionary of parameters for a psycopg2.connect'ion to an Ignition tag history database.
+
+## thickness_specifications.py
+
+Contains a function that will return the minimum and maximum thickness for the provided parameters. The docstring:
+
+    """Get the minimum and maximum thickness specification
+
+    :param adhesive: str, the adhesive type.
+    :param target_thickness: int, the target or nominal foam thickness.
+    :param specification: str, the specification to use, default is Nitto internal spec.
+    :return: tuple, of floats, the minimum and maximum.
+    """
