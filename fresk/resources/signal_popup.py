@@ -50,12 +50,12 @@ class Popup(Resource):
         elif data['action'] == 'show_force':
             lg.debug('showing popup')
             queues.out_message_queue.append({'action': 'show_force'})
-            return {'popup_result': 'Showing popup window.'}, 200
+            return {'popup_result': 'Showing popup window (force).'}, 200
 
         elif data['action'] == 'defects_updated':
             lg.debug('tell popup there are defect updates')
             queues.out_message_queue.append({'action': 'check_defect_updates'})
-            return {'popup_result': 'Showing popup window.'}, 200
+            return {'popup_result': 'Checking for new defects.'}, 200
 
         else:
             return {'popup_result': 'No valid request.'}, 400

@@ -88,14 +88,14 @@ class DefectMessageFrame(ScrolledFrame):
             # if we have no defects, no need to be big
             if not self.current_defects:
                 self.parent.hide_hideables()
-        except AssertionError:
-            lg.warning('Assertion error for sqlalchemy.')
+        except AssertionError as aser:
+            lg.warning('Assertion error for sqlalchemy. %s', aser)
             retry_num += 1
             if retry_num > 5:
                 raise ConnectionError('Cannot connect to database!')
             self.after(2000, self.check_for_new_defects, retry_num)
-        except AttributeError:
-            lg.warning('Running without flask.')
+        except AttributeError as ater:
+            lg.warning('Running without flask. %s', ater)
 
     def get_message_rows(self):
         """Get a list of the rows that MessagePanels currently occupy.
