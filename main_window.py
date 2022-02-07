@@ -12,7 +12,7 @@ from log_setup import lg
 from msg_window.popup_frame import DefectMessageFrame
 
 
-class Popup(tk.Tk):
+class MainWindow(tk.Tk):
     """The main tkinter window that the defect_instance panels, controls, etc reside in."""
 
     def __init__(self, *args, **kwargs):

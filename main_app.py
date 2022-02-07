@@ -3,7 +3,7 @@ import time
 from collections import deque
 
 from fresk.flask_app import start_flask_app
-from main_window import Popup
+from main_window import MainWindow
 
 # allow communication
 f2p_queue = deque()
@@ -17,4 +17,4 @@ flask_thread.start()
 while not f2p_queue:
     time.sleep(1)
 
-Popup(inbound_queue=f2p_queue, outbound_queue=p2f_queue)
+MainWindow(inbound_queue=f2p_queue, outbound_queue=p2f_queue)
