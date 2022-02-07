@@ -10,6 +10,8 @@ from fresk.models.defect import DefectModel
 from log_setup import lg
 # when called by RPC the directory may change and be unable to find the ttk theme file directory
 from msg_window.popup_frame import DefectMessageFrame
+from scada_tag_query import TagHistoryConnector
+from untracked_config.lam_num import LAM_NUM
 
 
 class MainWindow(tk.Tk):
@@ -103,6 +105,12 @@ class MainWindow(tk.Tk):
         self.new_messages = []
         self.flask_app = None
         self.after(1000, self.check_for_inbound_messages)
+
+        # the laminator number
+        self.lam_num = LAM_NUM
+
+        # for querying the tag history database
+        self._thist = TagHistoryConnector(f'lam{self.lam_num}')
 
         # self.after(1000, self.watching_focus)
         # self.geometry('+2500+200')  # place it on the second monitor for testing
@@ -258,8 +266,7 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
             with self.parent.flask_app.app_context():  # TODO: add a get_flask method to parent and pass that in
                 # create a new defect in the database, get the popup frame, make sure it has updated (to include the
                 # new defect), get the panel for the new defect, call the panel's change attributes method
-                from scada_tag_query import get_current_lam1_lot_number
-                lot_num = get_current_lam1_lot_number()
+                lot_num = self.winfo_toplevel()._thist.current_lot_number()
                 new_defect = DefectModel.new_defect(source_lot_number=lot_num, record_creation_source='operator')
                 popup = self.parent.popup_frame  # TODO: replace this with a passed in method call
                 popup.check_for_new_defects()
