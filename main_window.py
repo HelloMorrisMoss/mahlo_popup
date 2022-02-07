@@ -18,7 +18,7 @@ class MainWindow(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__()
         self.debugging = kwargs.get('debug')
-        # self.attributes('-toolwindow', True)
+        self.attributes('-toolwindow', True)
         self.title('Defect Removal Records')
 
         # what to do when hiding
