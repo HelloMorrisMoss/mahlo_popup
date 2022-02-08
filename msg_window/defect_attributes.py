@@ -113,6 +113,7 @@ class LengthSetFrames(ttk.Frame):
 
         for col, (field_name, text) in enumerate(self._length_set_tuples):
             this_var = tk.StringVar()
+            this_var.set(str(getattr(self.defect, field_name)))
             this_frame = UpDownButtonFrame(self, self.defect, variable=this_var, field_name=field_name,
                                            increment_values=[0.1, 1, 5, 10], text=text)
             this_frame.grid(row=0, column=col, rowspan=2, sticky='ns')

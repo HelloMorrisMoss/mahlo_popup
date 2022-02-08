@@ -198,7 +198,6 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
 		super().__init__(parent, *args, **kwargs)
 		self.defect = ud_defect
 		self.length_var = variable
-		self.length_var.set(str(ud_defect.length_of_defect_meters))
 		self.length_var.trace('w', self.update_length)
 
 		# todo: this could be its own class
