@@ -89,7 +89,7 @@ class DefectMessageFrame(ScrolledFrame):
             if not self.current_defects:
                 self.parent.hide_hideables()
         except AssertionError as aser:
-            lg.warning('Assertion error for sqlalchemy. %s', aser)
+            lg.warning('Assertion error for sqlalchemy (not connected). %s', aser)
             retry_num += 1
             if retry_num > 5:
                 raise ConnectionError('Cannot connect to database!')
