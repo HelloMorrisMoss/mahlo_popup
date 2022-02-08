@@ -84,6 +84,10 @@ class MessagePanel(tk.ttk.LabelFrame):
         self.length_panel = LengthSetFrames(self._lengths_frame, self.defect_interface)
         self.length_panel.grid(row=0, column=0, sticky='nesw')
 
+        self.advance_to_confirm_button = ttk.Button(self._lengths_frame, text='next',
+                                                    command=lambda: self._tabframe.select(2))
+        self.advance_to_confirm_button.grid(row=0, column=10, rowspan=10, sticky='ns')
+
         # confirmation frame
         self.message_label = self._add_message_display_label(self._confirm_frame)
         self.update_message_text()
