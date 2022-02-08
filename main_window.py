@@ -21,7 +21,9 @@ class MainWindow(tk.Tk):
         super().__init__()
         self.debugging = kwargs.get('debug')
         self.attributes('-toolwindow', True)
-        self.title('Defect Removal Records')
+        # the laminator number
+        self.lam_num = LAM_NUM
+        self.title(f'Defect Removal Records - lam {self.lam_num}')
 
         # what to do when hiding
         self._hide_option = tk.StringVar()
@@ -60,7 +62,7 @@ class MainWindow(tk.Tk):
         self.hideables = []
 
         # where the messages about defect appear with their toggles/save buttons
-        self.popup_frame = DefectMessageFrame(self, **grid_style_params)
+        self.popup_frame = DefectMessageFrame(self, lam_num=self.lam_num, **grid_style_params)
         self.popup_frame.grid(row=0, column=0, sticky='nesw')
         self.hideables.append(self.popup_frame)
 
@@ -105,9 +107,6 @@ class MainWindow(tk.Tk):
         self.new_messages = []
         self.flask_app = None
         self.after(1000, self.check_for_inbound_messages)
-
-        # the laminator number
-        self.lam_num = LAM_NUM
 
         # for querying the tag history database
         self._thist = TagHistoryConnector(f'lam{self.lam_num}')

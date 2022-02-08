@@ -14,7 +14,7 @@ class DefectMessageFrame(ScrolledFrame):
 
     """
 
-    def __init__(self, parent_container, *args, **kwargs):
+    def __init__(self, parent_container, lam_num, *args, **kwargs):
         """
         example_input_dict = {'messages': [{'title': 'Out of spec!',
                                         'msg_txt': {'template': template_str,
@@ -34,6 +34,7 @@ class DefectMessageFrame(ScrolledFrame):
         """
 
         self.parent = parent_container
+        self.lam_num = lam_num
         super().__init__(self.parent, compound=tk.RIGHT, canvasheight=200)
         setattr(self.interior, 'parent', self)
         self.set_style(kwargs)
@@ -79,7 +80,7 @@ class DefectMessageFrame(ScrolledFrame):
         """Check the database for new defects, if there are add new panels."""
         try:
             with self.parent.flask_app.app_context():
-                new_defs = DefectModel.find_new()
+                new_defs = DefectModel.find_new(lam_number=self.lam_num)
             lg.debug('new defects: %s', new_defs)
             for defect in new_defs:
                 if defect not in self.current_defects:

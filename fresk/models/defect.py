@@ -66,7 +66,7 @@ class DefectModel(fsa.Model):
         return id_df
 
     @classmethod
-    def find_new(cls):
+    def find_new(cls, lam_number=None):
         """Get a list of DefectModel objects that are new.
         New here is defined as the creation and modification times are the same or have no operator_saved_time.
         They will be ordered from oldest to newest.
@@ -74,9 +74,16 @@ class DefectModel(fsa.Model):
         :return: list, [<DefectModel 1>, <DefectModel 2>]
         """
 
-        return cls.query.filter(DefectModel.operator_saved_time is None or
-                                DefectModel.entry_modified_ts == DefectModel.entry_created_ts).order_by(
-            DefectModel.entry_created_ts.desc()).all()
+        if lam_number is None:
+            return cls.query.filter(DefectModel.operator_saved_time is None or
+                                    DefectModel.entry_modified_ts == DefectModel.entry_created_ts).order_by(
+                DefectModel.entry_created_ts.desc()).all()
+        else:
+
+            return cls.query.filter(DefectModel.operator_saved_time is None or
+                                    DefectModel.entry_modified_ts == DefectModel.entry_created_ts).filter(
+                DefectModel.lam_num == lam_number).order_by(
+                DefectModel.entry_created_ts.desc()).all()
 
     @classmethod
     def find_all(cls):
@@ -90,8 +97,8 @@ class DefectModel(fsa.Model):
     def mark_all_confirmed(cls):
         """Mark all a defect records that have not been confirmed as confirmed at this time.
 
-		:return: list
-		"""
+        :return: list
+        """
         unconfirmed = cls.find_new()
         for defect in unconfirmed:
             defect.operator_saved_time = func.now()
