@@ -106,6 +106,8 @@ class LengthSetFrames(ttk.Frame):
         self.parent = parent
         self._last_set_lengths = []  # list of the field_name for the most recently changed in order
         self._internal_update_running = False
+        self.toggle_auto_fill_lengths = tk.IntVar()
+        self.toggle_auto_fill_lengths.set(True)
         # add the length set frames
         self._length_set_tuples = ('length_of_defect_meters', 'Length Removed'), \
                                   ('mahlo_start_length', 'Start Length'), \
@@ -121,6 +123,9 @@ class LengthSetFrames(ttk.Frame):
             this_frame.grid(row=0, column=col, rowspan=2, sticky='ns')
             this_var.trace_add('write', functools.partial(self._auto_fill_third_length, field_name))
             self._length_set_frames.update({field_name: {'frame': this_frame, 'StringVar': this_var}})
+
+        self.toggle_auto_button = ttk.Checkbutton(self, text='autofill', variable=self.toggle_auto_fill_lengths)
+        self.toggle_auto_button.grid(row=0, column=col + 1)
 
         # self._all_length_set_button = ttk.Button(self, text='all set',
         #                                          command=lambda: self.parent.event_generate('<<LengthsSet>>'))
@@ -155,25 +160,25 @@ class LengthSetFrames(ttk.Frame):
             # if they changed report in the middle of this then anything with the end could be weird
 
             # need the field_name from tuples that isn't in last set lengths
+        if self.toggle_auto_fill_lengths.get():
+            def which_is_missing():
+                for field_name, _ in self._length_set_tuples:
+                    if field_name not in self._last_set_lengths:
+                        return field_name
 
-        def which_is_missing():
-            for field_name, _ in self._length_set_tuples:
-                if field_name not in self._last_set_lengths:
-                    return field_name
+            from operator import add, sub
 
-        from operator import add, sub
+            missing_value_string = which_is_missing()
 
-        missing_value_string = which_is_missing()
-
-        if missing_value_string == 'length_of_defect_meters':
-            field_names = 'mahlo_end_length', 'mahlo_start_length'
-            self.reconcile_values(*field_names, sub, missing_value_string)
-        elif missing_value_string == 'mahlo_end_length':
-            field_names = 'mahlo_start_length', 'length_of_defect_meters'
-            self.reconcile_values(*field_names, add, missing_value_string)
-        elif missing_value_string == 'mahlo_start_length':
-            field_names = 'mahlo_end_length', 'length_of_defect_meters'
-            self.reconcile_values(*field_names, sub, missing_value_string)
+            if missing_value_string == 'length_of_defect_meters':
+                field_names = 'mahlo_end_length', 'mahlo_start_length'
+                self.reconcile_values(*field_names, sub, missing_value_string)
+            elif missing_value_string == 'mahlo_end_length':
+                field_names = 'mahlo_start_length', 'length_of_defect_meters'
+                self.reconcile_values(*field_names, add, missing_value_string)
+            elif missing_value_string == 'mahlo_start_length':
+                field_names = 'mahlo_end_length', 'length_of_defect_meters'
+                self.reconcile_values(*field_names, sub, missing_value_string)
 
     def reconcile_values(self, field_name1, field_name2, operation, missing_field_name):
         _value1 = float(self._length_set_frames[field_name1]['StringVar'].get())
@@ -275,6 +280,8 @@ if __name__ == '__main__':
             self.length_of_defect_meters = 1.0
             self.record_creation_source = 'operator'
             self.source_lot_number = ''
+            self.mahlo_start_length = 12.34
+            self.mahlo_end_length = 43.21
 
 
     root = tk.Tk()
