@@ -77,7 +77,8 @@ class MainWindow(tk.Tk):
         # the buttons that aren't for a specific popup (add, settings, etc)
         self.controls_panel = IndependentControlsPanel(self, 'Control Panel', hide_option=self._hide_option,
                                                        grid_pad=self.pad, autohide_var=self._auto_hide,
-                                                       autoshow_var=self._auto_show, ghost_hide=self._ghost_hide)
+                                                       autoshow_var=self._auto_show, ghost_hide=self._ghost_hide,
+                                                       lam_num_controls=self.lam_num)
         self.controls_panel.grid(row=2, column=0, sticky='we')
         self.hideables.append(self.controls_panel)
 
@@ -252,10 +253,11 @@ class MainWindow(tk.Tk):
 class IndependentControlsPanel(tk.ttk.LabelFrame):
     """A frame with buttons that are not for specific defects, for the window itself."""
 
-    def __init__(self, parent_container, text='This is the title', **kwargs):
+    def __init__(self, parent_container, text='This is the title', lam_num_controls=0, **kwargs):
         super().__init__(parent_container, text=text)
         self.parent = parent_container
         self._next_column = 0
+        self.lam_num = lam_num_controls
 
         def add_new_defect():
             """Add a new defect to the database & popup window."""
@@ -266,7 +268,7 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
                 lot_num = thist.current_lot_number()
                 current_length = thist.current_mahlo_length()
                 new_defect = DefectModel.new_defect(source_lot_number=lot_num, record_creation_source='operator',
-                                                    mahlo_end_length=current_length)
+                                                    mahlo_end_length=current_length, lam_num=self.lam_num)
                 popup = self.parent.popup_frame  # TODO: replace this with a passed in method call
                 popup.check_for_new_defects()
                 # panel = popup.get_panel_by_defect_id(new_defect.id)
