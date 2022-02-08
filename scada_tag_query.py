@@ -111,9 +111,11 @@ class TagHistoryConnector(DatabaseConnection):
 
         :return: str, the current lot number.
         """
-        return self.get_recent_lots(1)[0][0]
+
+        return self.get_recent_lots(1)[0]
 
 
 if __name__ == '__main__':
     thist = TagHistoryConnector(f'lam1')
+    thist.get_recent_lots(1)
     lg.debug(thist.current_lot_number())
