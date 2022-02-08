@@ -1,14 +1,16 @@
+"""Contains panels and widgets for displaying and changing the attributes of a defect."""
+
 import functools
 import tkinter as tk
 from tkinter import ttk
 
 from dev_common import reasons, style_component
 from log_setup import lg
-from widgets.numpad_entry import NumpadEntry, UpDownButtonFrame
+from widgets.length_entry import UpDownButtonFrame
+from widgets.numpad_entry import NumpadEntry
 
 
-# TODO: rename this something better, like horizontal number selector
-class NumberPrompt(tk.ttk.LabelFrame):
+class HorizontalNumButtonSelector(tk.ttk.LabelFrame):
     """A ttk.LabelFrame prompting for a number between 1 and 5."""
 
     def __init__(self, parent, defect, variable=None):
@@ -63,7 +65,7 @@ class SelectDefectAttributes(tk.ttk.Frame):
         self.defect_type_panel.grid(row=0, column=10)
         self._not_length_wdigets.append(self.defect_type_panel)
 
-        self.rolls_count_selector = NumberPrompt(self, defect)
+        self.rolls_count_selector = HorizontalNumButtonSelector(self, defect)
         self.rolls_count_selector.grid(row=1, column=10)
         self._not_length_wdigets.append(self.rolls_count_selector)
 
@@ -281,7 +283,8 @@ if __name__ == '__main__':
     lg.debug(defect1.__dict__)
 
     for frame in (
-    (LotNumberEntry, 'lot'), (DefectTypePanel, 'type'), (LengthSetFrames, 'length'), (NumberPrompt, 'number')):
+            (LotNumberEntry, 'lot'), (DefectTypePanel, 'type'), (LengthSetFrames, 'length'),
+            (HorizontalNumButtonSelector, 'number')):
         frm = frame[0](root, defect1)
         frm.grid()
 

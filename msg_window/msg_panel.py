@@ -4,7 +4,7 @@ from tkinter import ttk
 
 from dev_common import StrCol
 from log_setup import lg
-from msg_window.defect_attributes import DefectTypePanel, LengthSetFrames, LotNumberEntry, NumberPrompt
+from msg_window.defect_attributes import DefectTypePanel, HorizontalNumButtonSelector, LengthSetFrames, LotNumberEntry
 # from widgets.roll_removed_toggles import _add_toggle, _get_toggle_definitions
 from widgets.roll_removed_toggles import RollRemovedToggles
 
@@ -73,8 +73,8 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         # TODO: this isn't changing the number of rolls on the confirm screen now
         self.number_of_finished_rolls = tk.IntVar()
-        self._roll_count_selector = NumberPrompt(self._lot_rolls_type_frame, self.defect_interface,
-                                                 variable=self.number_of_finished_rolls)
+        self._roll_count_selector = HorizontalNumButtonSelector(self._lot_rolls_type_frame, self.defect_interface,
+                                                                variable=self.number_of_finished_rolls)
         self._roll_count_selector.grid(row=1, column=1)
 
         # length panel
@@ -252,7 +252,7 @@ if __name__ == '__main__':
     defect1 = DummyDefect()
     lg.debug(defect1.__dict__)
 
-    for frame in ((DefectTypePanel, 'type'), (LengthSetFrames, 'length'), (NumberPrompt, 'number')):
+    for frame in ((DefectTypePanel, 'type'), (LengthSetFrames, 'length'), (HorizontalNumButtonSelector, 'number')):
         frm = frame[0](root, defect1)
         frm.grid()
 

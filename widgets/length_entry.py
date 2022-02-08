@@ -1,3 +1,5 @@
+"""Contains a frame containing an entry with a number pad for a numeric value and buttons to change the values."""
+
 import tkinter as tk
 
 from log_setup import lg
@@ -7,7 +9,7 @@ from widgets.numpad_entry import NumpadEntry
 class UpDownButtonFrame(tk.ttk.LabelFrame):
 	"""A frame with up and down buttons that increments a value displayed on a label."""
 
-	def __init__(self, parent, ud_defect, tkvar, *args, **kwargs):
+	def __init__(self, parent, ud_defect, variable, *args, **kwargs):
 		# keywords not intended for the LabelFrame
 		incr_vals = kwargs.pop('increment_values', None)
 		if not incr_vals:
@@ -80,6 +82,8 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
 
 
 class LengthButton(tk.ttk.Button):
+	"""A button to increase or decrease a tk.StringVar number value."""
+
 	def __init__(self, parent, length_var, direction_str, *args, **kwargs):
 
 		icr_mag = kwargs.pop('increment_magnitude', None)
@@ -100,7 +104,7 @@ class LengthButton(tk.ttk.Button):
 	def increment(self, *args):
 		"""Increase or decrease the variable.
 
-		:param args: tuple, unused tkinter params.
-		"""
+        :param args: tuple, unused tkinter params.
+        """
 
 		self.length_var.set(str(round(float(self.length_var.get()) + self.increment_val, 2)))
