@@ -114,8 +114,18 @@ class TagHistoryConnector(DatabaseConnection):
 
         return self.get_recent_lots(1)[0]
 
+    def current_mahlo_length(self):
+        """Get length from the Mahlo tag history.
+
+        :return: float
+        """
+
+        result_row = self.get_recent_values(self.tag_ids.length, 1)
+        return result_row[0][2]
+
 
 if __name__ == '__main__':
     thist = TagHistoryConnector(f'lam1')
-    thist.get_recent_lots(1)
     lg.debug(thist.current_lot_number())
+
+    lg.debug(thist.current_mahlo_length())
