@@ -81,9 +81,6 @@ class MainWindow(tk.Tk):
         self.controls_panel.grid(row=2, column=0, sticky='we')
         self.hideables.append(self.controls_panel)
 
-        # TODO: would making the window minimize (not just shrink) while the lam is running be good?
-        #  it seems like it would
-
         # move the window to the front
         window_topmost(self)
 
