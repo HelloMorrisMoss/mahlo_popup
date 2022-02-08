@@ -139,8 +139,7 @@ class NumberPad(tk.ttk.Frame):
         elif label == 'clear':
             self.clear()
         elif label == 'revert':
-            self.replace_all(self._original_value)
-            self._entry.icursor(tk.END)
+            self.revert()
         elif label == 'undo':
             self._entry.undo()
         elif label == 'today':
@@ -150,6 +149,10 @@ class NumberPad(tk.ttk.Frame):
         else:
             # todo: if text is selected, replace selected text with label
             self._entry.insert(current_cursor_index, label)
+
+    def revert(self):
+        self.replace_all(self._original_value)
+        self._entry.icursor(tk.END)
 
     def replace_all(self, new_value: str):
         """Replace the current value with something else.
@@ -174,6 +177,10 @@ class NumberPad(tk.ttk.Frame):
 
         # if it's not the numpad or descendants
         if not str(event.widget).startswith(str(self)):
+            try:
+                float(self._entry.textvariable.get())
+            except ValueError:
+                self.revert()
             self.close_numpad()
 
     def close_numpad(self):
