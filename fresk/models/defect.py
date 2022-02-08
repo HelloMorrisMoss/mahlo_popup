@@ -27,7 +27,7 @@ class DefectModel(fsa.Model):
     mahlo_end_length = fsa.Column(fsa.Float(precision=2), server_default='0.0')
 
     # reason for removal
-    defect_type = fsa.Column(fsa.VARCHAR(13))
+    defect_type = fsa.Column(fsa.VARCHAR(13), server_default='''thickness''')
 
     # the section removed
     rem_l = fsa.Column(fsa.Boolean, server_default='''False''')
