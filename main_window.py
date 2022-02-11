@@ -126,9 +126,16 @@ class MainWindow(tk.Tk):
                 self.geometry(f'''+{pos_dict['x']}+{pos_dict['y']}''')
         except FileNotFoundError:
             pass  # if it doesn't exist then there is nothing to do
+
         self.bind('<Configure>', self._save_this_position)
+        self.bind('<Escape>', self.escape)
 
         self.mainloop()
+
+    def escape(self, event: tkinter.Event):
+        """When the escape key is pressed, close the window."""
+        lg.debug('escape key pressed')
+        self.destroy()
 
     def _save_this_position(self, event: tkinter.Event):
         """Save the new window position for next time it opens."""
