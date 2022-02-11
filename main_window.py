@@ -112,7 +112,11 @@ class MainWindow(tk.Tk):
         # self.after(1000, self.watching_focus)
         # self.geometry('+2500+200')  # place it on the second monitor for testing
         # start the tkinter mainloop
+        self.protocol("WM_DELETE_WINDOW", self.closing_handler)
         self.mainloop()
+
+    def closing_handler(self):
+        self.hide_hideables()
 
     def watching_focus(self):
         lg.debug('focus: %s - state: %s', self.focus_displayof(), self.state())
