@@ -1,4 +1,5 @@
 """To add a popup window to the Mahlo HMI PC at the laminators. Designed to be called from the command line over ssl."""
+import json
 import tkinter
 import tkinter as tk
 from tkinter import ttk
@@ -112,10 +113,35 @@ class MainWindow(tk.Tk):
         # self.after(1000, self.watching_focus)
         # self.geometry('+2500+200')  # place it on the second monitor for testing
         # start the tkinter mainloop
+
+        # when trying to close the window from the interface
         self.protocol("WM_DELETE_WINDOW", self.closing_handler)
+
+        # try to position the window in the same place as last time
+        try:
+            self.last_pos_filepath = './untracked_config/last_position.txt'
+            with open(self.last_pos_filepath, 'r') as pos_file:
+                pos_dict = json.load(pos_file)
+                lg.debug(f'last position loaded: {pos_dict}')
+                self.geometry(f'''+{pos_dict['x']}+{pos_dict['y']}''')
+        except FileNotFoundError:
+            pass  # if it doesn't exist then there is nothing to do
+        self.bind('<Configure>', self._save_this_position)
+
         self.mainloop()
 
+    def _save_this_position(self, event: tkinter.Event):
+        """Save the new window position for next time it opens."""
+
+        if event.widget == self:
+            with open(self.last_pos_filepath, 'w') as pos_file:
+                pos_dict = {'x': event.x, 'y': event.y}
+                lg.debug(f'saving new position: {pos_dict}')
+                json.dump(pos_dict, pos_file, indent=4)
+
     def closing_handler(self):
+        """When trying to close the window from the interface, hide instead."""
+
         self.hide_hideables()
 
     def watching_focus(self):
