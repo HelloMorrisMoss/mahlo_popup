@@ -225,10 +225,6 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-/build/
-/dist/
-!/main.spec
-/grpc_examples/
-!/untracked_config/db_uri.py
-!/untracked_config/development_node.py
-!/untracked_config/thickness_specifications.py
+# project specific
+./untracked_config/*
+!./untracked_config/readme.md
