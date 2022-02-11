@@ -5,11 +5,9 @@ import tkinter as tk
 from tkinter import ttk
 
 from dev_common import add_show_messages_button, raise_above_all, recurse_hover, recurse_tk_structure, \
-    style_component, \
-    window_topmost
+    style_component, window_topmost
 from fresk.models.defect import DefectModel
 from log_setup import lg
-# when called by RPC the directory may change and be unable to find the ttk theme file directory
 from msg_window.popup_frame import DefectMessageFrame
 from scada_tag_query import TagHistoryConnector
 from untracked_config.lam_num import LAM_NUM
@@ -18,12 +16,18 @@ from untracked_config.lam_num import LAM_NUM
 class MainWindow(tk.Tk):
     """The main tkinter window that the defect_instance panels, controls, etc reside in."""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__()
-        self.debugging = kwargs.get('debug')
-        self.attributes('-toolwindow', True)
-        # the laminator number
-        self.lam_num = LAM_NUM
+    def __init__(self, inbound_queue, outbound_queue, debugging=False, *args, **kwargs):
+        """Initialize the main window.
+
+        :type inbound_queue: collections.deque, inbound messages from flask
+        :type outbound_queue: collections.deque, outbound messages from flask
+        :type debugging: bool, whether to execute extra debugging code
+        """
+        super().__init__(*args, **kwargs)
+        self.debugging = debugging
+        self.attributes('-toolwindow', True)  # don't show the min/max buttons on the title bar
+
+        self.lam_num = LAM_NUM  # the laminator number
         self.title(f'Defect Removal Records - lam {self.lam_num}')
 
         # what to do when hiding
@@ -32,6 +36,7 @@ class MainWindow(tk.Tk):
         self.message_button_geometry = '150x150'  # used for the message button and referenced by .show_hideables()
         self.full_window_geometry = '1150x400'
         self.full_sized()
+
         # whether to automatically hide/show the window
         self._auto_hide = tk.IntVar(value=True)
         self._auto_show = tk.IntVar(value=True)
@@ -39,13 +44,11 @@ class MainWindow(tk.Tk):
         self._ghost_fade = tk.IntVar(value=50)
 
         # communication with flask app
-        inbound_queue = kwargs.get('inbound_queue')
         if inbound_queue is not None:
             self.messages_from_flask = inbound_queue
         else:
             lg.warning('No inbound_queue')
 
-        outbound_queue = kwargs.get('outbound_queue')
         if outbound_queue is not None:
             self.messages_to_flask = outbound_queue
         else:
@@ -86,10 +89,7 @@ class MainWindow(tk.Tk):
         # move the window to the front
         window_topmost(self)
 
-        self._set_focus_out_event()
-        # self.bind("<FocusIn>", self._auto_show_window)
-
-        lg.debug(self.hideables)
+        self._focus_out_func_id = self._set_focus_out_event()
 
         # if working on the code, print the tk structure
         if self.debugging:
@@ -109,10 +109,6 @@ class MainWindow(tk.Tk):
 
         # for querying the tag history database
         self._thist = TagHistoryConnector(f'lam{self.lam_num}')
-
-        # self.after(1000, self.watching_focus)
-        # self.geometry('+2500+200')  # place it on the second monitor for testing
-        # start the tkinter mainloop
 
         # when trying to close the window from the interface
         self.protocol("WM_DELETE_WINDOW", self.closing_handler)
@@ -134,6 +130,7 @@ class MainWindow(tk.Tk):
 
     def escape(self, event: tkinter.Event):
         """When the escape key is pressed, close the window."""
+
         lg.debug('escape key pressed')
         self.destroy()
 
@@ -151,26 +148,35 @@ class MainWindow(tk.Tk):
 
         self.hide_hideables()
 
-    def watching_focus(self):
-        lg.debug('focus: %s - state: %s', self.focus_displayof(), self.state())
-        self.after(1000, self.watching_focus)
-
     def _set_focus_out_event(self):
-        self._focus_out_func_id = self.bind("<FocusOut>", self._auto_hide_window)
+        """Set the auto hide window method for when focus is lost, returning the function id."""
+
+        return self.bind("<FocusOut>", self._auto_hide_window)
 
     def _clear_focus_out_event(self):
+        """Remove the auto hide window method when focus is lost binding."""
+
         self.unbind("<FocusOut>", self._focus_out_func_id)
 
-    def _do_without_focus_out(self, callable_):
+    def _do_without_focus_out(self, callable_, *args, **kwargs):
+        """Call the callable_ while auto hide is disabled.
+
+        Some actions will cause the focus lost event to be raised even when "it shouldn't". This will
+        disable the auto hide binding, call the function/method, then rebind the auto hide. Accepts args
+        and kwargs for the callable.
+
+        :param callable_: callable
+        """
+
         self._clear_focus_out_event()
         self.update()
-        callable_()
+        callable_(*args, **kwargs)
         self._set_focus_out_event()
 
     def _auto_hide_window(self, event: tkinter.Event):
         """If auto-hide is selected, hide/shrink the window."""
 
-        # lg.debug('autohide check if actually has focus %s', self.focus_displayof())
+        # check if auto hide is set, the window still hasn't focus, and it was the main window that lost focus
         if self._auto_hide.get() and self.focus_displayof() is None and event.widget is self:
             lg.debug('auto hiding window')
             self.hide_hideables(event)
@@ -203,10 +209,9 @@ class MainWindow(tk.Tk):
             for hideable in self.hideables:
                 hideable.grid()
             self.number_of_messages_button.grid_remove()  # hide the messages button
-            # self.geometry('')  # grow to whatever size is needed for all the messages and other widgets
+
             self.full_sized()
             self._do_without_focus_out(self.deiconify)
-            # self.deiconify()  # restore from minimized
             window_topmost(self)
             raise_above_all(self)
             self.focus_get()
