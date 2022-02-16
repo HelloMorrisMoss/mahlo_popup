@@ -209,3 +209,8 @@ Ignition end of things brainstorming:
         * perhaps a label displaying this info, click for the interface to swap out the rest of defect attributes?
   * when two are set, set the third
   * try to get the current values from the Timescale?
+
+02/16 todo:
+
+* default reason toggle isn't starting out highlighted
+* instructions on screen
