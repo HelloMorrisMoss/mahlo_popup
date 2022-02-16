@@ -56,6 +56,10 @@ class Popup(Resource):
             lg.debug('tell popup there are defect updates')
             queues.out_message_queue.append({'action': 'check_defect_updates'})
             return {'popup_result': 'Checking for new defects.'}, 200
+        elif data['action'] == 'reset_position':
+            lg.debug('tell popup to return to screen origin')
+            queues.out_message_queue.append({'action': 'reset_position'})
+            return {'popup_result': 'Resetting popup position.'}, 200
 
         else:
             return {'popup_result': 'No valid request.'}, 400

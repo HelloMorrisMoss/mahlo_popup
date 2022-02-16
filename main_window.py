@@ -289,6 +289,8 @@ class MainWindow(tk.Tk):
                     elif action_str == 'check_defect_updates':
                         lg.debug('check for updates to defects')
                         self.popup_frame.check_for_new_defects()
+                    elif action_str == 'reset_position':
+                        self.geometry('+0+0')
         self.after(500, self.check_for_inbound_messages)
 
 
