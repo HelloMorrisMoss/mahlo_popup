@@ -4,7 +4,7 @@ import tkinter
 import tkinter as tk
 from tkinter import ttk
 
-from dev_common import add_show_messages_button, raise_above_all, recurse_hover, recurse_tk_structure, \
+from dev_common import add_show_messages_button, recurse_hover, recurse_tk_structure, \
     style_component, window_topmost
 from fresk.models.defect import DefectModel
 from log_setup import lg
@@ -211,14 +211,9 @@ class MainWindow(tk.Tk):
             self.number_of_messages_button.grid_remove()  # hide the messages button
 
             self.full_sized()
-            self._do_without_focus_out(self.deiconify)
+            self.deiconify()
             window_topmost(self)
-            raise_above_all(self)
             self.focus_get()
-
-            # re-hide the minimize/maxmize buttons if using iconify
-            # if self._hide_option == 'i':
-            # self._do_without_focus_out(lambda: self.attributes('-toolwindow', False))
 
     def full_sized(self):
         """Show the full sized window."""
@@ -306,8 +301,7 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         def add_new_defect():
             """Add a new defect to the database & popup window."""
             with self.parent.flask_app.app_context():  # TODO: add a get_flask method to parent and pass that in
-                # create a new defect in the database, get the popup frame, make sure it has updated (to include the
-                # new defect), get the panel for the new defect, call the panel's change attributes method
+                # create a new defect in the database, get the popup frame, tell it to update
                 thist = self.winfo_toplevel()._thist
                 lot_num = thist.current_lot_number()
                 current_length = thist.current_mahlo_length()
@@ -315,8 +309,6 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
                                                     mahlo_end_length=current_length, lam_num=self.lam_num)
                 popup = self.parent.popup_frame  # TODO: replace this with a passed in method call
                 popup.check_for_new_defects()
-                # panel = popup.get_panel_by_defect_id(new_defect.id)
-                # panel.change_attributes()
 
         # add a new defect button
         self.add_defect_button = tk.ttk.Button(self, text='New defect', command=add_new_defect)
