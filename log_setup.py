@@ -1,4 +1,5 @@
 import logging
+import sys
 
 from logging.handlers import RotatingFileHandler
 
@@ -46,6 +47,18 @@ def setup_logger():
     # Add handlers to the logger
 
     logr.addHandler(f_handler)
+
+    def handle_exception(exc_type, exc_value, exc_traceback):
+        """Log unhandled exceptions."""
+
+        if issubclass(exc_type, KeyboardInterrupt):
+            sys.__excepthook__(exc_type, exc_value, exc_traceback)
+            return
+
+        logr.critical("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+    sys.excepthook = handle_exception
+
     return logr
 
 
