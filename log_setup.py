@@ -24,7 +24,7 @@ class BreadcrumbFilter(logging.Filter):
 
 def setup_logger():
     # set up the logging
-    logr = logging.getLogger('mahlo_popup')
+    logr = logging.getLogger()
     logr.setLevel(logging.DEBUG)
 
     # console logger
