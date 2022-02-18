@@ -104,7 +104,6 @@ class LengthSetFrames(ttk.Frame):
         super().__init__(parent, *args, **kwargs)
         self.defect = ls_defect
         self.parent = parent
-        self._last_set_lengths = []  # list of the field_name for the most recently changed in order
         self._internal_update_running = False
         self.toggle_auto_fill_lengths = tk.IntVar()
         self.toggle_auto_fill_lengths.set(True)
@@ -112,6 +111,8 @@ class LengthSetFrames(ttk.Frame):
         self._length_set_tuples = ('length_of_defect_meters', 'Length Removed'), \
                                   ('mahlo_start_length', 'Start Length'), \
                                   ('mahlo_end_length', 'End Length')
+        self._last_set_lengths = ['mahlo_start_length',
+                                  'mahlo_end_length']  # list of the field_name for the most recently changed in order
 
         self._length_set_frames = {}
 
