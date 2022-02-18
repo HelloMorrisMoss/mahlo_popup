@@ -97,9 +97,9 @@ class MainWindow(tk.Tk):
                 """Print the tkinter window/widget structure"""
                 recurse_tk_structure(tk_component)
                 if repeat:
-                    self.after(5000, recursive_print)
+                    self.after(5000, lambda x=None: recursive_print(self))
 
-            self.after(1000, recursive_print)  # for debugging, prints out the tkinter structure
+            self.after(1000, lambda: recursive_print(self))  # for debugging, prints out the tkinter structure
             recurse_hover(self.popup_frame)  # for debugging, shows widget info when mouse cursor moves over it
 
         # messages from flask
