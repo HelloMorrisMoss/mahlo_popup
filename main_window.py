@@ -34,7 +34,7 @@ class MainWindow(tk.Tk):
         self._hide_option = tk.StringVar()
         self._hide_option.set('b')  # default to button
         self.message_button_geometry = '150x150'  # used for the message button and referenced by .show_hideables()
-        self.full_window_geometry = '1150x400'
+        self.full_window_geometry = '1150x450'
         self.full_sized()
 
         # whether to automatically hide/show the window
