@@ -87,7 +87,8 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         self.advance_to_confirm_button = ttk.Button(self._lengths_frame, text='next',
                                                     command=lambda: self._tabframe.select(2))
-        self.advance_to_confirm_button.grid(row=0, column=10, rowspan=10, sticky='ns')
+        self.advance_to_confirm_button.grid(row=0, column=10, rowspan=10, sticky='nse')
+        self._lengths_frame.columnconfigure(10, weight=1)  # so this next button can stick to the right and match
 
         # confirmation frame
         self.message_label = self._add_message_display_label(self._confirm_frame)
