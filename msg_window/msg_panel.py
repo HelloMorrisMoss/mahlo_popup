@@ -76,6 +76,7 @@ class MessagePanel(tk.ttk.LabelFrame):
                                                                 variable=self.number_of_finished_rolls)
         self._roll_count_selector.grid(row=1, column=1)
 
+        self._lot_rolls_type_frame.rowconfigure(0, weight=1)  # make the next button fill the full length
         self.advance_to_lengths_button = ttk.Button(self._lot_rolls_type_frame, text='next',
                                                     command=lambda: self._tabframe.select(1))
         self.advance_to_lengths_button.grid(row=0, column=10, rowspan=10, sticky='ns')
