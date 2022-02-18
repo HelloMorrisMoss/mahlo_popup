@@ -306,7 +306,8 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
                 lot_num = thist.current_lot_number()
                 current_length = thist.current_mahlo_length()
                 new_defect = DefectModel.new_defect(source_lot_number=lot_num, record_creation_source='operator',
-                                                    mahlo_end_length=current_length, lam_num=self.lam_num)
+                                                    mahlo_end_length=current_length, mahlo_start_length=current_length,
+                                                    lam_num=self.lam_num)
                 popup = self.parent.popup_frame  # TODO: replace this with a passed in method call
                 popup.check_for_new_defects()
 
