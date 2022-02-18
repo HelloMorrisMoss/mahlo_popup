@@ -165,35 +165,54 @@ class MessagePanel(tk.ttk.LabelFrame):
         self._removed_toggles.grid(row=0, column=1)
 
         # add the save button
-        self._add_action_buttons(parent)
-
-    def _add_action_buttons(self, parent):
-        """Add the action button frame and buttons.
-
-        :param parent: tkinter container
-        """
-
-        send_button_frame = tk.ttk.Frame(parent, style=self._wgt_styles['labelframe'])
-        send_grid_params = {'column': 12, 'row': 0, 'padx': self.pad['x'],
-                            'pady': self.pad['y'],
-                            'sticky': 'nesw',
-                            'columnspan': 2}
-        send_button_frame.grid(**send_grid_params)
-        setattr(send_button_frame, 'grid_params_', send_grid_params)
-        self.hideables.append(send_button_frame)
-        self.add_save_button(send_button_frame, send_grid_params)
-
-    def add_save_button(self, parent, send_grid_params):
-        """Add the save/send button.
-
-        :param parent: tkinter container
-        :param send_grid_params: dict, kwargs for the buttons .grid method.
-        """
-
+        # self._add_action_buttons(parent)
         send_btn = tk.ttk.Button(parent, style='Accent.TButton', text='Save', command=self.save_response)
+        send_grid_params = {'column': 12, 'row': 0,
+                            # 'padx': self.pad['x'],
+                            # 'pady': self.pad['y'],
+                            'sticky': 'nesw'}
+        # ,
+        #                 'columnspan': 2}
+        parent.columnconfigure(12, weight=1)
+        parent.rowconfigure(0, weight=1)
         send_btn.grid(**send_grid_params)
+        send_btn.grid(sticky='nse')
         setattr(send_btn, 'msg_id', self.defect_interface.id)
         setattr(send_btn, 'side', 'send')
+
+    # def _add_action_buttons(self, parent):
+    #     """Add the action button frame and buttons.
+    #
+    #     :param parent: tkinter container
+    #     """
+    #
+    #     send_button_frame = tk.ttk.Frame(parent, style=self._wgt_styles['labelframe'])
+    #     send_grid_params = {'column': 12, 'row': 0, 'padx': self.pad['x'],
+    #                         'pady': self.pad['y'],
+    #                         'sticky': 'nesw'}
+    #         # ,
+    #         #                 'columnspan': 2}
+    #     parent.columnconfigure(12, weight=1)
+    #     parent.rowconfigure(0, weight=1)
+    #     send_button_frame.columnconfigure(0, weight=1)
+    #     send_button_frame.rowconfigure(0, weight=1)
+    #     send_button_frame.grid(**send_grid_params)
+    #     setattr(send_button_frame, 'grid_params_', send_grid_params)
+    #     self.hideables.append(send_button_frame)
+    #     self.add_save_button(send_button_frame, send_grid_params)
+    #
+    # def add_save_button(self, parent, send_grid_params):
+    #     """Add the save/send button.
+    #
+    #     :param parent: tkinter container
+    #     :param send_grid_params: dict, kwargs for the buttons .grid method.
+    #     """
+    #
+    #     send_btn = tk.ttk.Button(parent, style='Accent.TButton', text='Save', command=self.save_response)
+    #     send_btn.grid(**send_grid_params)
+    #     send_btn.grid(sticky='nse')
+    #     setattr(send_btn, 'msg_id', self.defect_interface.id)
+    #     setattr(send_btn, 'side', 'send')
 
     def save_response(self, event=None):
         """Save the changes made to the database.
