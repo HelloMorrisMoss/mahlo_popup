@@ -104,7 +104,7 @@ class NumberPad(tk.ttk.Frame):
                          '.', '0', 'backspace',
                          u'🡸', 'OK', u'🡺',
                          'undo', 'revert', 'clear',
-                         'today']
+                         'today', 'length']
 
         buttons_dict = {}
         padx = 1
@@ -146,6 +146,9 @@ class NumberPad(tk.ttk.Frame):
             import datetime
             datetime.datetime.today()
             self.replace_all(datetime.datetime.today().isoformat()[:10].replace('-', ''))
+        elif label == 'length':
+            thist = self.winfo_toplevel()._thist
+            self.replace_all(thist.current_mahlo_length())
         else:
             # todo: if text is selected, replace selected text with label
             self._entry.insert(current_cursor_index, label)
