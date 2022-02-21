@@ -126,6 +126,8 @@ class MainWindow(tk.Tk):
         self.bind('<Configure>', self._save_this_position)
         self.bind('<Escape>', self.escape)
 
+        self.after(60000, self.ensure_on_top)
+
         self.mainloop()
 
     def escape(self, event: tkinter.Event):
@@ -287,6 +289,13 @@ class MainWindow(tk.Tk):
                     elif action_str == 'reset_position':
                         self.geometry('+0+0')
         self.after(500, self.check_for_inbound_messages)
+
+    def ensure_on_top(self):
+        """Check if the window is visible,if not, bring it to the front."""
+
+        if not self.winfo_viewable():
+            window_topmost(self)
+        self.after(60_000, self.ensure_on_top)
 
 
 class IndependentControlsPanel(tk.ttk.LabelFrame):
