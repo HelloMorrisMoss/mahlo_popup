@@ -72,7 +72,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         self.defect_type_panel.grid(row=0, column=1)
 
         self.number_of_finished_rolls = tk.IntVar()
-        self._roll_count_selector = HorizontalNumButtonSelector(self._lot_rolls_type_frame, self.defect_interface,
+        self._roll_count_selector = HorizontalNumButtonSelector(self._confirm_frame, self.defect_interface,
                                                                 variable=self.number_of_finished_rolls)
         self._roll_count_selector.grid(row=1, column=1)
 
@@ -168,8 +168,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         # self._add_action_buttons(parent)
         send_btn = tk.ttk.Button(parent, style='Accent.TButton', text='Save', command=self.save_response)
         send_grid_params = {'column': 12, 'row': 0,
-                            # 'padx': self.pad['x'],
-                            # 'pady': self.pad['y'],
+                            'rowspan': 10,
                             'sticky': 'nesw'}
         # ,
         #                 'columnspan': 2}
