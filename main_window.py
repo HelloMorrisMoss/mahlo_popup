@@ -25,12 +25,13 @@ class MainWindow(tk.Tk):
         """
         super().__init__(*args, **kwargs)
         self.debugging = debugging
-        self.attributes('-toolwindow', True)  # don't show the min/max buttons on the title bar
+        # self.attributes('-toolwindow', True)  # don't show the min/max buttons on the title bar
 
         self.lam_num = LAM_NUM  # the laminator number
         self.title(f'Defect Removal Records - lam {self.lam_num}')
 
         # what to do when hiding
+        self.current_form = None
         self._hide_option = tk.StringVar()
         self._hide_option.set('b')  # default to button
         self.message_button_geometry = '150x150'  # used for the message button and referenced by .show_hideables()
@@ -126,7 +127,7 @@ class MainWindow(tk.Tk):
         self.bind('<Configure>', self._save_this_position)
         self.bind('<Escape>', self.escape)
 
-        self.after(60000, self.ensure_on_top)
+        self.after(5_000, self.ensure_on_top, True)
 
         self.mainloop()
 
@@ -206,25 +207,30 @@ class MainWindow(tk.Tk):
     def show_hideables(self, event=None):
         """Show the defect message panels, control panel, etc."""
 
+        self.state(newstate='normal')  # in case minimized or maximized
         if not self.winfo_viewable() or self.message_button_geometry in self.geometry():
-            self.attributes('-alpha', 1)
+            self.attributes('-alpha', 1)  # opaque
             for hideable in self.hideables:
                 hideable.grid()
-            self.number_of_messages_button.grid_remove()  # hide the messages button
 
+            self.number_of_messages_button.grid_remove()  # hide the messages button
             self.full_sized()
-            self.deiconify()
-            window_topmost(self)
-            self.focus_get()
+            self.ensure_on_top()
 
     def full_sized(self):
         """Show the full sized window."""
 
+        self.current_form = 'main_window'
+        self.state(newstate='normal')
+        self.maxsize(*self.full_window_geometry.split('x'))
         self.geometry(self.full_window_geometry)
 
     def button_sized(self):
         """Show the window button sized."""
 
+        self.current_form = 'button'
+        self.state(newstate='normal')
+        self.maxsize(*self.message_button_geometry.split('x'))
         self.geometry(self.message_button_geometry)  # fixed size small window
 
     def hide_hideables(self, event=None):
@@ -290,12 +296,16 @@ class MainWindow(tk.Tk):
                         self.geometry('+0+0')
         self.after(500, self.check_for_inbound_messages)
 
-    def ensure_on_top(self):
+    def ensure_on_top(self, repeat=False):
         """Check if the window is visible,if not, bring it to the front."""
 
-        if not self.winfo_viewable():
-            window_topmost(self)
-        self.after(60_000, self.ensure_on_top)
+        lg.debug('on topping')
+        self.deiconify()
+        window_topmost(self)
+        self.focus_get()
+
+        if repeat:
+            self.after(60_000, self.ensure_on_top, True)
 
 
 class IndependentControlsPanel(tk.ttk.LabelFrame):
