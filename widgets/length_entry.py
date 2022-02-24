@@ -59,7 +59,7 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
         self._top_divider.grid(row=30, column=10, columnspan=col_span, sticky='ew', padx=2, pady=2)
 
         # label displaying the value
-        self.length_entry = NumpadEntry(parent=self, textvariable=self.length_var, width=11, justify='center')
+        self.length_entry = NumpadEntry(parent=self, textvariable=self.length_var, clicks=1, width=11, justify='center')
         self.length_entry.config(font=(None, 20))
         self.length_entry.grid(row=40, column=10, rowspan=2, columnspan=col_span, padx=(2, 2))
 

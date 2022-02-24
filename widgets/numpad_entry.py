@@ -8,7 +8,7 @@ from tkinter import ttk
 class NumpadEntry(ttk.Entry):
     """A tkinter.ttk.Entry that, when double_clicked, will show a number pad to edit the value."""
 
-    def __init__(self, parent, textvariable: tk.StringVar = None, *args, **kwargs):
+    def __init__(self, parent, textvariable: tk.StringVar = None, clicks=2, *args, **kwargs):
         if textvariable is None:
             kwargs['textvariable'] = tk.StringVar()
         else:
@@ -17,6 +17,7 @@ class NumpadEntry(ttk.Entry):
         self.textvariable = kwargs['textvariable']
         self.parent = parent
         self.bind('<Button-1>', self._quick_clicking)
+        self._clicks_to_show = clicks
         self._quick_clicks = 0
         self._previous_value = self.get()  # the last value
         self.previous_values = [self._previous_value]  # all previous values (for undo)
@@ -52,14 +53,13 @@ class NumpadEntry(ttk.Entry):
 
         :param event: tkinter.Event
         """
-        if self._quick_clicks == 1:
+        if self._quick_clicks == self._clicks_to_show - 1:
             self._reset_quick_clicks()
             self.show_numpad()
         else:
             self._quick_clicks += 1
 
             def unchanged_quick_clicks():
-                print('reset quick')
                 if self._quick_clicks == getattr(self, '_quick_clicks'):
                     self._reset_quick_clicks()
 
@@ -74,7 +74,6 @@ class NumpadEntry(ttk.Entry):
 
         # save and clear the current value
         self._previous_value = self.get()
-        # self.delete(0, tk.END)
 
         np = NumberPad(self)
         np.place(in_=self, relx=0, rely=1)

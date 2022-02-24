@@ -251,7 +251,7 @@ class LotNumberEntry(ttk.Labelframe):
         self._display_label.grid(row=0, column=0)
         self._display_format = '{value:_}'
 
-        self.numpad_entry = NumpadEntry(self, textvariable=self.lot_number_var)
+        self.numpad_entry = NumpadEntry(self, textvariable=self.lot_number_var, clicks=1)
         self.numpad_entry.grid(row=1, column=0)
 
     def _update_display(self):
