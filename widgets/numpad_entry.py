@@ -178,8 +178,8 @@ class NumberPad(tk.ttk.Frame):
         :param event: tkinter.Event
         """
 
-        # if it's not the numpad or descendants
-        if not str(event.widget).startswith(str(self)):
+        # if it's not the numpad, its entry, its or descendants
+        if not any((event.widget is self._entry, str(event.widget).startswith(str(self)))):
             try:
                 float(self._entry.textvariable.get())
             except ValueError:
