@@ -82,7 +82,8 @@ class DefectModel(fsa.Model):
 
             return cls.query.filter(DefectModel.operator_saved_time is None or
                                     DefectModel.entry_modified_ts == DefectModel.entry_created_ts).filter(
-                DefectModel.lam_num == lam_number).order_by(
+                DefectModel.lam_num == lam_number and (DefectModel.flagger_fire is not sqlalchemy.TIMESTAMP or
+                                                       DefectModel.record_creation_source == 'operator')).order_by(
                 DefectModel.entry_created_ts.desc()).all()
 
     @classmethod
