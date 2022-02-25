@@ -90,9 +90,9 @@ class RollRemovedToggles(tk.Frame):
                                                   4: ['left', 'left_center', 'right_center', 'right'],
                                                   5: ['left', 'left_center', 'center', 'right_center', 'right']}
         self.not_all_list = number_of_buttons_to_definitions_lists[num_of_buttons]
-        side_button_text = {'left': 'Operator Side\n', 'left_center': 'Operator Side of Center\n',
-                            'center': 'Center of Foam\n', 'right_center': 'Foamline Side of Center\n',
-                            'right': 'Foamline Side\n'}
+        side_button_text = {'left': 'Left Edge\n', 'left_center': 'Left of Center\n',
+                            'center': 'Center of Foam\n', 'right_center': 'Right of Center\n',
+                            'right': 'Right Edge\n'}
         side_button_dict = {side: {'params':
                                        {'onvalue': f'{side_button_text[side]} WAS removed.',
                                         'offvalue': f'{side_button_text[side]} NOT removed.',
@@ -207,7 +207,7 @@ class RollRemovedToggles(tk.Frame):
                     # if this is the side
                     if side == iter_side:
                         sides_count += 1
-                        side_val = 1
+
                     else:
                         # count the sides that are true
                         side_val = self.removed_vars.get(iter_side).get()
