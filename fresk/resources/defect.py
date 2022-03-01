@@ -78,7 +78,8 @@ class DefectList(Resource):
 
     # results = DefectModel.query.filter('entry_created_ts' != 'entry_modified_ts').all()
     def get(self):
-        results = DefectModel.query.all()
+        results = DefectModel.query.order_by(
+            DefectModel.id.desc()).all()
         result_dict = {}
         for row in results:
             result_dict[row.id] = row.jsonizable()
