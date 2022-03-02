@@ -121,9 +121,9 @@ class DefectModel(fsa.Model):
     def get_defects_between_dates(cls, start_date, end_date):
         start_date = datetime.datetime.fromisoformat(start_date)
         end_date = datetime.datetime.fromisoformat(end_date)
-        return DefectModel.query.filter_by(
-            start_date <= DefectModel.defect_start_ts <= end_date).order_by(
-            DefectModel.id.desc()).all()
+        return DefectModel.query.filter(
+            DefectModel.defect_start_ts > start_date, DefectModel.defect_start_ts < end_date
+            ).order_by(DefectModel.id.desc()).all()
 
     def save_to_database(self):
         """Save the changed to defect to the database."""
