@@ -75,11 +75,19 @@ class DefectList(Resource):
     parser = reqparse.RequestParser()
     #
     parser.add_argument('confirm_all', type=bool, required=False, help='This argument is optional.')
+    parser.add_argument('start_date', type=str, required=False, help='Defects with start dates after this. (optional)')
+    parser.add_argument('end_date', type=str, required=False, help='Defects with end dates before this. (optional)')
 
     # results = DefectModel.query.filter('entry_created_ts' != 'entry_modified_ts').all()
     def get(self):
-        results = DefectModel.query.order_by(
-            DefectModel.id.desc()).all()
+        pargs = self.parser.parse_args()
+        start_date = pargs.get('start_date')
+        end_date = pargs.get('end_date')
+        if start_date and end_date:
+            results = DefectModel.get_defects_between_dates(start_date, end_date)
+        else:
+            results = DefectModel.query.order_by(
+                DefectModel.id.desc()).all()
         result_dict = {}
         for row in results:
             result_dict[row.id] = row.jsonizable()
