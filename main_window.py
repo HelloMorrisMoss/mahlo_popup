@@ -4,7 +4,7 @@ import tkinter
 import tkinter as tk
 from tkinter import ttk
 
-from dev_common import add_show_messages_button, recurse_hover, recurse_tk_structure, \
+from dev_common import add_show_messages_button, blank_up, recurse_hover, recurse_tk_structure, \
     style_component, window_topmost
 from fresk.models.defect import DefectModel
 from log_setup import lg
@@ -121,8 +121,11 @@ class MainWindow(tk.Tk):
                 pos_dict = json.load(pos_file)
                 lg.debug(f'last position loaded: {pos_dict}')
                 self.geometry(f'''+{pos_dict['x']}+{pos_dict['y']}''')
-        except FileNotFoundError:
-            pass  # if it doesn't exist then there is nothing to do
+        except FileNotFoundError as fnf:
+            lg.error('File not found at %s', self.last_pos_filepath)  # if it doesn't exist then there is nothing to do
+        except json.decoder.JSONDecodeError as jde:
+            lg.error(jde)  # TODO: this should include more info
+            blank_up(self.last_pos_filepath)
 
         self.bind('<Configure>', self._save_this_position)
         self.bind('<Escape>', self.escape)

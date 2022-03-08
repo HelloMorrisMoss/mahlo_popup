@@ -4,6 +4,8 @@ import tkinter
 import tkinter as tk
 from tkinter import ttk
 
+from log_setup import lg
+
 
 def recurse_tk_structure(obj: tk.Widget, name='starting_level', indent=0, print_structure=True, apply_function=None,
                          apply_args=([], {})):
@@ -136,3 +138,23 @@ def window_topmost(window: tkinter.Toplevel, set_to=True, lift=True):
     window.attributes('-topmost', set_to)
     if lift:
         window.lift()
+
+
+def touch(file_path):
+    """Create an empty file at the file path."""
+
+    with open(file_path, 'w') as pf:
+        pf.write('')
+
+
+def blank_up(file_path, after_backup_function=touch):
+    """Backup the file with a timestamp and replace with a blank file."""
+
+    import time
+
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    fp, ext = os.path.extsep(file_path)
+    new_fp = f'{fp}_BACKUP_{timestr}{ext}'
+    os.rename(file_path, new_fp)
+    lg.info('Backing up last_position.txt to %s', new_fp)
+    touch(file_path)
