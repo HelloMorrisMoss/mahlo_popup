@@ -1,20 +1,19 @@
-from fresk.sqla_instance import fsa
+import sqlalchemy as fsa
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.scoping import scoped_session
 
-
-# import sqlalchemy as fsa
-# from sqlalchemy import create_engine
-# from sqlalchemy.ext.declarative import declarative_base
-# from sqlalchemy.orm import sessionmaker
-# from untracked_config.db_uri import DATABASE_URI
+from untracked_config.db_uri import DATABASE_URI
 
 # engine = create_engine(DATABASE_URI, connect_args={'check_same_thread': False})
-# engine = create_engine(DATABASE_URI)  # , connect_args={'check_same_thread': False})
-# local_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-# Base = declarative_base()
+engine = create_engine(DATABASE_URI)  # , connect_args={'check_same_thread': False})
+local_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+Base.query = scoped_session(local_session).query_property()
 
 
-class OperatorModel(fsa.Model):
-    # class OperatorModel(Base):
+class OperatorModel(Base):
     """A sqlalchemy model for laminator operators."""
     __tablename__ = 'lam_operator_list'
 
@@ -52,7 +51,9 @@ class OperatorModel(fsa.Model):
         if lam_number is None:
             return cls.query.filter(OperatorModel.date_removed == None).all()
         else:
-            lam_column_dict = {1: OperatorModel.lam_1_certified, 2: OperatorModel.lam_2_certified}[lam_number]
+            certified_lam_dict = {1: OperatorModel.lam_1_certified, 2: OperatorModel.lam_2_certified}
+            certified_lam_dict[0] = certified_lam_dict[1]  # for development
+            lam_column_dict = certified_lam_dict[lam_number]
             return cls.query.filter(OperatorModel.date_removed == None).filter(lam_column_dict).all()
 
     @classmethod
@@ -62,7 +63,10 @@ class OperatorModel(fsa.Model):
     # def jsonizable(self):
     #     return jsonizable(self)
 
-# if __name__ == '__main__':
+
+if __name__ == '__main__':
+    print(OperatorModel.query.all())
+
 # from sqlalchemy import create_engine
 # from sqlalchemy.ext.declarative import declarative_base
 # from sqlalchemy.orm import sessionmaker
