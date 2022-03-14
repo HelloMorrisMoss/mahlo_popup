@@ -1,6 +1,7 @@
 from flask_restful import reqparse, Resource
 
 from fresk.defect_args import all_args, arg_type_dict
+from fresk.helpers import jsonizable, remove_empty_parameters
 from fresk.models.defect import DefectModel
 from log_setup import lg
 
@@ -19,7 +20,7 @@ class Defect(Resource):
         id_ = data.get('id')
         lg.debug('id from data: %s', id_)
         if id_:
-            defect = DefectModel.find_by_id(id_)
+            defect = DefectModel
 
             if defect:
                 return defect.jsonizable(), 200
@@ -32,15 +33,10 @@ class Defect(Resource):
         data = self.defect_parser.parse_args()
 
         # don't pass the Model empty parameters
-        data = self.remove_empty_parameters(data)
-        defect = DefectModel.new_defect(**data)
+        data = remove_empty_parameters(data)
+        defect = DefectModel
 
         return defect.jsonizable(), 201
-
-    def remove_empty_parameters(self, data):
-        """Accepts a dictionary and returns a dict with only the key, values where the values are not None."""
-
-        return {key: value for key, value in data.items() if value is not None}
 
     # TODO: once there is an option to edit defects, this may need to be touched up
     def put(self):
@@ -48,11 +44,11 @@ class Defect(Resource):
         # check if there is an id, if there is, try to get the defect record
         id_ = data.get('id')
         if id_:
-            defect = DefectModel.find_by_id(id_)
+            defect = DefectModel
             if defect:
                 lg.debug('defect exists, updating')
                 # don't pass the Model empty parameters
-                data = self.remove_empty_parameters(data)
+                data = remove_empty_parameters(data)
                 lg.debug('put dict %s', data)
                 # update the existing
                 for key, arg in data.items():
@@ -90,7 +86,7 @@ class DefectList(Resource):
                 DefectModel.id.desc()).all()
         result_dict = {}
         for row in results:
-            result_dict[row.id] = row.jsonizable()
+            result_dict[row.id] = jsonizable(row)
         return result_dict, 200
 
     def put(self):

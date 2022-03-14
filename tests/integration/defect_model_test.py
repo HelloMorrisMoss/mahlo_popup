@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from fresk.helpers import jsonizable
 from fresk.models.defect import DefectModel
 from tests.base_test import BaseTest
 
@@ -37,7 +38,7 @@ class DefectModelTest(BaseTest):
             defect = DefectModel()
             defect.save_to_database()
 
-            print(defect.jsonizable())
+            print(jsonizable())
 
             # it exists
             self.assertIsNotNone(DefectModel.find_by_id(defect.id))

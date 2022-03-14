@@ -1,5 +1,9 @@
 import datetime
-from sqlalchemy.types import TypeDecorator, TIMESTAMP
+
+from sqlalchemy.types import TIMESTAMP, TypeDecorator
+
+from fresk.defect_args import all_args
+
 
 class Timestamp(TypeDecorator):
     impl = TIMESTAMP
@@ -18,3 +22,28 @@ class Timestamp(TypeDecorator):
             return None
 
         return datetime.datetime.fromisoformat(value)
+
+
+def jsonizable(model):
+    """Get a json serializable representation of the SQLAlchemy Model instance.
+
+    This is needed due to datetimes, they are converted to ISO 8601 format strings.
+
+    :return: dict
+    """
+    jdict = {}
+    for key in all_args:
+        this_val = getattr(model, key)
+        if isinstance(this_val, datetime.datetime):
+            try:
+                this_val = this_val.isoformat()
+            except AttributeError as er:
+                this_val = str(this_val)
+        jdict[key] = this_val
+    return jdict
+
+
+def remove_empty_parameters(data):
+    """Accepts a dictionary and returns a dict with only the key, values where the values are not None."""
+
+    return {key: value for key, value in data.items() if value is not None}

@@ -4,6 +4,7 @@ import sqlalchemy
 from sqlalchemy import func
 
 from fresk.defect_args import all_args
+from fresk.helpers import jsonizable
 from fresk.sqla_instance import fsa
 from log_setup import lg
 
@@ -142,23 +143,4 @@ class DefectModel(fsa.Model):
         return jdict
 
     def jsonizable(self):
-        """Get a json serializable representation of the defect instance.
-
-        This is needed due to datetimes, they are converted to ISO 8601 format strings.
-
-        :return: dict
-        """
-        jdict = {}
-        for key in all_args:
-            this_val = getattr(self, key)
-            if isinstance(this_val, datetime.datetime):
-                try:
-                    this_val = this_val.isoformat()
-                except AttributeError as er:
-                    lg.error(er)
-                    this_val = str(this_val)
-            jdict[key] = this_val
-        # jdict = json.dumps(jdict, default=lambda x: x.isoformat())  # converting it to json early is not pretty
-        # return {k: str(v) for k, v in self.__dict__['_sa_instance_state']._instance_dict.items() if k in all_args}
-        # return {k: getattr(self, k) for k in all_args}
-        return jdict
+        return jsonizable(self)
