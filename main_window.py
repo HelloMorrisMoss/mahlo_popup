@@ -144,10 +144,12 @@ class MainWindow(tk.Tk):
         """Save the new window position for next time it opens."""
 
         if event.widget == self:
-            with open(self.last_pos_filepath, 'w') as pos_file:
+            with open(self.last_pos_filepath, 'rw') as pos_file:
+                last_pos_dict = json.load(pos_file)
                 pos_dict = {'x': event.x, 'y': event.y}
-                lg.debug(f'saving new position: {pos_dict}')
-                json.dump(pos_dict, pos_file, indent=4)
+                if last_pos_dict != pos_dict:
+                    lg.debug(f'saving new position: {pos_dict}')
+                    json.dump(pos_dict, pos_file, indent=4)
 
     def closing_handler(self):
         """When trying to close the window from the interface, hide instead."""
