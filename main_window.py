@@ -79,11 +79,16 @@ class MainWindow(tk.Tk):
         self.columnconfigure(0, weight=1)  # to make the button able to fill the width
         self.rowconfigure(0, weight=1)  # to make the button able to fill the height
 
+        # operator
+        self.current_operator = tk.StringVar()
+
         # the buttons that aren't for a specific popup (add, settings, etc)
         self.controls_panel = IndependentControlsPanel(self, 'Control Panel', hide_option=self._hide_option,
                                                        grid_pad=self.pad, autohide_var=self._auto_hide,
                                                        autoshow_var=self._auto_show, ghost_hide=self._ghost_hide,
-                                                       lam_num_controls=self.lam_num)
+                                                       lam_num_controls=self.lam_num,
+                                                       current_operator=self.current_operator,
+                                                       )
         self.controls_panel.grid(row=2, column=0, sticky='we')
         self.hideables.append(self.controls_panel)
 
@@ -328,6 +333,7 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         self.parent = parent_container
         self._next_column = 0
         self.lam_num = lam_num_controls
+        self.current_operator = kwargs.pop('current_operator')
 
         def add_new_defect():
             """Add a new defect to the database & popup window."""
@@ -377,6 +383,10 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
             self._ghost_fader = ttk.Checkbutton(self._hide_selector, text='Fade',
                                                 variable=kwargs['ghost_hide'])
             self._ghost_fader.grid(row=3, column=self.next_column())
+
+        test_list = ['john doe', 'jane doe']
+        self.operator_selector = ttk.OptionMenu(self, self.current_operator, *test_list, direction='above')
+        self.operator_selector.grid(row=3, column=self.next_column())
 
     def next_column(self):
         """Get an integer representing the next tk grid column to use."""
