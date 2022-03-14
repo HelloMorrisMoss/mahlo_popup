@@ -32,7 +32,14 @@ class Database(Resource):
     def post(self):
         data = self.defect_parser.parse_args()
         action = data.get('action')
-        if action == 'reset_database':
-            create_tables()
+        if action:
+            if action == 'reset_database':
+                create_tables()
 
-        return {'database reset': f'successful at {datetime.datetime.now().isoformat()}'}, 200
+                return {'database reset': f'successful at {datetime.datetime.now().isoformat()}'}, 200
+            # elif action == 'create_operators_table':
+            #     OperatorModel.__table__.create(checkfirst=True)
+            #     return {'operator table creation': f'successful at {datetime.datetime.now().isoformat()}'}, 200
+            else:
+                return {'no valid command': f'at {datetime.datetime.now().isoformat()}'}, 400
+        return {'No action specified': f'at {datetime.datetime.now().isoformat()}'}, 400
