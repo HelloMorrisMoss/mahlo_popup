@@ -144,10 +144,17 @@ class MainWindow(tk.Tk):
         """Save the new window position for next time it opens."""
 
         if event.widget == self:
-            with open(self.last_pos_filepath, 'rw') as pos_file:
-                last_pos_dict = json.load(pos_file)
-                pos_dict = {'x': event.x, 'y': event.y}
-                if last_pos_dict != pos_dict:
+            pos_dict = {'x': event.x, 'y': event.y}
+            try:
+                with open(self.last_pos_filepath, 'r') as pos_file:
+                    last_pos_dict = json.load(pos_file)
+            except FileNotFoundError as fnf:
+                from traceback import format_exception
+                exc_one_line = ''.join(format_exception(FileNotFoundError, fnf, fnf.__traceback__)).replace('\n', '\\n')
+                lg.warning('Could not open previous position file, a new one will be created. %s', exc_one_line)
+                last_pos_dict = None
+            if last_pos_dict != pos_dict:
+                with open(self.last_pos_filepath, 'w') as pos_file:
                     lg.debug(f'saving new position: {pos_dict}')
                     json.dump(pos_dict, pos_file, indent=4)
 
