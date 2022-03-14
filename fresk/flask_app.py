@@ -8,6 +8,7 @@ from flask_restful import Api
 from fresk.queuesholder import queues
 from fresk.resources.database import Database
 from fresk.resources.defect import Defect, DefectList
+from fresk.resources.lam_operator import Operator
 from fresk.resources.signal_popup import Popup
 from fresk.routing import routes_blueprint
 from fresk.sqla_instance import fsa
@@ -28,6 +29,7 @@ api.add_resource(Defect, '/defect')
 api.add_resource(Popup, '/popup')
 api.add_resource(DefectList, '/defects')
 api.add_resource(Database, '/database')
+api.add_resource(Operator, '/operator')
 
 app.register_blueprint(routes_blueprint)
 
