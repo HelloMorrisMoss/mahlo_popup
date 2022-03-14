@@ -7,6 +7,7 @@ from tkinter import ttk
 from dev_common import add_show_messages_button, blank_up, recurse_hover, recurse_tk_structure, \
     style_component, window_topmost
 from fresk.models.defect import DefectModel
+from fresk.models.lam_operator import OperatorModel
 from log_setup import lg
 from msg_window.popup_frame import DefectMessageFrame
 from scada_tag_query import TagHistoryConnector
@@ -384,7 +385,9 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
                                                 variable=kwargs['ghost_hide'])
             self._ghost_fader.grid(row=3, column=self.next_column())
 
-        test_list = ['john doe', 'jane doe']
+        active_operators_this_lam = OperatorModel.get_active_operators(self.lam_num)
+        operator_names = [(op.first_name, op.last_name) for op in active_operators_this_lam]
+        test_list = [' '.join((fn, ln)) for (fn, ln) in operator_names]
         self.operator_selector = ttk.OptionMenu(self, self.current_operator, *test_list, direction='above')
         self.operator_selector.grid(row=3, column=self.next_column())
 
