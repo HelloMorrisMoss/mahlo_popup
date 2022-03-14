@@ -42,6 +42,8 @@ class DefectModel(fsa.Model):
     record_creation_source = fsa.Column(fsa.String(), server_default='')
     marked_for_deletion = fsa.Column(fsa.Boolean, server_default='''False''')
     operator_saved_time = fsa.Column(fsa.DateTime(timezone=True))
+    operator_initials = fsa.Column(fsa.String)
+    operator_list_id = fsa.Column(fsa.Integer)
 
     flask_sqlalchemy_instance = fsa
 

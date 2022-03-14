@@ -3,6 +3,7 @@ from datetime import datetime
 from tkinter import ttk
 
 from dev_common import StrCol
+from fresk.models.lam_operator import OperatorModel
 from log_setup import lg
 from msg_window.defect_attributes import DefectTypePanel, HorizontalNumButtonSelector, LengthSetFrames, LotNumberEntry
 # from widgets.roll_removed_toggles import _add_toggle, _get_toggle_definitions
@@ -228,7 +229,14 @@ class MessagePanel(tk.ttk.LabelFrame):
         # I don't love this parent.parent referencing, if the app changes (from flask being restarted) it would
         # automatically grab the new one if updated in the main window
         lg.debug(self.current_defects)
-        with self.winfo_toplevel().flask_app.app_context():
+        top_level_win = self.winfo_toplevel()
+        with top_level_win.flask_app.app_context():
+            op_name = top_level_win.current_operator.get().split(' ')
+            filter_val_first = OperatorModel.first_name == op_name[0]
+            filter_val_last = OperatorModel.last_name == op_name[1]
+            operator_db = OperatorModel.query.filter(filter_val_first).filter(filter_val_last).all()[0]
+            self.defect_interface.operator_initials = operator_db.initials
+            self.defect_interface.operator_list_id = operator_db.id
             self.defect_interface.save_to_database()
             self.current_defects.pop(self.current_defects.index(self.defect_interface))
         self.destroy()

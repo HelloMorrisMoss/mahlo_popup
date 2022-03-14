@@ -77,54 +77,54 @@ if __name__ == '__main__':
 # engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={'check_same_thread': False})
 # SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # Base = declarative_base
-#
+
 # OperatorModel.__table__.create(SessionLocal.object_session)
 # Session = sessionmaker(bind=engine)
 # sesn = Session()
 # sesn = local_session
 # with local_session() as sesn:
 
-#  # to load the operators in from a manually created json file
-# from sqlalchemy.orm import Session
-#
-# with Session(engine) as sesn:
-#     OperatorModel.__table__.create(sesn.bind, checkfirst=True)
-#     # sesn.close()
-#
-#     import json
-#     import datetime
-#
-#     final_list = []
-#     fp = r'C:\Users\lmcglaughlin\PycharmProjects\mahlo_popup\untracked_config\lam_operators.json'
-#     with open(fp, 'r') as jf:
-#         ld = json.load(jf)
-#     joined = {}
-#     for ln in (1, 2):
-#         for first_name, last_name in ld[str(ln)]:
-#             this_dict = {
-#                 'first_name': first_name,
-#                 'last_name': last_name,
-#                 f'lam_{ln}_certified': True,
-#                 'date_added': datetime.datetime.now(),
-#                 'initials': first_name[0] + last_name[0],
-#                 }
-#             name_tuple = (first_name, last_name)
-#             try:
-#                 joined[name_tuple].update(this_dict)
-#             except KeyError:
-#                 joined[name_tuple] = this_dict
-#
-#     print(joined)
-#     OperatorModel.query = sesn.query()
-#     for k, v in joined.items():
-#         om = OperatorModel(**v)
-#         initials_number = 1
-#         while sesn.query(OperatorModel).filter(OperatorModel.initials == om.initials).all():
-#             om.initials = om.first_name[:initials_number + 1] + om.last_name[0]
-#             initials_number += 1
-#
-#         sesn.add(om)
-#         sesn.commit()
+# to load the operators in from a manually created json file
+from sqlalchemy.orm import Session
+
+with Session(engine) as sesn:
+    # OperatorModel.__table__.create(sesn.bind, checkfirst=True)
+    # sesn.close()
+
+    import json
+    import datetime
+
+    final_list = []
+    fp = r'C:\Users\lmcglaughlin\PycharmProjects\mahlo_popup\untracked_config\lam_operators.json'
+    with open(fp, 'r') as jf:
+        ld = json.load(jf)
+    joined = {}
+    for ln in (1, 2):
+        for first_name, last_name in ld[str(ln)]:
+            this_dict = {
+                'first_name': first_name,
+                'last_name': last_name,
+                f'lam_{ln}_certified': True,
+                'date_added': datetime.datetime.now(),
+                'initials': first_name[0] + last_name[0],
+                }
+            name_tuple = (first_name, last_name)
+            try:
+                joined[name_tuple].update(this_dict)
+            except KeyError:
+                joined[name_tuple] = this_dict
+
+    print(joined)
+    OperatorModel.query = sesn.query()
+    for k, v in joined.items():
+        om = OperatorModel(**v)
+        initials_number = 1
+        while sesn.query(OperatorModel).filter(OperatorModel.initials == om.initials).all():
+            om.initials = om.first_name[:initials_number + 1] + om.last_name[0]
+            initials_number += 1
+
+        sesn.add(om)
+        sesn.commit()
 #         # try:
 #         #     sesn.commit()
 #         # except fsa.exc.IntegrityError:
