@@ -395,7 +395,8 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         # drop down to select the current operator
         active_operators_this_lam = OperatorModel.get_active_operators(self.lam_num)
         operator_names = [(op.first_name, op.last_name) for op in active_operators_this_lam]
-        test_list = [' '.join((fn, ln)) for (fn, ln) in operator_names]
+        test_list = sorted([' '.join((fn, ln)) for (fn, ln) in operator_names])
+        test_list = ['NO OPERATOR'] + test_list
         self.operator_selector = ttk.OptionMenu(self, self.current_operator, *test_list, direction='above')
         self.operator_selector.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
                                     pady=self.pad['y'])

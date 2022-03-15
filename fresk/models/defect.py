@@ -3,6 +3,7 @@ import datetime
 import sqlalchemy
 from sqlalchemy import func
 
+from dev_common import exception_one_line
 from fresk.defect_args import all_args
 from fresk.helpers import jsonizable
 from fresk.sqla_instance import fsa
@@ -132,7 +133,11 @@ class DefectModel(fsa.Model):
     def save_to_database(self):
         """Save the changed to defect to the database."""
         fsa.session.add(self)
-        fsa.session.commit()
+        try:
+            fsa.session.commit()
+        except Exception as exc:
+            lg.error(exception_one_line(exception_obj=exc))
+            fsa.rollback()
 
     def get_model_dict(self):
         """Get a dictionary of {column_name: value}
