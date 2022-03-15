@@ -211,7 +211,7 @@ class DefectTypePanel(tk.ttk.LabelFrame):
             button_label_text = reason  # if reason != 0 else 'Cancel'
             reason_button = tk.ttk.Button(self, text=button_label_text)
             reason_button.bind('<Button-1>', self.return_button_val)
-            reason_button.grid(row=row, column=col, sticky='ew', padx=2, pady=2)
+            reason_button.grid(row=row, column=col, sticky='nesw', padx=2, pady=2)
             if self.defect.defect_type == reason:
                 reason_button.config(style='Accent.TButton')
             col += 1
@@ -220,6 +220,8 @@ class DefectTypePanel(tk.ttk.LabelFrame):
                 col = 0
 
             self._type_buttons.append(reason_button)
+        for rn in range(row):
+            self.rowconfigure(rn, weight=1)
 
         self.value = tk.StringVar()
 

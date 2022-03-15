@@ -67,10 +67,10 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         # lot #, rolls, defect type panel
         self.lot_number_selector = LotNumberEntry(self._lot_rolls_type_frame, self.defect_interface)
-        self.lot_number_selector.grid(row=0, column=0, padx=2, pady=2)
+        self.lot_number_selector.grid(row=0, column=0, padx=2, pady=2, sticky='ns')
 
         self.defect_type_panel = DefectTypePanel(self._lot_rolls_type_frame, self.defect_interface)
-        self.defect_type_panel.grid(row=0, column=1)
+        self.defect_type_panel.grid(row=0, column=1, sticky='ns', padx=2)
 
         self.number_of_finished_rolls = tk.IntVar()
         self._roll_count_selector = HorizontalNumButtonSelector(self._confirm_frame, self.defect_interface,
