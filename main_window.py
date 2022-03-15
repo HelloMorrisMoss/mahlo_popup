@@ -1,13 +1,11 @@
 """To add a popup window to the Mahlo HMI PC at the laminators. Designed to be called from the command line over ssl."""
 import json
-import os
-import sys
 import tkinter
 import tkinter as tk
 from tkinter import ttk
 
 from dev_common import add_show_messages_button, blank_up, recurse_hover, recurse_tk_structure, \
-    style_component, window_topmost
+    restart_program, style_component, window_topmost
 from fresk.models.defect import DefectModel
 from fresk.models.lam_operator import OperatorModel
 from log_setup import lg
@@ -316,7 +314,7 @@ class MainWindow(tk.Tk):
                         self.geometry('+0+0')
                     elif action_str == 'restart_popup':
                         lg.info('Restarting Mahlo Defect Record Popup.')
-                        os.execl(sys.executable, sys.executable, *sys.argv)
+                        restart_program()
         self.after(500, self.check_for_inbound_messages)
 
     def ensure_on_top(self, repeat=False):

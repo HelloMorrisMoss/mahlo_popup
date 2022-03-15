@@ -1,5 +1,6 @@
 """For development helpers, in their own module to avoid circular imports and keep things organized."""
 import os
+import sys
 import tkinter
 import tkinter as tk
 from tkinter import ttk
@@ -158,3 +159,9 @@ def blank_up(file_path, after_backup_function=touch):
     os.rename(file_path, new_fp)
     lg.info('Backing up last_position.txt to %s', new_fp)
     touch(file_path)
+
+
+def restart_program():
+    """Restarts the popup and server."""
+
+    os.execl(sys.executable, sys.executable, *sys.argv)
