@@ -388,11 +388,17 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
                                                 variable=kwargs['ghost_hide'])
             self._ghost_fader.grid(row=3, column=self.next_column())
 
+        # drop down to select the current operator
         active_operators_this_lam = OperatorModel.get_active_operators(self.lam_num)
         operator_names = [(op.first_name, op.last_name) for op in active_operators_this_lam]
         test_list = [' '.join((fn, ln)) for (fn, ln) in operator_names]
         self.operator_selector = ttk.OptionMenu(self, self.current_operator, *test_list, direction='above')
         self.operator_selector.grid(row=3, column=self.next_column())
+
+        # restart the program button
+        self.restart_button = ttk.Button(self, text='Restart', command=restart_program)
+        self.columnconfigure(1000, weight=1)
+        self.restart_button.grid(row=3, column=1000, sticky='e', padx=self.pad['x'])  # put it all the way to the right
 
     def next_column(self):
         """Get an integer representing the next tk grid column to use."""
