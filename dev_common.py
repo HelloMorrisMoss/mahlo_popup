@@ -165,3 +165,14 @@ def restart_program():
     """Restarts the popup and server."""
 
     os.execl(sys.executable, sys.executable, *sys.argv)
+
+
+def exception_one_line(exception_obj):
+    """Get the exception traceback text as a one line string. New lines are replaces with escaped '\\n'.
+
+    :param exception_obj: builtins.Ex.ception, the exception.
+    :return: str, the message string.
+    """
+    from traceback import format_exception
+    return ''.join(format_exception(FileNotFoundError, exception_obj, exception_obj.__traceback__)
+                   ).replace('\n', '\\n')

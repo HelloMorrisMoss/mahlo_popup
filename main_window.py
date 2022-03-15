@@ -4,7 +4,7 @@ import tkinter
 import tkinter as tk
 from tkinter import ttk
 
-from dev_common import add_show_messages_button, blank_up, recurse_hover, recurse_tk_structure, \
+from dev_common import add_show_messages_button, blank_up, exception_one_line, recurse_hover, recurse_tk_structure, \
     restart_program, style_component, window_topmost
 from fresk.models.defect import DefectModel
 from fresk.models.lam_operator import OperatorModel
@@ -121,6 +121,18 @@ class MainWindow(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self.closing_handler)
 
         # try to position the window in the same place as last time
+        self.reload_last_position()
+
+        self.bind('<Configure>', self._save_this_position)
+        self.bind('<Escape>', self.escape)
+
+        self.after(5_000, self.ensure_on_top, True)
+
+        self.mainloop()
+
+    def reload_last_position(self):
+        """Load the position information from last time the window was open."""
+
         try:
             self.last_pos_filepath = './untracked_config/last_position.txt'
             with open(self.last_pos_filepath, 'r') as pos_file:
@@ -130,15 +142,8 @@ class MainWindow(tk.Tk):
         except FileNotFoundError as fnf:
             lg.error('File not found at %s', self.last_pos_filepath)  # if it doesn't exist then there is nothing to do
         except json.decoder.JSONDecodeError as jde:
-            lg.error(jde)  # TODO: this should include more info
+            lg.error(exception_one_line(jde))
             blank_up(self.last_pos_filepath)
-
-        self.bind('<Configure>', self._save_this_position)
-        self.bind('<Escape>', self.escape)
-
-        self.after(5_000, self.ensure_on_top, True)
-
-        self.mainloop()
 
     def escape(self, event: tkinter.Event):
         """When the escape key is pressed, close the window."""
@@ -155,8 +160,7 @@ class MainWindow(tk.Tk):
                 with open(self.last_pos_filepath, 'r') as pos_file:
                     last_pos_dict = json.load(pos_file)
             except FileNotFoundError as fnf:
-                from traceback import format_exception
-                exc_one_line = ''.join(format_exception(FileNotFoundError, fnf, fnf.__traceback__)).replace('\n', '\\n')
+                exc_one_line = exception_one_line(fnf)
                 lg.warning('Could not open previous position file, a new one will be created. %s', exc_one_line)
                 last_pos_dict = None
             if last_pos_dict != pos_dict:
