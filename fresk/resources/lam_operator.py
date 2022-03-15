@@ -13,22 +13,25 @@ class Operator(Resource):
     for arg in all_args:
         defect_parser.add_argument(arg, type=arg_type_dict[arg], required=False, help='This argument is optional.')
 
-    # def get(self):
-    #
-    #     data = self.defect_parser.parse_args()
-    #     from pprint import pprint
-    #     pprint(data)
-    #     id_ = data.get('id')
-    #     lg.debug('id from data: %s', id_)
-    #     if id_:
-    #         defect = DefectModel.find_by_id(id_)
-    #
-    #         if defect:
-    #             return defect.jsonizable(), 200
-    #         else:
-    #             return {'defect_instance': f'Defect not found with id: {id_}'}, 404
-    #
-    #     return {'defect_instance': f'An id is required! (?id=###)'}, 400
+    def get(self):
+        """Get a response with the json representation of the operators."""
+        data = self.defect_parser.parse_args()
+        from pprint import pprint
+        lam_num = data.get('lam_number')
+
+        if lam_num:
+            ops = OperatorModel.get_active_operators(lam_num)
+        else:
+            ops = OperatorModel.get_active_operators()
+
+            if ops:
+                ops_list = []
+                for op in ops:
+                    ops_list.append(op.jsonizable())
+                pprint(ops_list)
+                return ops_list, 200
+            else:
+                return {'operator': f'No operators found'}, 404
 
     def post(self):
         data = self.defect_parser.parse_args()

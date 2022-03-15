@@ -4,6 +4,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.scoping import scoped_session
 
+from fresk.helpers import jsonizable
+from log_setup import lg
 from untracked_config.db_uri import DATABASE_URI
 
 # engine = create_engine(DATABASE_URI, connect_args={'check_same_thread': False})
@@ -60,8 +62,13 @@ class OperatorModel(Base):
     def check_for_initials(cls, initials):
         return cls.query.filter(cls.initials == initials).all()
 
-    # def jsonizable(self):
-    #     return jsonizable(self)
+    def jsonizable(self):
+        return jsonizable(self)
+
+    def save_to_database(self):
+        """Save the changed to defect to the database."""
+        self.scoped_session.add(self)
+        self.scoped_session.commit()
 
 
 if __name__ == '__main__':

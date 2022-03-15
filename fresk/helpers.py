@@ -2,8 +2,6 @@ import datetime
 
 from sqlalchemy.types import TIMESTAMP, TypeDecorator
 
-from fresk.defect_args import all_args
-
 
 class Timestamp(TypeDecorator):
     impl = TIMESTAMP
@@ -31,15 +29,18 @@ def jsonizable(model):
 
     :return: dict
     """
+    from sqlalchemy.orm.state import InstanceState
+
     jdict = {}
-    for key in all_args:
-        this_val = getattr(model, key)
+    for key, this_val in model.__dict__.items():
+        # this_val = getattr(model, key)
         if isinstance(this_val, datetime.datetime):
             try:
                 this_val = this_val.isoformat()
             except AttributeError as er:
                 this_val = str(this_val)
-        jdict[key] = this_val
+        elif not isinstance(this_val, InstanceState):
+            jdict[key] = this_val
     return jdict
 
 
