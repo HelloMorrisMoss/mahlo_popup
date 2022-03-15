@@ -1,5 +1,7 @@
 """To add a popup window to the Mahlo HMI PC at the laminators. Designed to be called from the command line over ssl."""
 import json
+import os
+import sys
 import tkinter
 import tkinter as tk
 from tkinter import ttk
@@ -143,7 +145,7 @@ class MainWindow(tk.Tk):
     def escape(self, event: tkinter.Event):
         """When the escape key is pressed, close the window."""
 
-        lg.debug('escape key pressed')
+        lg.info('Escape key pressed, shutting down.')
         self.destroy()
 
     def _save_this_position(self, event: tkinter.Event):
@@ -312,6 +314,9 @@ class MainWindow(tk.Tk):
                         self.popup_frame.check_for_new_defects()
                     elif action_str == 'reset_position':
                         self.geometry('+0+0')
+                    elif action_str == 'restart_popup':
+                        lg.info('Restarting Mahlo Defect Record Popup.')
+                        os.execl(sys.executable, sys.executable, *sys.argv)
         self.after(500, self.check_for_inbound_messages)
 
     def ensure_on_top(self, repeat=False):
