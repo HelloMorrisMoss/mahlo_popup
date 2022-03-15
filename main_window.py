@@ -338,6 +338,7 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         self._next_column = 0
         self.lam_num = lam_num_controls
         self.current_operator = kwargs.pop('current_operator')
+        self.pad = kwargs.get('grid_pad')
 
         def add_new_defect():
             """Add a new defect to the database & popup window."""
@@ -355,45 +356,51 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         # add a new defect button
         self.add_defect_button = tk.ttk.Button(self, text='New defect', command=add_new_defect)
         self.add_defect_button.grid(row=3, column=self.next_column(),
-                                    padx=self.parent.pad['x'], pady=self.parent.pad['y'])
+                                    padx=self.parent.pad['x'], pady=self.parent.pad['y'], sticky='ns')
 
         # hide button
         # getting an error claiming the parent doesn't have the method hide_hideables
         self.hide_button = tk.ttk.Button(self, text='Hide now', command=self.parent.hide_hideables)
-        self.hide_button.grid(row=3, column=self.next_column())
+        self.hide_button.grid(row=3, column=self.next_column(), sticky='ns', padx=self.parent.pad['x'],
+                              pady=self.parent.pad['y'])
 
         # add what to do when hiding selection
         if kwargs.get('hide_option'):
             self._hide_selector = ttk.LabelFrame(self, text='Hide options')
-            self.pad = kwargs.get('grid_pad')
-            self._hide_selector.grid(row=3, column=self.next_column(), padx=self.pad['x'], pady=self.pad['y'])
+            self._hide_selector.grid(row=3, column=self.next_column(), padx=self.pad['x'], pady=self.pad['y'],
+                                     sticky='ns')
 
             # auto hide when losing focus
             self._autohide_toggle = ttk.Checkbutton(self._hide_selector, text='Autohide',
                                                     variable=kwargs['autohide_var'])
-            self._autohide_toggle.grid(row=3, column=self.next_column())
+            self._autohide_toggle.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
+                                       pady=self.pad['y'])
 
             # unhide when gaining focus
             self._autoshow_toggle = ttk.Checkbutton(self._hide_selector, text='Autoshow',
                                                     variable=kwargs['autoshow_var'])
-            self._autoshow_toggle.grid(row=3, column=self.next_column())
+            self._autoshow_toggle.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
+                                       pady=self.pad['y'])
 
             # transparency
             self._ghost_fader = ttk.Checkbutton(self._hide_selector, text='Fade',
                                                 variable=kwargs['ghost_hide'])
-            self._ghost_fader.grid(row=3, column=self.next_column())
+            self._ghost_fader.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
+                                   pady=self.pad['y'])
 
         # drop down to select the current operator
         active_operators_this_lam = OperatorModel.get_active_operators(self.lam_num)
         operator_names = [(op.first_name, op.last_name) for op in active_operators_this_lam]
         test_list = [' '.join((fn, ln)) for (fn, ln) in operator_names]
         self.operator_selector = ttk.OptionMenu(self, self.current_operator, *test_list, direction='above')
-        self.operator_selector.grid(row=3, column=self.next_column())
+        self.operator_selector.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
+                                    pady=self.pad['y'])
 
         # restart the program button
         self.restart_button = ttk.Button(self, text='Restart', command=restart_program)
         self.columnconfigure(1000, weight=1)
-        self.restart_button.grid(row=3, column=1000, sticky='e', padx=self.pad['x'])  # put it all the way to the right
+        self.restart_button.grid(row=3, column=1000, sticky='e', padx=self.pad['x'],  # put it all the way to the right
+                                 pady=self.pad['y'])
 
     def next_column(self):
         """Get an integer representing the next tk grid column to use."""
