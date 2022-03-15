@@ -2,6 +2,8 @@ import tkinter as tk
 from datetime import datetime
 from tkinter import ttk
 
+import sqlalchemy.exc
+
 from dev_common import StrCol
 from fresk.models.lam_operator import OperatorModel
 from log_setup import lg
@@ -234,7 +236,12 @@ class MessagePanel(tk.ttk.LabelFrame):
             op_name = top_level_win.current_operator.get().split(' ')
             filter_val_first = OperatorModel.first_name == op_name[0]
             filter_val_last = OperatorModel.last_name == op_name[1]
-            operator_db = OperatorModel.query.filter(filter_val_first).filter(filter_val_last).all()[0]
+            try:
+                operator_db = OperatorModel.query.filter(filter_val_first).filter(filter_val_last).all()[0]
+            except sqlalchemy.exc.PendingRollbackError:
+                OperatorModel.scoped_session.rollback()
+                lg.error('Rollback error trying to fetch operator data.')
+                return
             self.defect_interface.operator_initials = operator_db.initials
             self.defect_interface.operator_list_id = operator_db.id
             self.defect_interface.save_to_database()
