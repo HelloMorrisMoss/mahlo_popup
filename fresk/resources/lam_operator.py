@@ -38,7 +38,7 @@ class Operator(Resource):
 
         # don't pass the Model empty parameters
         data = remove_empty_parameters(data)
-        operator = OperatorModel(*data)
+        operator = OperatorModel.new_operator(**data)
 
         return operator.jsonizable(), 201
 

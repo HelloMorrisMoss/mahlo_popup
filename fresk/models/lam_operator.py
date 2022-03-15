@@ -12,7 +12,8 @@ from untracked_config.db_uri import DATABASE_URI
 engine = create_engine(DATABASE_URI)  # , connect_args={'check_same_thread': False})
 local_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
-Base.query = scoped_session(local_session).query_property()
+Base.scoped_session = scoped_session(local_session)
+Base.query = Base.scoped_session.query_property()
 
 
 class OperatorModel(Base):
@@ -43,7 +44,15 @@ class OperatorModel(Base):
                                last_name=last_name,
                                lam_1_certified=lam_1_certified,
                                lam_2_certified=lam_2_certified)
+        # add unique initials
+        initial_characters = 1
+        initials = f'{first_name[0:initial_characters]}{last_name[0]}'
+        while cls.check_for_initials(initials):
+            initial_characters += 1
+            initials = f'{first_name[0:initial_characters]}{last_name[0]}'
+        new_op.initials = initials
         new_op.save_to_database()
+        lg.info('New operator created: %s', new_op.__dict__)
         return new_op
 
     @classmethod
@@ -72,7 +81,8 @@ class OperatorModel(Base):
 
 
 if __name__ == '__main__':
-    print(OperatorModel.query.all())
+    OperatorModel.new_operator(first_name='Kyle', last_name='Derosa')
+    # print(OperatorModel.query.all())
 
 # from sqlalchemy import create_engine
 # from sqlalchemy.ext.declarative import declarative_base
