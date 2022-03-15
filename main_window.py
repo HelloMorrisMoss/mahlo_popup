@@ -367,11 +367,6 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
             self._hide_selector = ttk.LabelFrame(self, text='Hide options')
             self.pad = kwargs.get('grid_pad')
             self._hide_selector.grid(row=3, column=self.next_column(), padx=self.pad['x'], pady=self.pad['y'])
-            # options = ('Button', 'b'), ('Icon', 'i'), ('Vanish', 'v')  # icon isn't working well yet
-            options = ('Button', 'b'), ('Vanish', 'v')
-            for i, (option, optn) in enumerate(options):
-                rb = ttk.Radiobutton(self._hide_selector, text=option, value=optn, variable=kwargs['hide_option'])
-                rb.grid(row=3, column=i)
 
             # auto hide when losing focus
             self._autohide_toggle = ttk.Checkbutton(self._hide_selector, text='Autohide',
