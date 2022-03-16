@@ -204,6 +204,7 @@ class MessagePanel(tk.ttk.LabelFrame):
             lg.debug('IndexError fetching operator from database. Check selected operator.')
             top_level_win.event_generate('<<OperatorNotFound>>')
             return
+        self.defect_interface.shift_number = top_level_win.current_shift
         self.defect_interface.operator_initials = operator_db.initials
         self.defect_interface.operator_list_id = operator_db.id
         self.defect_interface.save_to_database()

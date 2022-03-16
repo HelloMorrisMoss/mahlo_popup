@@ -117,6 +117,8 @@ class MainWindow(tk.Tk):
         # for querying the tag history database
         self._thist = TagHistoryConnector(f'lam{self.lam_num}')
 
+        self.current_shift = self._thist.get_current_shift_number()
+
         # when trying to close the window from the interface
         self.protocol("WM_DELETE_WINDOW", self.closing_handler)
 
@@ -291,6 +293,8 @@ class MainWindow(tk.Tk):
     def check_for_inbound_messages(self):
         """Check the inbound queue for new defect messages and if there are any, send them to the MessagePanel."""
 
+        # TODO: make a deque subclass that is subscribable -> generate tk events
+
         while len(self.messages_from_flask):
             self.new_messages.append(self.messages_from_flask.pop())
         if self.new_messages:
@@ -298,14 +302,9 @@ class MainWindow(tk.Tk):
 
             # if we haven't gotten the flask app via the queue yet, look for it
             while self.new_messages:
-                # if self.flask_app is None:
-                #     if msg.get('flask_app'):
-                #         self.flask_app = self.new_messages.pop(mindex)['flask_app']
-                #         lg.debug('Flask App received.')
-                #         self.after(2000, self.popup_frame.check_for_new_defects)
-                # elif msg.get('action'):
-                if self.new_messages[0].get('action'):
-                    action_str = self.new_messages.pop(0)['action']
+                action_dict = self.new_messages.pop(0)
+                if action_dict.get('action'):
+                    action_str = action_dict['action']
                     if action_str == 'shrink':
                         self.hide_hideables()
                     elif action_str == 'show':
@@ -320,9 +319,12 @@ class MainWindow(tk.Tk):
                     elif action_str == 'restart_popup':
                         lg.info('Restarting Mahlo Defect Record Popup.')
                         restart_program()
+                    elif action_str == 'shift_change':
+                        self.current_shift = self._thist.get_current_shift_number()
+                        self.event_generate('<<ShiftChange>>')
                 else:
                     # clear out any messages that cannot be used so that they don't accumulate
-                    unused_messge = self.new_messages.pop(0)
+                    unused_messge = action_dict
                     lg.warning('Unhandled message received in popup: %s', unused_messge)
         self.after(500, self.check_for_inbound_messages)
 
@@ -349,11 +351,13 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         self.current_operator = kwargs.pop('current_operator')
         self.pad = kwargs.get('grid_pad')
 
+        toplevel = self.winfo_toplevel()
+
         def add_new_defect():
             """Add a new defect to the database & popup window."""
 
             # create a new defect in the database, get the popup frame, tell it to update
-            thist = self.winfo_toplevel()._thist
+            thist = toplevel._thist
             lot_num = thist.current_lot_number()
             current_length = thist.current_mahlo_length()
             new_defect = DefectModel.new_defect(source_lot_number=lot_num, record_creation_source='operator',
@@ -400,14 +404,15 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         # drop down to select the current operator
         active_operators_this_lam = OperatorModel.get_active_operators(self.lam_num)
         operator_names = [(op.first_name, op.last_name) for op in active_operators_this_lam]
-        test_list = sorted([' '.join((fn, ln)) for (fn, ln) in operator_names])
-        test_list = ['NO OPERATOR'] + test_list
+        operator_name_list = sorted([' '.join((fn, ln)) for (fn, ln) in operator_names])
+        self._default_operator = 'NO OPERATOR'
+        operator_name_list = [self._default_operator] + operator_name_list
 
-        self.operator_selector = ttk.OptionMenu(self, self.current_operator, *test_list, direction='above')
+        self.operator_selector = ttk.OptionMenu(self, self.current_operator, *operator_name_list, direction='above')
         self.operator_selector.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
                                     pady=self.pad['y'])
 
-        # in case the operator is not selected, a flashing warning label
+        # in case an operator is not selected, a flashing warning label
         self.select_operator_label = ttk.Label(self, text='Please select an operator.', background='#ffcc00',
                                                foreground='#000000')
         self.select_operator_label.grid(row=3, column=self.next_column())
@@ -428,7 +433,13 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
             self.select_operator_label.grid_remove()
             self.after(1000, flash_select_label_on)
 
-        self.winfo_toplevel().bind('<<OperatorNotFound>>', flash_select_label_on)
+        toplevel.bind('<<OperatorNotFound>>', flash_select_label_on)
+
+        # to reset the operator on shift change
+        def reset_operator_selection(*args):
+            self.current_operator.set(self._default_operator)
+
+        toplevel.bind('<<ShiftChange>>', reset_operator_selection)
 
         # restart the program button
         self.restart_button = ttk.Button(self, text='Restart', command=restart_program)

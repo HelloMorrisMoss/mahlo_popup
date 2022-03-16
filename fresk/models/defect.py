@@ -46,6 +46,7 @@ class DefectModel(Base):
     operator_saved_time = fsa.Column(fsa.DateTime(timezone=True))
     operator_initials = fsa.Column(fsa.String)
     operator_list_id = fsa.Column(fsa.Integer)
+    shift_number = fsa.Column(fsa.Integer)
 
     flask_sqlalchemy_instance = fsa
 

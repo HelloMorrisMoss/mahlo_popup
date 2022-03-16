@@ -16,11 +16,14 @@ class TagIds:
                 'lam1': {
                     'lot_number': 'mahlo/lam1/batchid',
                     'length': 'MAHLO/LAM1/MdMeterCount',
+                    'shift_number': 'Miscellaneous Tags/Shift',
                     },
                 'lam2': {
                     'lot_number': 'mahlo/lam2/batchid',
                     'length': 'MAHLO/LAM2/MdMeterCount',
+                    'shift_number': 'Miscellaneous Tags/Shift',
                     },
+
                 }
             # for development
             self._tag_set_dict['lam0'] = self._tag_set_dict['lam1']
@@ -32,8 +35,9 @@ class TagIds:
         """
 
         for field, ilike_str in self._tag_set_dict[self._tag_set].items():
-            lg.debug('setting %s field using %s', field, ilike_str)
-            setattr(self, field, paths_to_id_function(ilike_str))
+            _tag_id = paths_to_id_function(ilike_str)
+            lg.debug('setting "%s" field using "%s" - id: %s', field, ilike_str, _tag_id)
+            setattr(self, field, _tag_id)
 
 
 class DatabaseConnection:
@@ -80,8 +84,11 @@ class TagHistoryConnector(DatabaseConnection):
         id_sql_query = r'''SELECT id FROM sqlth_te WHERE tagpath ILIKE %s'''
         self.crs.execute(id_sql_query, (tag_path_ilike_string,))
         results = self.crs.fetchall()
-        if len(results) > 1:
+        result_count = len(results)
+        if result_count > 1:
             raise Warning('Multiple tags match ilike string pattern (tag_path_ilike_string): %s', tag_path_ilike_string)
+        elif result_count == 0:
+            raise Warning('No historized tag id found for %s', tag_path_ilike_string)
         return results[0]
 
     def get_recent_lots(self, lot_count: int = 5):
@@ -123,9 +130,13 @@ class TagHistoryConnector(DatabaseConnection):
         result_row = self.get_recent_values(self.tag_ids.length, 1)
         return result_row[0][2]
 
+    def get_current_shift_number(self):
+        result_row = self.get_recent_values(self.tag_ids.shift_number, 1)
+        return result_row[0][1]
+
 
 if __name__ == '__main__':
     thist = TagHistoryConnector(f'lam1')
     lg.debug(thist.current_lot_number())
-
     lg.debug(thist.current_mahlo_length())
+    lg.debug(thist.get_current_shift_number())
