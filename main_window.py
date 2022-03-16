@@ -402,9 +402,33 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         operator_names = [(op.first_name, op.last_name) for op in active_operators_this_lam]
         test_list = sorted([' '.join((fn, ln)) for (fn, ln) in operator_names])
         test_list = ['NO OPERATOR'] + test_list
+
         self.operator_selector = ttk.OptionMenu(self, self.current_operator, *test_list, direction='above')
         self.operator_selector.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
                                     pady=self.pad['y'])
+
+        # in case the operator is not selected, a flashing warning label
+        self.select_operator_label = ttk.Label(self, text='Please select an operator.', background='#ffcc00',
+                                               foreground='#000000')
+        self.select_operator_label.grid(row=3, column=self.next_column())
+        self.select_operator_label.grid_remove()
+
+        self.blinks = 5
+        self.blink_count = 0
+
+        def flash_select_label_on(*args):
+            if self.blink_count < self.blinks:
+                self.blink_count += 1
+                self.select_operator_label.grid()
+                self.after(1000, flash_select_label_off)
+            else:
+                self.blink_count = 0
+
+        def flash_select_label_off(*args):
+            self.select_operator_label.grid_remove()
+            self.after(1000, flash_select_label_on)
+
+        self.winfo_toplevel().bind('<<OperatorNotFound>>', flash_select_label_on)
 
         # restart the program button
         self.restart_button = ttk.Button(self, text='Restart', command=restart_program)
@@ -417,3 +441,11 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
 
         self._next_column += 10
         return self._next_column
+
+
+if __name__ == '__main__':
+    from collections import deque
+
+    dq1 = deque()
+    dq2 = deque()
+    MainWindow(dq1, dq2)
