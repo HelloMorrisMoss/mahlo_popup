@@ -221,39 +221,32 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         :param event: tkinter.Event, (optional)
         """
-        # msg_id = self._get_event_info(event)
-        # removed_results_dict = self._removed_state_vars[msg_id]
-        lg.debug(self.defect_interface)
-        now_ts = datetime.now()
+
+        lg.debug('Saving defect record: %s', self.defect_interface)
+        now_ts = datetime.now()  # todo: make this part of .save_to_database and use the database time
         self.defect_interface.entry_modified_ts = now_ts
         self.defect_interface.operator_saved_time = now_ts
 
-        # I don't love this parent.parent referencing, if the app changes (from flask being restarted) it would
-        # automatically grab the new one if updated in the main window
-        lg.debug(self.current_defects)
         top_level_win = self.winfo_toplevel()
-        with top_level_win.flask_app.app_context():
-            op_name = top_level_win.current_operator.get().split(' ')
-            filter_val_first = OperatorModel.first_name == op_name[0]
-            filter_val_last = OperatorModel.last_name == op_name[1]
-            try:
-                operator_db = OperatorModel.query.filter(filter_val_first).filter(filter_val_last).all()[0]
-            except sqlalchemy.exc.PendingRollbackError:
-                OperatorModel.scoped_session.rollback()
-                lg.error('Rollback error trying to fetch operator data.')
-                return
-            self.defect_interface.operator_initials = operator_db.initials
-            self.defect_interface.operator_list_id = operator_db.id
-            self.defect_interface.save_to_database()
-            self.current_defects.pop(self.current_defects.index(self.defect_interface))
+        # with top_level_win.flask_app.app_context():
+        op_name = top_level_win.current_operator.get().split(' ')
+        filter_val_first = OperatorModel.first_name == op_name[0]
+        filter_val_last = OperatorModel.last_name == op_name[1]
+        try:
+            operator_db = OperatorModel.query.filter(filter_val_first).filter(filter_val_last).all()[0]
+        except sqlalchemy.exc.PendingRollbackError:
+            OperatorModel.scoped_session.rollback()
+            lg.error('Rollback error trying to fetch operator data.')
+            return
+        except IndexError:
+            lg.debug('IndexError fetching operator from database. Check selected operator.')
+            top_level_win.event_generate('<<OperatorNotFound>>')
+            return
+        self.defect_interface.operator_initials = operator_db.initials
+        self.defect_interface.operator_list_id = operator_db.id
+        self.defect_interface.save_to_database()
+        self.current_defects.pop(self.current_defects.index(self.defect_interface))
         self.destroy()
-        lg.debug(self.parent.parent.current_defects)
-
-    # def _change_toggle_count(self):
-    #     """Change the number of toggle-buttons on the the foam removed toggles frame."""
-    #     # self._destroy_toggle_panel()
-    #     # self._add_foam_removed_toggle_selectors(self)
-    #     pass
 
 
 # if __name__ == '__main__':

@@ -1,19 +1,8 @@
 import sqlalchemy as fsa
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm.scoping import scoped_session
 
 from fresk.helpers import jsonizable
+from fresk.sqla_instance import Base
 from log_setup import lg
-from untracked_config.db_uri import DATABASE_URI
-
-# engine = create_engine(DATABASE_URI, connect_args={'check_same_thread': False})
-engine = create_engine(DATABASE_URI)  # , connect_args={'check_same_thread': False})
-local_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
-Base.scoped_session = scoped_session(local_session)
-Base.query = Base.scoped_session.query_property()
 
 
 class OperatorModel(Base):
@@ -52,7 +41,7 @@ class OperatorModel(Base):
             initials = f'{first_name[0:initial_characters]}{last_name[0]}'
         new_op.initials = initials
         new_op.save_to_database()
-        lg.info('New operator created: %s', new_op.__dict__)
+        lg.info('New operator created: %s', new_op.__dict__.items())
         return new_op
 
     @classmethod
@@ -81,7 +70,7 @@ class OperatorModel(Base):
 
 
 if __name__ == '__main__':
-    OperatorModel.new_operator(first_name='Kyle', last_name='Derosa')
+    OperatorModel.new_operator(first_name='John', last_name='Doe')
     # print(OperatorModel.query.all())
 
 # from sqlalchemy import create_engine

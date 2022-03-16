@@ -1,16 +1,17 @@
 import datetime
 
 import sqlalchemy
+import sqlalchemy as fsa
 from sqlalchemy import func
 
 from dev_common import exception_one_line
 from fresk.defect_args import all_args
 from fresk.helpers import jsonizable
-from fresk.sqla_instance import fsa
+from fresk.sqla_instance import Base
 from log_setup import lg
 
 
-class DefectModel(fsa.Model):
+class DefectModel(Base):
     """A SQLalchemy model for the defect removal record database."""
     __tablename__ = 'laminator_foam_defect_removal_records'
 
@@ -132,12 +133,15 @@ class DefectModel(fsa.Model):
 
     def save_to_database(self):
         """Save the changed to defect to the database."""
-        fsa.session.add(self)
+        # fsa.session.add(self)
+        self.scoped_session.add(self)
         try:
-            fsa.session.commit()
+            self.scoped_session.commit()
+            # fsa.session.commit()
         except Exception as exc:
             lg.error(exception_one_line(exception_obj=exc))
-            fsa.rollback()
+            # fsa.rollback()
+            self.scoped_session.rollback()
 
     def get_model_dict(self):
         """Get a dictionary of {column_name: value}
@@ -151,3 +155,7 @@ class DefectModel(fsa.Model):
 
     def jsonizable(self):
         return jsonizable(self)
+
+
+if __name__ == '__main':
+    pass
