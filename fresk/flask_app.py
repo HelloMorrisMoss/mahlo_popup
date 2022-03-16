@@ -47,7 +47,7 @@ def start_flask_app(in_message_queue=None, out_message_queue=None):
             queues.out_message_queue = out_message_queue
             g.in_message_queue = in_message_queue
             g.out_message_queue = out_message_queue
-            g.out_message_queue.append({'flask_app': app})
+            # g.out_message_queue.append({'flask_app': app})
             schedule_queue_watcher(in_message_queue, out_message_queue)
             lg.debug('flask app sent by message queue')
     else:
@@ -74,13 +74,13 @@ def schedule_queue_watcher(in_message_queue, out_message_queue):
         check_context = app.app_context()
         with check_context:
             while len(in_message_queue):
-                print(f'defect_instance count: {len(in_message_queue)}')
-                print(in_message_queue)
+                lg.debug(f'defect_instance count: %s: , %s', len(in_message_queue), in_message_queue)
                 try:
                     msg = in_message_queue.pop()
                     out_message_queue.append({'message': 'hello'})
-                    lg.debug(f'Regular check at {datetime.datetime.now()} found a defect_instance: {msg}')
+                    lg.debug('Regular check at %s found a defect_instance: %s', datetime.datetime.now(), msg)
                 except IndexError:
+                    lg.warning('Index error in while loop. Should never happen.')
                     break  # the deque is empty TODO: the while and try except SHOULD be redundant
 
     from apscheduler.schedulers.background import BackgroundScheduler

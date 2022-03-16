@@ -297,14 +297,15 @@ class MainWindow(tk.Tk):
             lg.debug('new messages: %s', self.new_messages)
 
             # if we haven't gotten the flask app via the queue yet, look for it
-            for mindex, msg in enumerate(self.new_messages):
-                if self.flask_app is None:
-                    if msg.get('flask_app'):
-                        self.flask_app = self.new_messages.pop(mindex)['flask_app']
-                        lg.debug('Flask App received.')
-                        self.after(2000, self.popup_frame.check_for_new_defects)
-                elif msg.get('action'):
-                    action_str = self.new_messages.pop(mindex)['action']
+            while self.new_messages:
+                # if self.flask_app is None:
+                #     if msg.get('flask_app'):
+                #         self.flask_app = self.new_messages.pop(mindex)['flask_app']
+                #         lg.debug('Flask App received.')
+                #         self.after(2000, self.popup_frame.check_for_new_defects)
+                # elif msg.get('action'):
+                if self.new_messages[0].get('action'):
+                    action_str = self.new_messages.pop(0)['action']
                     if action_str == 'shrink':
                         self.hide_hideables()
                     elif action_str == 'show':
@@ -319,6 +320,10 @@ class MainWindow(tk.Tk):
                     elif action_str == 'restart_popup':
                         lg.info('Restarting Mahlo Defect Record Popup.')
                         restart_program()
+                else:
+                    # clear out any messages that cannot be used so that they don't accumulate
+                    unused_messge = self.new_messages.pop(0)
+                    lg.warning('Unhandled message received in popup: %s', unused_messge)
         self.after(500, self.check_for_inbound_messages)
 
     def ensure_on_top(self, repeat=False):
@@ -346,16 +351,16 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
 
         def add_new_defect():
             """Add a new defect to the database & popup window."""
-            with self.parent.flask_app.app_context():  # TODO: add a get_flask method to parent and pass that in
-                # create a new defect in the database, get the popup frame, tell it to update
-                thist = self.winfo_toplevel()._thist
-                lot_num = thist.current_lot_number()
-                current_length = thist.current_mahlo_length()
-                new_defect = DefectModel.new_defect(source_lot_number=lot_num, record_creation_source='operator',
-                                                    mahlo_end_length=current_length, mahlo_start_length=current_length,
-                                                    lam_num=self.lam_num)
-                popup = self.parent.popup_frame  # TODO: replace this with a passed in method call
-                popup.check_for_new_defects()
+
+            # create a new defect in the database, get the popup frame, tell it to update
+            thist = self.winfo_toplevel()._thist
+            lot_num = thist.current_lot_number()
+            current_length = thist.current_mahlo_length()
+            new_defect = DefectModel.new_defect(source_lot_number=lot_num, record_creation_source='operator',
+                                                mahlo_end_length=current_length, mahlo_start_length=current_length,
+                                                lam_num=self.lam_num)
+            popup = self.parent.popup_frame  # TODO: replace this with a passed in method call
+            popup.check_for_new_defects()
 
         # add a new defect button
         self.add_defect_button = tk.ttk.Button(self, text='New defect', command=add_new_defect)

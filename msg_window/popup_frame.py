@@ -79,8 +79,7 @@ class DefectMessageFrame(ScrolledFrame):
     def check_for_new_defects(self, retry_num=0):
         """Check the database for new defects, if there are add new panels."""
         try:
-            with self.parent.flask_app.app_context():
-                new_defs = DefectModel.find_new(lam_number=self.lam_num)
+            new_defs = DefectModel.find_new(lam_number=self.lam_num)
             lg.debug('new defects: %s', new_defs)
             for defect in new_defs:
                 if defect not in self.current_defects:
