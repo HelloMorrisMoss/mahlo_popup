@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 import flask
 import waitress
@@ -85,6 +86,7 @@ def schedule_queue_watcher(in_message_queue, out_message_queue):
 
     from apscheduler.schedulers.background import BackgroundScheduler
     scheduler = BackgroundScheduler(daemon=True, timezone='America/New_York')
+    logging.getLogger('apscheduler').setLevel(logging.WARNING)  # don't need to know everything the daemon does
     scheduler.add_job(regular_check_function, 'interval', seconds=10)
     scheduler.start()
 
