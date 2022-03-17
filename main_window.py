@@ -268,7 +268,6 @@ class MainWindow(tk.Tk):
         window_not_focus = self.focus_displayof() is None  # so pressing buttons doesn't hide the window
         window_visible = self.winfo_viewable()  # so
         proceed = (event_is_none or window_not_focus) and window_visible
-        lg.debug(f'{event=} {window_not_focus=} {proceed=} {self._auto_hide=}')
 
         if proceed:
             if self._hide_option.get() == 'v':
@@ -331,7 +330,6 @@ class MainWindow(tk.Tk):
     def ensure_on_top(self, repeat=False):
         """Check if the window is visible,if not, bring it to the front."""
 
-        lg.debug('on topping')
         self.deiconify()
         window_topmost(self)
         self.focus_get()

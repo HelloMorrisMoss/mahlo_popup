@@ -48,15 +48,13 @@ def start_flask_app(in_message_queue=None, out_message_queue=None):
             queues.out_message_queue = out_message_queue
             g.in_message_queue = in_message_queue
             g.out_message_queue = out_message_queue
-            # g.out_message_queue.append({'flask_app': app})
             schedule_queue_watcher(in_message_queue, out_message_queue)
-            lg.debug('flask app sent by message queue')
     else:
         lg.warning('No inbound defect_instance queue!')
 
     fsa.init_app(app)
 
-    host = '0.0.0.0'
+    host = '0.0.0.0'  # accessible to outside connections
     port = 5000
     waitress.serve(app, host=host, port=port, threads=2)
     lg.debug('after waitress!')

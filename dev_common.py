@@ -4,21 +4,25 @@ import sys
 import tkinter
 import tkinter as tk
 from tkinter import ttk
+from typing import Type, TypeVar
 
 from log_setup import lg
 
 
-def recurse_tk_structure(obj: tk.Widget, name='starting_level', indent=0, print_structure=True, apply_function=None,
-                         apply_args=([], {})):
-    """Recursively move down the nested tkinter objects by their 'children' attribute, printing the structure.
+def recurse_tk_structure(obj: tk.Widget, name='starting_level', indent=0, print_structure: callable = print,
+                         apply_function=None, apply_args: tuple = ([], {})):
+    """Recursively move down the nested tkinter objects by their 'children' attribute, acting on all of them.
 
-    :param apply_function:
-    :param apply_args:
-    :param function:
-    :param obj: tkinter object.
+    By default will print the structure to the console.
+
+    :param obj: Type[tkinter.Misc], the top of the tk object tree to start the recursion. A window or widget.
     :param name: the 'key' from the next level up dict for this object.
     :param indent: how far to indent the print statement.
+    :param print_structure: callable, default is builtins.print, how to print or log the structure. False to turn off.
+    :param apply_function: callable, (optional) a function to apply to the object.
+    :param apply_args: tuple, (optional) contains the args and kwargs to pass to the apply_function. Ex: ([], {})
     """
+
     if print_structure:
         ind_space = ' ' * indent
         print(f'{ind_space}{name} - {obj}: ')
@@ -33,15 +37,18 @@ def recurse_tk_structure(obj: tk.Widget, name='starting_level', indent=0, print_
         print(f'{ind_space}leaf - end')
 
 
-def hover_enter_factory(this_widget):
+def hover_enter_factory(this_widget: Type[tkinter.Widget]):
     """Bind a mouse-hover function to a tkinter widget to display information when hovered.
 
     :param this_widget: a tkinter widget.
     """
-    this_widget = this_widget
+
+    # TODO: double check the late binding stuff in here; I think this built to check for late binding
+    this_widget = this_widget  # this might have been here to protect against late binding, still needed?
     winfo = this_widget.grid_info()
 
     def set_loc_label(event, this_widget):
+        # I think this was checking whether late binding had caused a mismatch in widgets
         event_widget = event.widget
         print(this_widget, event_widget, winfo)
 
@@ -128,7 +135,11 @@ def style_component(component, path_override=''):
     component._wgt_styles = {'toggle': 'Switch.TCheckbutton', 'labelframe': 'Card.TFrame'}
 
 
-def window_topmost(window: tkinter.Toplevel, set_to=True, lift=True):
+# for type hinting for either Toplevel or subclasses
+tkToplevel = TypeVar('tkToplevel', bound=tkinter.Toplevel)
+
+
+def window_topmost(window: tkToplevel, set_to=True, lift=True):
     """Set a tkinter window to remain on top of other windows when losing focus to them and lift to the top.
 
     :param window: tkinter.TopLevel, the window to work on.
