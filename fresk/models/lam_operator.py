@@ -1,6 +1,6 @@
 import sqlalchemy as fsa
 
-from fresk.helpers import jsonizable
+from fresk.helpers import jsonize_sqla_model
 from fresk.sqla_instance import Base
 from log_setup import lg
 
@@ -61,7 +61,7 @@ class OperatorModel(Base):
         return cls.query.filter(cls.initials == initials).all()
 
     def jsonizable(self):
-        return jsonizable(self)
+        return jsonize_sqla_model(self)
 
     def save_to_database(self):
         """Save the changed to defect to the database."""

@@ -22,25 +22,24 @@ class Timestamp(TypeDecorator):
         return datetime.datetime.fromisoformat(value)
 
 
-def jsonizable(model):
+def jsonize_sqla_model(model):
     """Get a json serializable representation of the SQLAlchemy Model instance.
 
     This is needed due to datetimes, they are converted to ISO 8601 format strings.
 
     :return: dict
     """
-    from sqlalchemy.orm.state import InstanceState
 
     jdict = {}
-    for key, this_val in model.__dict__.items():
-        # this_val = getattr(model, key)
+    for key in model.__table__.columns.keys():
+        this_val = getattr(model, key)
         if isinstance(this_val, datetime.datetime):
             try:
                 this_val = this_val.isoformat()
             except AttributeError as er:
                 this_val = str(this_val)
-        elif not isinstance(this_val, InstanceState):
-            jdict[key] = this_val
+
+        jdict[key] = this_val
     return jdict
 
 

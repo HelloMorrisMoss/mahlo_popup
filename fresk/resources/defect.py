@@ -1,7 +1,7 @@
 from flask_restful import reqparse, Resource
 
 from fresk.defect_args import all_args, arg_type_dict
-from fresk.helpers import jsonizable, remove_empty_parameters
+from fresk.helpers import jsonize_sqla_model, remove_empty_parameters
 from fresk.models.defect import DefectModel
 from log_setup import lg
 
@@ -15,12 +15,10 @@ class Defect(Resource):
     def get(self):
 
         data = self.defect_parser.parse_args()
-        from pprint import pprint
-        pprint(data)
         id_ = data.get('id')
         lg.debug('id from data: %s', id_)
         if id_:
-            defect = DefectModel
+            defect = DefectModel.find_by_id(id_)
 
             if defect:
                 return defect.jsonizable(), 200
@@ -69,12 +67,10 @@ class Defect(Resource):
 
 class DefectList(Resource):
     parser = reqparse.RequestParser()
-    #
     parser.add_argument('confirm_all', type=bool, required=False, help='This argument is optional.')
     parser.add_argument('start_date', type=str, required=False, help='Defects with start dates after this. (optional)')
     parser.add_argument('end_date', type=str, required=False, help='Defects with end dates before this. (optional)')
 
-    # results = DefectModel.query.filter('entry_created_ts' != 'entry_modified_ts').all()
     def get(self):
         pargs = self.parser.parse_args()
         start_date = pargs.get('start_date')
@@ -86,7 +82,7 @@ class DefectList(Resource):
                 DefectModel.id.desc()).all()
         result_dict = {}
         for row in results:
-            result_dict[row.id] = jsonizable(row)
+            result_dict[row.id] = jsonize_sqla_model(row)
         return result_dict, 200
 
     def put(self):

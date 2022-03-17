@@ -16,7 +16,6 @@ class Operator(Resource):
     def get(self):
         """Get a response with the json representation of the operators."""
         data = self.defect_parser.parse_args()
-        from pprint import pprint
         lam_num = data.get('lam_number')
 
         if lam_num:
@@ -28,7 +27,6 @@ class Operator(Resource):
                 ops_list = []
                 for op in ops:
                     ops_list.append(op.jsonizable())
-                pprint(ops_list)
                 return ops_list, 200
             else:
                 return {'operator': f'No operators found'}, 404
