@@ -1,3 +1,4 @@
+"""Contains the logger setup and a simple script to read the log file into a pandas dataframe."""
 import logging
 import sys
 
@@ -62,5 +63,17 @@ def setup_logger():
     return logr
 
 
-# protect against multiple loggers from importing in multiple files
-lg = setup_logger() if not logging.getLogger().hasHandlers() else logging.getLogger()
+if __name__ != '__main__':
+    # protect against multiple loggers from importing in multiple files
+    lg = setup_logger() if not logging.getLogger().hasHandlers() else logging.getLogger()
+else:
+    import pandas as pd
+
+    column_names = ['tstamp', 'program', 'breadcrumbs', 'callable', 'line#', 'level',
+                    'message']  # + [f'col{n}' for n in range(8)]
+    ldf = pd.read_csv('untracked_config/20220321 mahlo lam1 log - mahlo_popup.log', names=column_names)
+    col_name = 'tstamp'
+    ldf = ldf[len(ldf) - 5000::]
+    ldf[col_name] = pd.to_datetime(ldf[col_name])
+
+    ldf = ldf[ldf['tstamp'] > '2022-03-18']
