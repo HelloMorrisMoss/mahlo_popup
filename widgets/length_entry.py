@@ -1,8 +1,9 @@
-"""Contains a frame containing an entry with a number pad for a numeric value and buttons to change the values."""
+f"""Contains a frame containing an entry with a number pad for a numeric value and buttons to change the values."""
 
 import tkinter as tk
 
 from log_setup import lg
+from widgets.helpers import get_current_length
 from widgets.numpad_entry import NumpadEntry
 
 
@@ -70,6 +71,16 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
         self.down_label = tk.ttk.Label(self.down_frame, text='-')
         self.down_label.config(font=(None, 14))
         self.down_label.grid(row=80, column=10, columnspan=col_span)
+
+        # current length button
+        self.columnconfigure(10, weight=1)
+        self.current_length_button = tk.ttk.Button(self, text='current length',
+                                                   command=self.set_to_current_length)
+        self.current_length_button.grid(row=100, column=10, columnspan=3)
+
+    def set_to_current_length(self):
+        cur_len = get_current_length(self)
+        self.length_entry.numpad.replace_all(cur_len)
 
     def update_length(self, *args):
         """Update the label and ud_defect value. TODO: pull the ud_defect parts out of here, make this publish -->

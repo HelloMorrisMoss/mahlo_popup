@@ -4,6 +4,8 @@ import tkinter as tk
 import tkinter.ttk
 from tkinter import ttk
 
+from widgets.helpers import get_current_length
+
 
 class NumpadEntry(ttk.Entry):
     """A tkinter.ttk.Entry that, when double_clicked, will show a number pad to edit the value."""
@@ -24,6 +26,8 @@ class NumpadEntry(ttk.Entry):
         self._last_button_pressed = 'None'
         self.textvariable.trace_add('write', self._add_to_undo_list)
         self._undoing = False
+        self.numpad = self.instantiate_numpad()
+        self.numpad.close_numpad()
 
     def _add_to_undo_list(self, *args):
         if not self._undoing:
@@ -75,9 +79,13 @@ class NumpadEntry(ttk.Entry):
         # save and clear the current value
         self._previous_value = self.get()
 
+        self.instantiate_numpad()
+        self.after(10, lambda: self.selection_clear())
+
+    def instantiate_numpad(self):
         np = NumberPad(self)
         np.place(in_=self, relx=0, rely=1)
-        self.after(10, lambda: self.selection_clear())
+        return np
 
 
 class NumberPad(tk.ttk.Frame):
@@ -146,8 +154,8 @@ class NumberPad(tk.ttk.Frame):
             datetime.datetime.today()
             self.replace_all(datetime.datetime.today().isoformat()[:10].replace('-', ''))
         elif label == 'length':
-            thist = self.winfo_toplevel()._thist
-            self.replace_all(thist.current_mahlo_length())
+            cur_length = get_current_length(self)
+            self.replace_all(cur_length)
         else:
             # todo: if text is selected, replace selected text with label
             self._entry.insert(current_cursor_index, label)

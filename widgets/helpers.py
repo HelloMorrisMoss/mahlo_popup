@@ -33,3 +33,15 @@ class WhereWidget:
 
 	def __str__(self):
 		return pformat(self.__dict__)
+
+
+def get_current_length(self):
+	"""Get the current length from the database.
+
+    :param self: a widget in the tree from the MainWindow.
+    :return: float, the length
+    """
+
+	thist = self.winfo_toplevel()._thist
+	cur_length = thist.current_mahlo_length()
+	return cur_length
