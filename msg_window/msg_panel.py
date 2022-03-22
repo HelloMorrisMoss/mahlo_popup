@@ -6,7 +6,7 @@ from tkinter import ttk
 
 import sqlalchemy.exc
 
-from dev_common import StrCol
+from dev_common import dt_to_shift, StrCol
 from fresk.models.lam_operator import OperatorModel
 from log_setup import lg
 from msg_window.defect_attributes import DefectTypePanel, HorizontalNumButtonSelector, LengthSetFrames, LotNumberEntry
@@ -204,7 +204,7 @@ class MessagePanel(tk.ttk.LabelFrame):
             lg.debug('IndexError fetching operator from database. Check selected operator.')
             top_level_win.event_generate('<<OperatorNotFound>>')
             return
-        self.defect_interface.shift_number = top_level_win.current_shift
+        self.defect_interface.shift_number = dt_to_shift(self.defect_interface.defect_start_ts)
         self.defect_interface.operator_initials = operator_db.initials
         self.defect_interface.operator_list_id = operator_db.id
         self.defect_interface.save_to_database()

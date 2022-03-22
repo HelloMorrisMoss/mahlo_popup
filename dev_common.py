@@ -1,4 +1,5 @@
 """For development helpers, in their own module to avoid circular imports and keep things organized."""
+import datetime
 import os
 import sys
 import tkinter
@@ -150,6 +151,25 @@ def window_topmost(window: tkToplevel, set_to=True, lift=True):
     window.attributes('-topmost', set_to)
     if lift:
         window.lift()
+
+
+def dt_to_shift(dtime: datetime.datetime):
+    """Convert a datetime.datetime to the shift that it would correspond to.
+
+    :param dtime: datetime.datetime
+    :return: int, the shift
+    """
+
+    now = dtime
+    seconds_since_midnight = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
+    if seconds_since_midnight < 26_100:
+        return 3
+    elif seconds_since_midnight < 54_900:
+        return 1
+    elif seconds_since_midnight < 83_700:
+        return 2
+    else:
+        return 3
 
 
 def touch(file_path):
