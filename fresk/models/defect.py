@@ -1,7 +1,6 @@
 import datetime
 
 import sqlalchemy
-import sqlalchemy as fsa
 from sqlalchemy import func
 
 from dev_common import exception_one_line
@@ -15,40 +14,42 @@ class DefectModel(Base):
     """A SQLalchemy model for the defect removal record database."""
     __tablename__ = 'laminator_foam_defect_removal_records'
 
-    id = fsa.Column(fsa.Integer, primary_key=True)
-    source_lot_number = fsa.Column(fsa.String, default='')
-    tabcode = fsa.Column(fsa.String, default='')
-    recipe = fsa.Column(fsa.String, default='')
-    lam_num = fsa.Column(fsa.Integer, default=0)
-    file_name = fsa.Column(fsa.String, server_default='')
-    flagger_fire = fsa.Column(fsa.TIMESTAMP(timezone=True))
-    rolls_of_product_post_slit = fsa.Column(fsa.Integer, default=3)
-    defect_start_ts = fsa.Column(fsa.TIMESTAMP(timezone=True), server_default=sqlalchemy.func.now())
-    defect_end_ts = fsa.Column(fsa.TIMESTAMP(timezone=True), server_default=sqlalchemy.func.now())
-    length_of_defect_meters = fsa.Column(fsa.Float(precision=2), server_default='0.0')
-    mahlo_start_length = fsa.Column(fsa.Float(precision=2), server_default='0.0')
-    mahlo_end_length = fsa.Column(fsa.Float(precision=2), server_default='0.0')
+    # for use below and elsewhere to set a column to the database's current timestamp
+    db_current_ts = func.current_timestamp()
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    source_lot_number = sqlalchemy.Column(sqlalchemy.String, default='')
+    tabcode = sqlalchemy.Column(sqlalchemy.String, default='')
+    recipe = sqlalchemy.Column(sqlalchemy.String, default='')
+    lam_num = sqlalchemy.Column(sqlalchemy.Integer, default=0)
+    file_name = sqlalchemy.Column(sqlalchemy.String, server_default='')
+    flagger_fire = sqlalchemy.Column(sqlalchemy.TIMESTAMP(timezone=True))
+    rolls_of_product_post_slit = sqlalchemy.Column(sqlalchemy.Integer, default=3)
+    defect_start_ts = sqlalchemy.Column(sqlalchemy.TIMESTAMP(timezone=True), server_default=db_current_ts)
+    defect_end_ts = sqlalchemy.Column(sqlalchemy.TIMESTAMP(timezone=True), server_default=db_current_ts)
+    length_of_defect_meters = sqlalchemy.Column(sqlalchemy.Float(precision=2), server_default='0.0')
+    mahlo_start_length = sqlalchemy.Column(sqlalchemy.Float(precision=2), server_default='0.0')
+    mahlo_end_length = sqlalchemy.Column(sqlalchemy.Float(precision=2), server_default='0.0')
 
     # reason for removal
-    defect_type = fsa.Column(fsa.VARCHAR(13), server_default='''thickness''')
+    defect_type = sqlalchemy.Column(sqlalchemy.VARCHAR(13), server_default='''thickness''')
 
     # the section removed
-    rem_l = fsa.Column(fsa.Boolean, server_default='''False''')
-    rem_lc = fsa.Column(fsa.Boolean, server_default='''False''')
-    rem_c = fsa.Column(fsa.Boolean, server_default='''False''')
-    rem_rc = fsa.Column(fsa.Boolean, server_default='''False''')
-    rem_r = fsa.Column(fsa.Boolean, server_default='''False''')
+    rem_l = sqlalchemy.Column(sqlalchemy.Boolean, server_default='''False''')
+    rem_lc = sqlalchemy.Column(sqlalchemy.Boolean, server_default='''False''')
+    rem_c = sqlalchemy.Column(sqlalchemy.Boolean, server_default='''False''')
+    rem_rc = sqlalchemy.Column(sqlalchemy.Boolean, server_default='''False''')
+    rem_r = sqlalchemy.Column(sqlalchemy.Boolean, server_default='''False''')
     # TODO: these timestamps are being set to model(table) creation time, unlike the ones above
-    entry_created_ts = fsa.Column(fsa.DateTime(timezone=True), server_default=sqlalchemy.func.now())
-    entry_modified_ts = fsa.Column(fsa.DateTime(timezone=True), server_default=sqlalchemy.func.now())
-    record_creation_source = fsa.Column(fsa.String(), server_default='')
-    marked_for_deletion = fsa.Column(fsa.Boolean, server_default='''False''')
-    operator_saved_time = fsa.Column(fsa.DateTime(timezone=True))
-    operator_initials = fsa.Column(fsa.String)
-    operator_list_id = fsa.Column(fsa.Integer)
-    shift_number = fsa.Column(fsa.Integer)
-
-    flask_sqlalchemy_instance = fsa
+    entry_created_ts = sqlalchemy.Column(sqlalchemy.DateTime(timezone=True), server_default=db_current_ts)
+    entry_modified_ts = sqlalchemy.Column(sqlalchemy.DateTime(timezone=True), server_default=db_current_ts,
+                                          onupdate=db_current_ts)
+    record_creation_source = sqlalchemy.Column(sqlalchemy.String(), server_default='')
+    marked_for_deletion = sqlalchemy.Column(sqlalchemy.Boolean, server_default='''False''')
+    operator_saved_time = sqlalchemy.Column(sqlalchemy.DateTime(timezone=True))
+    operator_initials = sqlalchemy.Column(sqlalchemy.String)
+    operator_list_id = sqlalchemy.Column(sqlalchemy.Integer)
+    shift_number = sqlalchemy.Column(sqlalchemy.Integer)
 
     def __init__(self, **kwargs):
         # for the kwargs provided, assign them to the corresponding columns
@@ -68,7 +69,7 @@ class DefectModel(Base):
         id_df = cls.query.filter_by(id=id_).first()
         if get_sqalchemy:
             lg.debug('returning with sqlalchemy')
-            return id_df, fsa
+            return id_df, sqlalchemy
         return id_df
 
     @classmethod
@@ -108,8 +109,7 @@ class DefectModel(Base):
         """
         unconfirmed = cls.find_new()
         for defect in unconfirmed:
-            defect.operator_saved_time = func.now()
-            defect.entry_modified_ts = func.now()
+            defect.operator_saved_time = defect.db_current_ts
             defect.save_to_database()
 
     @classmethod
@@ -134,14 +134,12 @@ class DefectModel(Base):
 
     def save_to_database(self):
         """Save the changed to defect to the database."""
-        # fsa.session.add(self)
+
         self.scoped_session.add(self)
         try:
             self.scoped_session.commit()
-            # fsa.session.commit()
         except Exception as exc:
             lg.error(exception_one_line(exception_obj=exc))
-            # fsa.rollback()
             self.scoped_session.rollback()
 
     def get_model_dict(self):

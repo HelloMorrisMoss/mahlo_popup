@@ -186,8 +186,8 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         lg.debug('Saving defect record: %s', self.defect_interface)
         now_ts = datetime.now()  # todo: make this part of .save_to_database and use the database time
-        self.defect_interface.entry_modified_ts = now_ts
-        self.defect_interface.operator_saved_time = now_ts
+        # self.defect_interface.entry_modified_ts = self.defect_interface.db_now
+        self.defect_interface.operator_saved_time = self.defect_interface.db_current_ts
 
         # get the operator name
         top_level_win = self.winfo_toplevel()
@@ -208,6 +208,7 @@ class MessagePanel(tk.ttk.LabelFrame):
         self.defect_interface.operator_initials = operator_db.initials
         self.defect_interface.operator_list_id = operator_db.id
         self.defect_interface.save_to_database()
+        self.defect_interface.scoped_session.remove()
         self.current_defects.pop(self.current_defects.index(self.defect_interface))
         self.destroy()
 
