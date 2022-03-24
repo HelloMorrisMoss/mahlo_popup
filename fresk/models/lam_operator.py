@@ -58,9 +58,7 @@ class OperatorModel(Base):
             certified_lam_dict = {1: OperatorModel.lam_1_certified, 2: OperatorModel.lam_2_certified}
             certified_lam_dict[0] = certified_lam_dict[1]  # for development
             lam_column_dict = certified_lam_dict[lam_number]
-            ops = cls.query.filter(OperatorModel.date_removed == None).filter(lam_column_dict).all()
-            cls.scoped_session.remove()
-            return ops
+            return cls.query.filter(OperatorModel.date_removed == None).filter(lam_column_dict).all()
 
     @classmethod
     def check_for_initials(cls, initials):
