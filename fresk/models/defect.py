@@ -123,6 +123,7 @@ class DefectModel(Base):
         :param kwargs: dict, of kwargs['column_name'] = 'value to use'
         :return: DefectModel
         """
+
         new_def = DefectModel(**kwargs)
         new_def.save_to_database()
         return new_def
@@ -145,6 +146,7 @@ class DefectModel(Base):
         except Exception as exc:
             lg.error(exception_one_line(exception_obj=exc))
             self.scoped_session.rollback()
+            raise exc
 
     def get_model_dict(self):
         """Get a dictionary of {column_name: value}

@@ -189,8 +189,8 @@ class MessagePanel(tk.ttk.LabelFrame):
         # get the operator name
         top_level_win = self.winfo_toplevel()
         self.defect_interface.shift_number = dt_to_shift(self.defect_interface.defect_start_ts)
-        self.defect_interface.operator_initials = top_level_win.current_operator_initials
-        self.defect_interface.operator_list_id = top_level_win.current_operator_id
+        # self.defect_interface.operator_initials = top_level_win.current_operator_initials.get()
+        # self.defect_interface.operator_list_id = top_level_win.current_operator_id.get()
         self.defect_interface.save_to_database()
         self.defect_interface.scoped_session.remove()
         self.current_defects.pop(self.current_defects.index(self.defect_interface))

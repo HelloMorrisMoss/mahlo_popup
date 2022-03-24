@@ -4,12 +4,9 @@ import tkinter
 import tkinter as tk
 from tkinter import ttk
 
-import sqlalchemy
-
 from dev_common import add_show_messages_button, blank_up, exception_one_line, recurse_hover, recurse_tk_structure, \
     restart_program, style_component, window_topmost
 from fresk.models.defect import DefectModel
-from fresk.models.lam_operator import OperatorModel
 from log_setup import lg
 from msg_window.popup_frame import DefectMessageFrame
 from scada_tag_query import TagHistoryConnector
@@ -82,31 +79,32 @@ class MainWindow(tk.Tk):
         self.columnconfigure(0, weight=1)  # to make the button able to fill the width
         self.rowconfigure(0, weight=1)  # to make the button able to fill the height
 
-        # operator
-        self.current_operator_name = tk.StringVar()
-        self.current_operator_initials = tk.StringVar()
-        self.current_operator_id = tk.IntVar()
-
-        def update_operator(*args):
-            op_name = self.current_operator_name.get().split(' ')
-            filter_val_first = OperatorModel.first_name == op_name[0]
-            filter_val_last = OperatorModel.last_name == op_name[1]
-            try:
-                operator_db = OperatorModel.query.filter(filter_val_first).filter(filter_val_last).all()[0]
-                self.current_operator_id = operator_db.id
-                self.current_operator_initials = operator_db.initials
-                operator_db.scoped_session.remove()
-            except sqlalchemy.exc.PendingRollbackError:
-                OperatorModel.scoped_session.rollback()
-                self.event_generate('<<OperatorNotFound>>')
-                lg.error('Rollback error trying to fetch operator data.')
-                return
-            except IndexError:
-                lg.debug('IndexError fetching operator from database. Check selected operator.')
-                self.event_generate('<<OperatorNotFound>>')
-                return
-
-        self.current_operator_name.trace_add('write', update_operator)
+        # # operator
+        # self.current_operator_name = tk.StringVar()
+        # self.current_operator_initials = tk.StringVar()
+        # self.current_operator_id = tk.IntVar()
+        #
+        # def update_operator(*args):
+        #     op_name = self.current_operator_name.get().split(' ')
+        #     filter_val_first = OperatorModel.first_name == op_name[0]
+        #     filter_val_last = OperatorModel.last_name == op_name[1]
+        #     try:
+        #         operator_db = OperatorModel.query.filter(filter_val_first).filter(filter_val_last).all()[0]
+        #         self.current_operator_id = operator_db.id
+        #         self.current_operator_initials = operator_db.initials
+        #         operator_db.scoped_session.remove()
+        #     except sqlalchemy.exc.PendingRollbackError:
+        #         OperatorModel.scoped_session.rollback()
+        #         self.event_generate('<<OperatorNotFound>>')
+        #         lg.error('Rollback error trying to fetch operator data.')
+        #         return
+        #     except IndexError:
+        #         lg.debug('IndexError fetching operator from database. Check selected operator.')
+        #         self.event_generate('<<OperatorNotFound>>')
+        #         return
+        #
+        # self.current_operator_name.trace_add('write', update_operator)
+        self.current_operator_name = None  # dummy
 
         # the buttons that aren't for a specific popup (add, settings, etc)
         self.controls_panel = IndependentControlsPanel(self, 'Control Panel', hide_option=self._hide_option,
@@ -424,45 +422,45 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
             self._ghost_fader.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
                                    pady=self.pad['y'])
 
-        # drop down to select the current operator
-        active_operators_this_lam = OperatorModel.get_active_operators(self.lam_num)
-        operator_names = [(op.first_name, op.last_name) for op in active_operators_this_lam]
-        operator_name_list = sorted([' '.join((fn, ln)) for (fn, ln) in operator_names])
-        self._default_operator = 'NO OPERATOR'
-        operator_name_list = [self._default_operator] + operator_name_list
-
-        self.operator_selector = ttk.OptionMenu(self, self.current_operator, *operator_name_list, direction='above')
-        self.operator_selector.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
-                                    pady=self.pad['y'])
-
-        # in case an operator is not selected, a flashing warning label
-        self.select_operator_label = ttk.Label(self, text='Please select an operator.', background='#ffcc00',
-                                               foreground='#000000')
-        self.select_operator_label.grid(row=3, column=self.next_column())
-        self.select_operator_label.grid_remove()
-
-        self.blinks = 5
-        self.blink_count = 0
-
-        def flash_select_label_on(*args):
-            if self.blink_count < self.blinks:
-                self.blink_count += 1
-                self.select_operator_label.grid()
-                self.after(1000, flash_select_label_off)
-            else:
-                self.blink_count = 0
-
-        def flash_select_label_off(*args):
-            self.select_operator_label.grid_remove()
-            self.after(1000, flash_select_label_on)
-
-        toplevel.bind('<<OperatorNotFound>>', flash_select_label_on)
-
-        # to reset the operator on shift change
-        def reset_operator_selection(*args):
-            self.current_operator.set(self._default_operator)
-
-        toplevel.bind('<<ShiftChange>>', reset_operator_selection)
+        # # drop down to select the current operator
+        # active_operators_this_lam = OperatorModel.get_active_operators(self.lam_num)
+        # operator_names = [(op.first_name, op.last_name) for op in active_operators_this_lam]
+        # operator_name_list = sorted([' '.join((fn, ln)) for (fn, ln) in operator_names])
+        # self._default_operator = 'NO OPERATOR'
+        # operator_name_list = [self._default_operator] + operator_name_list
+        #
+        # self.operator_selector = ttk.OptionMenu(self, self.current_operator, *operator_name_list, direction='above')
+        # self.operator_selector.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
+        #                             pady=self.pad['y'])
+        #
+        # # in case an operator is not selected, a flashing warning label
+        # self.select_operator_label = ttk.Label(self, text='Please select an operator.', background='#ffcc00',
+        #                                        foreground='#000000')
+        # self.select_operator_label.grid(row=3, column=self.next_column())
+        # self.select_operator_label.grid_remove()
+        #
+        # self.blinks = 5
+        # self.blink_count = 0
+        #
+        # def flash_select_label_on(*args):
+        #     if self.blink_count < self.blinks:
+        #         self.blink_count += 1
+        #         self.select_operator_label.grid()
+        #         self.after(1000, flash_select_label_off)
+        #     else:
+        #         self.blink_count = 0
+        #
+        # def flash_select_label_off(*args):
+        #     self.select_operator_label.grid_remove()
+        #     self.after(1000, flash_select_label_on)
+        #
+        # toplevel.bind('<<OperatorNotFound>>', flash_select_label_on)
+        #
+        # # to reset the operator on shift change
+        # def reset_operator_selection(*args):
+        #     self.current_operator.set(self._default_operator)
+        #
+        # toplevel.bind('<<ShiftChange>>', reset_operator_selection)
 
         # restart the program button
         self.restart_button = ttk.Button(self, text='Restart', command=restart_program)
