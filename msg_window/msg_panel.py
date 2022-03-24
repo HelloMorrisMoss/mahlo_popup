@@ -4,10 +4,7 @@ import tkinter as tk
 from datetime import datetime
 from tkinter import ttk
 
-import sqlalchemy.exc
-
 from dev_common import dt_to_shift, StrCol
-from fresk.models.lam_operator import OperatorModel
 from log_setup import lg
 from msg_window.defect_attributes import DefectTypePanel, HorizontalNumButtonSelector, LengthSetFrames, LotNumberEntry
 from widgets.roll_removed_toggles import RollRemovedToggles
@@ -191,22 +188,9 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         # get the operator name
         top_level_win = self.winfo_toplevel()
-        op_name = top_level_win.current_operator.get().split(' ')
-        filter_val_first = OperatorModel.first_name == op_name[0]
-        filter_val_last = OperatorModel.last_name == op_name[1]
-        try:
-            operator_db = OperatorModel.query.filter(filter_val_first).filter(filter_val_last).all()[0]
-        except sqlalchemy.exc.PendingRollbackError:
-            OperatorModel.scoped_session.rollback()
-            lg.error('Rollback error trying to fetch operator data.')
-            return
-        except IndexError:
-            lg.debug('IndexError fetching operator from database. Check selected operator.')
-            top_level_win.event_generate('<<OperatorNotFound>>')
-            return
         self.defect_interface.shift_number = dt_to_shift(self.defect_interface.defect_start_ts)
-        self.defect_interface.operator_initials = operator_db.initials
-        self.defect_interface.operator_list_id = operator_db.id
+        self.defect_interface.operator_initials = top_level_win.current_operator_initials
+        self.defect_interface.operator_list_id = top_level_win.current_operator_id
         self.defect_interface.save_to_database()
         self.defect_interface.scoped_session.remove()
         self.current_defects.pop(self.current_defects.index(self.defect_interface))

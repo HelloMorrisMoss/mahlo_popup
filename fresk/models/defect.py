@@ -2,11 +2,12 @@ import datetime
 
 import sqlalchemy
 from sqlalchemy import func
+from sqlalchemy.orm.scoping import scoped_session
 
 from dev_common import exception_one_line
 from fresk.defect_args import all_args
 from fresk.helpers import jsonize_sqla_model
-from fresk.sqla_instance import Base
+from fresk.sqla_instance import Base, local_session
 from log_setup import lg
 
 
@@ -50,6 +51,9 @@ class DefectModel(Base):
     operator_initials = sqlalchemy.Column(sqlalchemy.String)
     operator_list_id = sqlalchemy.Column(sqlalchemy.Integer)
     shift_number = sqlalchemy.Column(sqlalchemy.Integer)
+
+    scoped_session = scoped_session(local_session)
+    query = scoped_session.query_property()
 
     def __init__(self, **kwargs):
         # for the kwargs provided, assign them to the corresponding columns

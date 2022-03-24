@@ -12,7 +12,7 @@ from fresk.resources.defect import Defect, DefectList
 from fresk.resources.lam_operator import Operator
 from fresk.resources.signal_popup import Popup
 from fresk.routing import routes_blueprint
-from fresk.sqla_instance import fsa, Session
+from fresk.sqla_instance import fsa
 from log_setup import lg
 from untracked_config.db_uri import DATABASE_URI
 
@@ -91,7 +91,11 @@ def schedule_queue_watcher(in_message_queue, out_message_queue):
 
 @app.teardown_appcontext
 def cleanup(resp_or_exc):
-    Session.remove()
+    # Session.remove()
+    from fresk.models.defect import DefectModel
+    DefectModel.scoped_session.remove()
+    from fresk.models.lam_operator import OperatorModel
+    OperatorModel.scoped_session.remove()
 
 
 if __name__ == '__main__':

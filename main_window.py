@@ -4,6 +4,8 @@ import tkinter
 import tkinter as tk
 from tkinter import ttk
 
+import sqlalchemy
+
 from dev_common import add_show_messages_button, blank_up, exception_one_line, recurse_hover, recurse_tk_structure, \
     restart_program, style_component, window_topmost
 from fresk.models.defect import DefectModel
@@ -81,14 +83,37 @@ class MainWindow(tk.Tk):
         self.rowconfigure(0, weight=1)  # to make the button able to fill the height
 
         # operator
-        self.current_operator = tk.StringVar()
+        self.current_operator_name = tk.StringVar()
+        self.current_operator_initials = tk.StringVar()
+        self.current_operator_id = tk.IntVar()
+
+        def update_operator(*args):
+            op_name = self.current_operator_name.get().split(' ')
+            filter_val_first = OperatorModel.first_name == op_name[0]
+            filter_val_last = OperatorModel.last_name == op_name[1]
+            try:
+                operator_db = OperatorModel.query.filter(filter_val_first).filter(filter_val_last).all()[0]
+                self.current_operator_id = operator_db.id
+                self.current_operator_initials = operator_db.initials
+                operator_db.scoped_session.remove()
+            except sqlalchemy.exc.PendingRollbackError:
+                OperatorModel.scoped_session.rollback()
+                self.event_generate('<<OperatorNotFound>>')
+                lg.error('Rollback error trying to fetch operator data.')
+                return
+            except IndexError:
+                lg.debug('IndexError fetching operator from database. Check selected operator.')
+                self.event_generate('<<OperatorNotFound>>')
+                return
+
+        self.current_operator_name.trace_add('write', update_operator)
 
         # the buttons that aren't for a specific popup (add, settings, etc)
         self.controls_panel = IndependentControlsPanel(self, 'Control Panel', hide_option=self._hide_option,
                                                        grid_pad=self.pad, autohide_var=self._auto_hide,
                                                        autoshow_var=self._auto_show, ghost_hide=self._ghost_hide,
                                                        lam_num_controls=self.lam_num,
-                                                       current_operator=self.current_operator,
+                                                       current_operator=self.current_operator_name,
                                                        )
         self.controls_panel.grid(row=2, column=0, sticky='we')
         self.hideables.append(self.controls_panel)

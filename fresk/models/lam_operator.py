@@ -1,7 +1,8 @@
 import sqlalchemy as fsa
+from sqlalchemy.orm.scoping import scoped_session
 
 from fresk.helpers import jsonize_sqla_model
-from fresk.sqla_instance import Base
+from fresk.sqla_instance import Base, local_session
 from log_setup import lg
 
 
@@ -19,6 +20,9 @@ class OperatorModel(Base):
     date_removed = fsa.Column(fsa.TIMESTAMP(timezone=True))
 
     flask_sqlalchemy_instance = fsa
+
+    scoped_session = scoped_session(local_session)
+    query = scoped_session.query_property()
 
     def __init__(self, **kwargs):
         # for the kwargs provided, assign them to the corresponding columns
