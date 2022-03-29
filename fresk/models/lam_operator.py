@@ -1,11 +1,11 @@
 import sqlalchemy as fsa
 
 from fresk.helpers import jsonize_sqla_model
-from fresk.sqla_instance import Base, SelfSessionBase
+from fresk.sqla_instance import Base
 from log_setup import lg
 
 
-class OperatorModel(Base, SelfSessionBase):
+class OperatorModel(Base):
     """A sqlalchemy model for laminator operators."""
     __tablename__ = 'lam_operator_list'
 

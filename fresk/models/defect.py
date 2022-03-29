@@ -6,11 +6,11 @@ from sqlalchemy import func
 from dev_common import exception_one_line
 from fresk.defect_args import all_args
 from fresk.helpers import jsonize_sqla_model
-from fresk.sqla_instance import Base, SelfSessionBase
+from fresk.sqla_instance import Base
 from log_setup import lg
 
 
-class DefectModel(Base, SelfSessionBase):
+class DefectModel(Base):
     """A SQLalchemy model for the defect removal record database."""
     __tablename__ = 'laminator_foam_defect_removal_records'
 
