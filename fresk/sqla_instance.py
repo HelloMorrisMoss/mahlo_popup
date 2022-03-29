@@ -9,19 +9,14 @@ from untracked_config.db_uri import DATABASE_URI
 
 # set up sqlalchemy
 engine = create_engine(DATABASE_URI, pool_pre_ping=True)
+local_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+Session = scoped_session(local_session)
 
-active_sessions = []
-
-
-def new_session(model_class):
-    local_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    model_class.scoped_session = scoped_session(local_session)
-
-    # add useful bits to the model_class
-    model_class.query = model_class.scoped_session.query_property()
-    model_class.sqla = sqlalchemy
-    model_class.engine = engine
-
+# add useful bits to the Base
+Base.scoped_session = Session
+Base.query = Base.scoped_session.query_property()
+Base.sqla = sqlalchemy
+Base.engine = engine
 
 fsa = flask_sqlalchemy.SQLAlchemy()

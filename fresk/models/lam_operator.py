@@ -1,7 +1,7 @@
 import sqlalchemy as fsa
 
 from fresk.helpers import jsonize_sqla_model
-from fresk.sqla_instance import Base, new_session
+from fresk.sqla_instance import Base
 from log_setup import lg
 
 
@@ -68,8 +68,6 @@ class OperatorModel(Base):
         self.scoped_session.add(self)
         self.scoped_session.commit()
 
-
-new_session(OperatorModel)
 
 if __name__ == '__main__':
     OperatorModel.new_operator(first_name='John', last_name='Doe')
