@@ -6,7 +6,7 @@ from sqlalchemy import func
 from dev_common import exception_one_line
 from fresk.defect_args import all_args
 from fresk.helpers import jsonize_sqla_model
-from fresk.sqla_instance import Base
+from fresk.sqla_instance import Base, new_session
 from log_setup import lg
 
 
@@ -155,6 +155,8 @@ class DefectModel(Base):
     def jsonizable(self):
         return jsonize_sqla_model(self)
 
+
+new_session(DefectModel)
 
 if __name__ == '__main':
     pass
