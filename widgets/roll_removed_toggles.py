@@ -41,7 +41,9 @@ class RollRemovedToggles(tk.Frame):
         # TODO: move the 'change number of rolls selector' to be with the rolls removed
         # default to the guessed number
         # number_of_buttons = defect_interface['toggle_count_guess']
-        number_of_buttons = self.defect_interface.rolls_of_product_post_slit
+        with self.defect_interface.session() as session:
+            number_of_buttons = self.defect_interface.rolls_of_product_post_slit
+            self.defect_interface.session.remove()
 
         self.toggle_button_def_dict = self._get_toggle_definitions(number_of_buttons)
 
@@ -233,7 +235,10 @@ class RemovedToggle(ttk.Checkbutton):
         # add some custom attributes to use elsewhere, to keep track of which button is which
         setattr(self, 'state_var', btndef['params']['variable'])
         setattr(self, 'side', btn_side)
-        setattr(self, 'msg_id', self.defect_interface.id)
+        with self.defect_interface.session() as session:
+            defect_id = self.defect_interface.id
+            self.defect_interface.session.remove()
+        setattr(self, 'msg_id', defect_id)
 
         # if it is the 'all' button add the list of buttons to toggle
         if btndef.get('not_all_list') is not None:

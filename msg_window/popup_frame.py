@@ -3,6 +3,7 @@ from tkinter import ttk
 
 from ttkwidgets.frames import ScrolledFrame
 
+from dev_common import exception_one_line
 from fresk.models.defect import DefectModel
 from log_setup import lg
 from msg_window.msg_panel import MessagePanel
@@ -79,7 +80,9 @@ class DefectMessageFrame(ScrolledFrame):
     def check_for_new_defects(self, retry_num=0):
         """Check the database for new defects, if there are add new panels."""
         try:
-            new_defs = DefectModel.find_new(lam_number=self.lam_num)
+            with DefectModel.session() as session:
+                new_defs = DefectModel.find_new(lam_number=self.lam_num)
+                DefectModel.session.remove()
             lg.debug('new defects: %s', new_defs)
             for defect in new_defs:
                 if defect not in self.current_defects:
@@ -95,7 +98,7 @@ class DefectMessageFrame(ScrolledFrame):
                 raise ConnectionError('Cannot connect to database!')
             self.after(2000, self.check_for_new_defects, retry_num)
         except AttributeError as ater:
-            lg.warning('Running without flask. %s', ater)
+            lg.warning('Running without flask. %s', exception_one_line(ater))
 
     def get_message_rows(self):
         """Get a list of the rows that MessagePanels currently occupy.
