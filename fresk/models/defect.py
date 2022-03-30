@@ -6,7 +6,8 @@ from sqlalchemy import func
 from dev_common import exception_one_line
 from fresk.defect_args import all_args
 from fresk.helpers import jsonize_sqla_model
-from fresk.sqla_instance import Base
+from fresk.models.model_wrapper import ModelWrapper
+from fresk.sqla_instance import Base, new_sqla_session
 from log_setup import lg
 
 
@@ -66,10 +67,9 @@ class DefectModel(Base):
         :param get_sqalchemy: bool
         :return: DefectModel
         """
-        id_df = cls.query.filter_by(id=id_).first()
-        if get_sqalchemy:
-            lg.debug('returning with sqlalchemy')
-            return id_df, sqlalchemy
+        with new_sqla_session() as session:
+            id_df = session.query(cls).filter_by(id=id_).first()
+            id_df = ModelWrapper(id_df)
         return id_df
 
     @classmethod
