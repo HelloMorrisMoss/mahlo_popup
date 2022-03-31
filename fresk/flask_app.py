@@ -93,7 +93,7 @@ def schedule_queue_watcher(in_message_queue, out_message_queue):
 def cleanup(resp_or_exc):
     """Clean up sqlalchemy sessions."""
 
-    from sqla_instance import Session
+    from fresk.sqla_instance import Session
 
     Session.remove()
 
