@@ -75,14 +75,18 @@ class DefectList(Resource):
         pargs = self.parser.parse_args()
         start_date = pargs.get('start_date')
         end_date = pargs.get('end_date')
-        if start_date and end_date:
-            results = DefectModel.get_defects_between_dates(start_date, end_date)
-        else:
-            results = DefectModel.query.order_by(
-                DefectModel.id.desc()).all()
-        result_dict = {}
-        for row in results:
-            result_dict[row.id] = jsonize_sqla_model(row)
+        lg.info('Request for defects data received. Start: %s End: %s', start_date, end_date)
+        with DefectModel.session() as session:
+            if start_date and end_date:
+                results = DefectModel.get_defects_between_dates(start_date, end_date)
+            else:
+                results = DefectModel.query.order_by(
+                    DefectModel.id.desc()).all()
+            result_dict = {}
+            for row in results:
+                result_dict[row.id] = jsonize_sqla_model(row)
+            DefectModel.session.remove()
+        lg.debug('Returning defects data results response.')
         return result_dict, 200
 
     def put(self):

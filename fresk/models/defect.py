@@ -129,6 +129,7 @@ class DefectModel(Base):
         results = DefectModel.query. \
             filter(DefectModel.defect_start_ts > start_date, DefectModel.defect_start_ts < end_date). \
             order_by(DefectModel.id.desc()).all()
+        lg.debug('Data collected: %s records', len(results))
         return results
 
     def save_to_database(self):
