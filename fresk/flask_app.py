@@ -91,11 +91,11 @@ def schedule_queue_watcher(in_message_queue, out_message_queue):
 
 @app.teardown_appcontext
 def cleanup(resp_or_exc):
-    # Session.remove()
-    from fresk.models.defect import DefectModel
-    DefectModel.scoped_session.remove()
-    from fresk.models.lam_operator import OperatorModel
-    OperatorModel.scoped_session.remove()
+    """Clean up sqlalchemy sessions."""
+
+    from fresk.sqla_instance import Session
+
+    Session.remove()
 
 
 if __name__ == '__main__':
