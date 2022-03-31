@@ -116,7 +116,9 @@ class StrCol(tk.StringVar):
             new_bool = True
         else:
             new_bool = False
-        setattr(self.defect_interface, self.column, new_bool)
+        with self.defect_interface.session() as session:
+            setattr(self.defect_interface, self.column, new_bool)
+            self.defect_interface.session.remove()
         super().set(value)
 
 

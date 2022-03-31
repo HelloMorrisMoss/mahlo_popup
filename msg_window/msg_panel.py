@@ -4,7 +4,10 @@ import tkinter as tk
 from datetime import datetime
 from tkinter import ttk
 
+import sqlalchemy.exc
+
 from dev_common import dt_to_shift, StrCol
+from fresk.models.lam_operator import OperatorModel
 from log_setup import lg
 from msg_window.defect_attributes import DefectTypePanel, HorizontalNumButtonSelector, LengthSetFrames, LotNumberEntry
 from widgets.roll_removed_toggles import RollRemovedToggles
@@ -31,7 +34,10 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         self.hideables = []
         self.defect_interface = defect_instance
-        self.defect_id = self.defect_interface.id
+        with self.defect_interface.session() as session:
+            interface_id = self.defect_interface.id
+            self.defect_interface.session.remove()
+        self.defect_id = interface_id
         self.message_text_template = 'lot  # {lot_number}\n' \
                                      '{timestamp} on lam{lam_num}\n' \
                                      '{len_meters} meters oospec\n' \
@@ -62,7 +68,9 @@ class MessagePanel(tk.ttk.LabelFrame):
         self._tabframe.bind('<<NotebookTabChanged>>', self.update_message_text)
 
         # if it's an auto-detected defect, they hopefully only need to confirm it, start there
-        if self.defect_interface.record_creation_source != 'operator':
+        with self.defect_interface.session() as session:
+            source = self.defect_interface.record_creation_source
+        if source != 'operator':
             self._tabframe.select(self._tabframe.index('end') - 1)
 
         # lot #, rolls, defect type panel
@@ -137,15 +145,25 @@ class MessagePanel(tk.ttk.LabelFrame):
     def update_message_text(self, *args):
         """Update the message label with any changes."""
 
+        with self.defect_interface.session() as session:
+            ts = self.defect_interface.defect_end_ts
+            lot_number = self.defect_interface.source_lot_number
+            len_meters = self.defect_interface.length_of_defect_meters
+            defect_type = self.defect_interface.defect_type
+            defect_id = self.defect_interface.id
+            start_length = self.defect_interface.mahlo_start_length
+            end_length = self.defect_interface.mahlo_end_length
+            lam_num = self.defect_interface.lam_num
+            self.defect_interface.session.remove()
         msg_text = self.message_text_template.format(
-            lot_number=self.defect_interface.source_lot_number,
-            timestamp=self.defect_interface.defect_end_ts.strftime(self.dt_format_str),
-            len_meters=self.defect_interface.length_of_defect_meters,
-            dtype=self.defect_interface.defect_type,
-            defect_id=self.defect_interface.id,
-            mahlo_start_length=self.defect_interface.mahlo_start_length,
-            mahlo_end_length=self.defect_interface.mahlo_end_length,
-            lam_num=self.defect_interface.lam_num,
+            lot_number=lot_number,
+            timestamp=ts.strftime(self.dt_format_str),
+            len_meters=len_meters,
+            dtype=defect_type,
+            defect_id=defect_id,
+            mahlo_start_length=start_length,
+            mahlo_end_length=end_length,
+            lam_num=lam_num,
             )
         self.message_label.config(text=msg_text)
 
@@ -172,7 +190,10 @@ class MessagePanel(tk.ttk.LabelFrame):
         parent.rowconfigure(0, weight=1)
         send_btn.grid(**send_grid_params)
         send_btn.grid(sticky='nse')
-        setattr(send_btn, 'msg_id', self.defect_interface.id)
+        with self.defect_interface.session() as session:
+            defect_id = self.defect_interface.id
+            self.defect_interface.session.remove()
+        setattr(send_btn, 'msg_id', defect_id)
         setattr(send_btn, 'side', 'send')
 
     def save_response(self, event=None):
@@ -184,17 +205,37 @@ class MessagePanel(tk.ttk.LabelFrame):
         lg.debug('Saving defect record: %s', self.defect_interface)
         now_ts = datetime.now()  # todo: make this part of .save_to_database and use the database time
         # self.defect_interface.entry_modified_ts = self.defect_interface.db_now
-        self.defect_interface.operator_saved_time = self.defect_interface.db_current_ts
+        with OperatorModel.session() as session:
+            # get the operator name
+            top_level_win = self.winfo_toplevel()
+            op_name = top_level_win.current_operator.get().split(' ')
 
-        # get the operator name
-        top_level_win = self.winfo_toplevel()
-        self.defect_interface.shift_number = dt_to_shift(self.defect_interface.defect_start_ts)
-        # self.defect_interface.operator_initials = top_level_win.current_operator_initials.get()
-        # self.defect_interface.operator_list_id = top_level_win.current_operator_id.get()
-        self.defect_interface.save_to_database()
-        self.defect_interface.scoped_session.remove()
-        self.current_defects.pop(self.current_defects.index(self.defect_interface))
-        self.destroy()
+            # create filters
+            filter_val_first = OperatorModel.first_name == op_name[0]
+            filter_val_last = OperatorModel.last_name == op_name[1]
+            try:
+                operator_db = OperatorModel.query.filter(filter_val_first).filter(filter_val_last).all()[0]
+                op_initials = operator_db.initials
+                op_id = operator_db.id
+                OperatorModel.session.remove()
+            except sqlalchemy.exc.PendingRollbackError:
+                OperatorModel.scoped_session.rollback()
+                lg.error('Rollback error trying to fetch operator data.')
+                return
+            except IndexError:
+                lg.debug('IndexError fetching operator from database. Check selected operator.')
+                top_level_win.event_generate('<<OperatorNotFound>>')
+                return
+
+        with self.defect_interface.session() as session:
+            self.defect_interface.operator_saved_time = self.defect_interface.db_current_ts
+            self.defect_interface.shift_number = dt_to_shift(self.defect_interface.defect_start_ts)
+            self.defect_interface.operator_initials = op_initials
+            self.defect_interface.operator_list_id = op_id
+            self.defect_interface.save_to_database()
+            self.defect_interface.session.remove()
+            self.current_defects.pop(self.current_defects.index(self.defect_interface))
+            self.destroy()
 
 
 # if __name__ == '__main__':

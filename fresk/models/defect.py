@@ -2,12 +2,11 @@ import datetime
 
 import sqlalchemy
 from sqlalchemy import func
-from sqlalchemy.orm.scoping import scoped_session
 
 from dev_common import exception_one_line
-from fresk.defect_args import all_args
 from fresk.helpers import jsonize_sqla_model
-from fresk.sqla_instance import Base, local_session
+from fresk.models.model_wrapper import ModelWrapper
+from fresk.sqla_instance import Base
 from log_setup import lg
 
 
@@ -52,9 +51,6 @@ class DefectModel(Base):
     operator_list_id = sqlalchemy.Column(sqlalchemy.Integer)
     shift_number = sqlalchemy.Column(sqlalchemy.Integer)
 
-    scoped_session = scoped_session(local_session)
-    query = scoped_session.query_property()
-
     def __init__(self, **kwargs):
         # for the kwargs provided, assign them to the corresponding columns
         self_keys = DefectModel.__dict__.keys()
@@ -70,10 +66,9 @@ class DefectModel(Base):
         :param get_sqalchemy: bool
         :return: DefectModel
         """
+
         id_df = cls.query.filter_by(id=id_).first()
-        if get_sqalchemy:
-            lg.debug('returning with sqlalchemy')
-            return id_df, sqlalchemy
+        id_df = ModelWrapper(id_df)
         return id_df
 
     @classmethod
@@ -123,7 +118,6 @@ class DefectModel(Base):
         :param kwargs: dict, of kwargs['column_name'] = 'value to use'
         :return: DefectModel
         """
-
         new_def = DefectModel(**kwargs)
         new_def.save_to_database()
         return new_def
@@ -140,13 +134,12 @@ class DefectModel(Base):
     def save_to_database(self):
         """Save the changed to defect to the database."""
 
-        self.scoped_session.add(self)
+        self.session.add(self)
         try:
-            self.scoped_session.commit()
+            self.session.commit()
         except Exception as exc:
             lg.error(exception_one_line(exception_obj=exc))
-            self.scoped_session.rollback()
-            raise exc
+            self.session.rollback()
 
     def get_model_dict(self):
         """Get a dictionary of {column_name: value}
@@ -154,7 +147,7 @@ class DefectModel(Base):
         :return: dict
         """
         jdict = {}
-        for key in all_args:
+        for key in self.__table__.columns.keys():
             jdict[key] = self.__dict__.get(key)
         return jdict
 
