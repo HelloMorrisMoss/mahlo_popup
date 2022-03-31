@@ -86,7 +86,7 @@ class DefectList(Resource):
             for row in results:
                 result_dict[row.id] = jsonize_sqla_model(row)
             DefectModel.session.remove()
-        lg.debug('Returning defects data results response.')
+        lg.debug('Returning %s defects data results response.', len(result_dict.keys()))
         return result_dict, 200
 
     def put(self):
