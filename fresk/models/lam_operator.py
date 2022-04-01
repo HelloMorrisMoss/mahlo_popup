@@ -65,8 +65,11 @@ class OperatorModel(Base):
 
     def save_to_database(self):
         """Save the changed to defect to the database."""
-        self.scoped_session.add(self)
-        self.scoped_session.commit()
+
+        with self.session() as session:
+            session.add(self)
+            session.commit()
+            self.session.remove()
 
 
 if __name__ == '__main__':

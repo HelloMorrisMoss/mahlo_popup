@@ -18,27 +18,34 @@ class Operator(Resource):
         data = self.defect_parser.parse_args()
         lam_num = data.get('lam_number')
 
-        if lam_num:
-            ops = OperatorModel.get_active_operators(lam_num)
-        else:
-            ops = OperatorModel.get_active_operators()
+        with OperatorModel.session() as session:
+            if lam_num:
+                ops = OperatorModel.get_active_operators(lam_num)
+            else:
+                ops = OperatorModel.get_active_operators()
 
             if ops:
                 ops_list = []
                 for op in ops:
                     ops_list.append(op.jsonizable())
-                return ops_list, 200
+                response = ops_list, 200
             else:
-                return {'operator': f'No operators found'}, 404
+                response = {'operator': f'No operators found'}, 404
+            OperatorModel.session.remove()
+
+        return response
 
     def post(self):
         data = self.defect_parser.parse_args()
 
         # don't pass the Model empty parameters
         data = remove_empty_parameters(data)
-        operator = OperatorModel.new_operator(**data)
-
-        return operator.jsonizable(), 201
+        with OperatorModel.session() as session:
+            operator = OperatorModel.new_operator(**data)
+            session.add(operator)
+            response_dict = operator.jsonizable()
+            OperatorModel.session.remove()
+        return response_dict, 201
 
     # def remove_empty_parameters(self, data):
     #     """Accepts a dictionary and returns a dict with only the key, values where the values are not None."""
