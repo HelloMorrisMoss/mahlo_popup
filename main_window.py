@@ -128,7 +128,8 @@ class MainWindow(tk.Tk):
         self.bind('<Configure>', self._save_this_position)
         self.bind('<Escape>', self.escape)
 
-        self.after(5_000, self.ensure_on_top, True)
+        if self.lam_num:  # don't steal focus on development system
+            self.after(5_000, self.ensure_on_top, True)
 
         self.mainloop()
 
