@@ -73,10 +73,11 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
         self.down_label.grid(row=80, column=10, columnspan=col_span)
 
         # current length button
-        self.columnconfigure(10, weight=1)
-        self.current_length_button = tk.ttk.Button(self, text='current length',
-                                                   command=self.set_to_current_length)
-        self.current_length_button.grid(row=100, column=10, columnspan=3)
+        if self._field_name == 'mahlo_end_length':
+            self.columnconfigure(10, weight=1)
+            self.current_length_button = tk.ttk.Button(self, text='current length',
+                                                       command=self.set_to_current_length)
+            self.current_length_button.grid(row=100, column=10, columnspan=3)
 
     def set_to_current_length(self):
         cur_len = get_current_length(self)
