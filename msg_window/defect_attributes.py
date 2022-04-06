@@ -111,8 +111,7 @@ class LengthSetFrames(ttk.Frame):
         self._length_set_tuples = ('length_of_defect_meters', 'Length Removed'), \
                                   ('mahlo_start_length', 'Start Length'), \
                                   ('mahlo_end_length', 'End Length')
-        self._last_set_lengths = ['mahlo_start_length',
-                                  'mahlo_end_length']  # list of the field_name for the most recently changed in order
+        self._last_set_lengths = ['mahlo_start_length']
 
         self._length_set_frames = {}
         self._length_var_dict = {}
