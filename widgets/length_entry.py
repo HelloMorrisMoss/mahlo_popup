@@ -91,7 +91,11 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
         """
         new_val = self.length_var.get()
         try:
-            setattr(self.defect, self._field_name, float(new_val))
+            new_value = float(new_val)
+            if new_value < 0.0:
+                lg.warning('This value can not be negative!')
+                new_value = 0.0
+            setattr(self.defect, self._field_name, new_value)
         except ValueError as ver:
             lg.debug('Not a valid float value %s - %s', new_val, ver)
 

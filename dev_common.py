@@ -122,6 +122,110 @@ class StrCol(tk.StringVar):
         super().set(value)
 
 
+class NumStrVar(tk.StringVar):
+    """A tk.StringVar that holds a positive 'float' value and attempts to set to a negative value can be suscrbied."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._alt_min_var = None
+        self._alt_max_var = None
+        self._negative_subscribers = {}
+        self._alt_min_subscribers = {}
+        self._previous_values = []
+        self._dynamic_min = None
+        self._dynamic_max = None
+        self._nsv_name_str = ''
+
+    def set_nsv_name(self, the_name: str):
+        self._nsv_name_str = the_name
+
+    def subscribe_to_negatives(self, subscriber: object, subscription_callable: callable):
+        sub_id = id(subscriber)
+        if sub_id not in self._negative_subscribers.keys():
+            self._negative_subscribers[sub_id] = subscription_callable
+
+    def publish_negative_attempt(self):
+        for sub, callme in self._negative_subscribers.items():
+            callme()
+
+    def subscribe_to_alt_min(self, subscriber: object, subscription_callable: callable):
+        if subscriber not in self._alt_min_subscribers.index(subscriber):
+            self._alt_min_subscribers[subscriber] = subscription_callable
+
+    def publish_alt_min(self):
+        for sub, callme in self._alt_min_subscribers:
+            callme()
+
+    def set_alternative_minimum_variable(self, alt_min):
+        self._alt_min_var = alt_min
+
+    def set_alternative_maximum_variable(self, alt_max):
+        self._alt_max_var = alt_max
+
+    # def set_dynamic_limits(self, dynamic_max, dynamic_min):
+    #     self._dynamic_min = dynamic_min
+    #     self._dynamic_max = dynamic_max
+    #
+    # def get_dynamic_range(self):
+    #     return self._dynamic_min.get(), self._dynamic_max.get()
+    #
+    # def dynamic_limits_are_set(self):
+    #     return self._dynamic_min is not None and self._dynamic_max is not None
+    #
+    # def check_within_dynamic_range(self, new_value):
+    #     if self.dynamic_limits_are_set():
+    #         dmin, dmax = self.get_dynamic_range()
+    #         return dmin <= new_value <= dmax
+    #     else:
+    #         return True
+
+    def set(self, new_value):
+        try:
+            new_float = float(new_value)
+
+            if new_float >= 0:
+                within_limits = self.check_alt_limits(new_float)
+                if within_limits:
+                    super().set(str(new_value))
+                    self._previous_values.append(new_value)
+                    lg.debug('%s: new value set %s and added to previous values: %s',
+                             self._nsv_name_str, new_value, self._previous_values)
+            else:
+                self.publish_negative_attempt()
+        except ValueError:
+            pass  # this is going to happen regularly and isn't a problem
+
+    def revert_to_previous_value(self):
+        current_value = self._previous_values.pop()
+        lg.debug('Reverting to previous value: %s from: %s', self._previous_values, current_value)
+        self.set(self._previous_values[-1])
+
+    def check_alt_limits(self, new_float):
+        # if not self.check_within_dynamic_range(new_float):
+        #     return False
+        if isinstance(self._alt_min_var, NumStrVar):
+            alt_min = self._alt_min_var.get()
+        else:
+            alt_min = 0.0
+
+        if new_float < alt_min:
+            return False
+
+        if isinstance(self._alt_max_var, NumStrVar):
+            alt_max = self._alt_max_var.get()
+            if new_float > alt_max:
+                return False
+        return True
+
+    def get(self):
+        try:
+            return_value = float(super().get())
+            lg.debug('value returned %s', return_value)
+            return return_value
+        except ValueError:
+            pass  # many won't be convertable
+
+
 reasons = (
     'belt_marks', 'bursting', 'contamination', 'curling', 'delamination', 'lost_edge', 'puckering',
     'shrinkage',

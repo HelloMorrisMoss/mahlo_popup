@@ -4,7 +4,7 @@ import functools
 import tkinter as tk
 from tkinter import ttk
 
-from dev_common import reasons, style_component
+from dev_common import NumStrVar, reasons, style_component
 from log_setup import lg
 from widgets.length_entry import UpDownButtonFrame
 from widgets.numpad_entry import NumpadEntry
@@ -115,15 +115,31 @@ class LengthSetFrames(ttk.Frame):
                                   'mahlo_end_length']  # list of the field_name for the most recently changed in order
 
         self._length_set_frames = {}
+        self._length_var_dict = {}
 
         for col, (field_name, text) in enumerate(self._length_set_tuples):
-            this_var = tk.StringVar()
+            this_var = NumStrVar()
+            this_var.set_nsv_name(field_name)
+            self._length_var_dict[field_name] = this_var
             this_var.set(str(getattr(self.defect, field_name)))
             this_frame = UpDownButtonFrame(self, self.defect, variable=this_var, field_name=field_name,
                                            increment_values=[0.1, 1, 5, 10], text=text)
             this_frame.grid(row=0, column=col, rowspan=2, sticky='ns')
             this_var.trace_add('write', functools.partial(self._auto_fill_third_length, field_name))
             self._length_set_frames.update({field_name: {'frame': this_frame, 'StringVar': this_var}})
+
+        # don't let the start go above the end or vice versa
+        length_end = self._length_var_dict['mahlo_end_length']
+        length_start = self._length_var_dict['mahlo_start_length']
+        length_end.set_alternative_minimum_variable(
+            length_start)
+
+        length_start.set_alternative_maximum_variable(
+            length_end)
+
+        # if a change to the total length force the start negative, revert to the previous value
+        # length_defect = self._length_var_dict['length_of_defect_meters']
+        # length_defect.set_dynamic_limits(length_start, length_end)
 
         self.toggle_auto_button = ttk.Checkbutton(self, text='autofill', variable=self.toggle_auto_fill_lengths)
         self.toggle_auto_button.grid(row=0, column=col + 1)
@@ -182,16 +198,35 @@ class LengthSetFrames(ttk.Frame):
                 self.reconcile_values(*field_names, sub, missing_value_string)
 
     def reconcile_values(self, field_name1, field_name2, operation, missing_field_name):
-        _value1 = float(self._length_set_frames[field_name1]['StringVar'].get())
-        _value2 = float(self._length_set_frames[field_name2]['StringVar'].get())
-        new_value = str(round(operation(_value1, _value2), 2))
-        self._length_set_frames[missing_field_name]['StringVar'].set(new_value)
+        lg.debug('reconciling values for %s, %s, %s, %s', field_name1, field_name2, operation, missing_field_name)
+        # all_field_names = 'mahlo_end_length', 'length_of_defect_meters', 'mahlo_start_length'
+        # these_values_dict = {f: self._length_set_frames[f]['StringVar'] for f, _ in self._length_set_tuples}
+        first_var = self._length_set_frames[field_name1]['StringVar']
+        second_var = self._length_set_frames[field_name2]['StringVar']
+        first_value = float(first_var.get())
+        second_value = float(second_var.get())
+        new_val_float = round(operation(first_value, second_value), 2)
+        if new_val_float > 0:
+            new_value = str(new_val_float)
+            self._length_set_frames[missing_field_name]['StringVar'].set(new_value)
+        else:
+            second_var.revert_to_previous_value()
 
     def _hide(self):
         self.grid_remove()
 
     def _show(self):
         self.grid()
+
+    def check_if_values_are_ok(self, start_val, end_val, length_val):
+        if start_val > end_val:
+            return False
+        elif any(vl < 0.0 for vl in (start_val, end_val, length_val)):
+            return False
+        elif (end_val - start_val) != length_val:
+            return False
+        elif (end_val - start_val) < 0.0:
+            return False
 
 
 class DefectTypePanel(tk.ttk.LabelFrame):
