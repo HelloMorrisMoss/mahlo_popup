@@ -1,10 +1,12 @@
 """To add a popup window to the Mahlo HMI PC at the laminators. Designed to be called from the command line over ssl."""
+import datetime
 import json
 import tkinter
 import tkinter as tk
 from tkinter import ttk
 
-from dev_common import add_show_messages_button, blank_up, exception_one_line, recurse_hover, recurse_tk_structure, \
+from dev_common import add_show_messages_button, blank_up, dt_to_shift, exception_one_line, recurse_hover, \
+    recurse_tk_structure, \
     restart_program, style_component, window_topmost
 from fresk.models.defect import DefectModel
 from fresk.models.lam_operator import OperatorModel
@@ -80,8 +82,9 @@ class MainWindow(tk.Tk):
         self.columnconfigure(0, weight=1)  # to make the button able to fill the width
         self.rowconfigure(0, weight=1)  # to make the button able to fill the height
 
-        # operator
+        # operator and shift
         self.current_operator = tk.StringVar()
+        self.current_shift = None  # this gets set later
 
         # the buttons that aren't for a specific popup (add, settings, etc)
         self.controls_panel = IndependentControlsPanel(self, 'Control Panel', hide_option=self._hide_option,
@@ -131,7 +134,16 @@ class MainWindow(tk.Tk):
         if self.lam_num:  # don't steal focus on development system
             self.after(5_000, self.ensure_on_top, True)
 
+        self.after(10_000, self.check_shift)
+
         self.mainloop()
+
+    def check_shift(self):
+        this_shift = dt_to_shift(datetime.datetime.now())
+        if this_shift != self.current_shift:
+            self.current_shift = this_shift
+            self.event_generate('<<ShiftChange>>')
+        self.after(10_000, self.check_shift)
 
     def reload_last_position(self):
         """Load the position information from last time the window was open."""
