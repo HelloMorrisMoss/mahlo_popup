@@ -22,6 +22,7 @@ if ON_DEV_NODE:
         run_popup = False
     elif testing_this == '2':
         run_server = False
+
 else:
     if not LAM_NUM:
         run_popup = False  # don't run the popup on the oee server
