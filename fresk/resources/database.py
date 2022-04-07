@@ -9,16 +9,13 @@ from log_setup import lg
 
 def create_tables():
     """Recreate the database tables."""
-    import platform
     from untracked_config.development_node import dev_node
 
     lg.debug('Rebuilding database tables.')
 
     # this section is to remove the old database table if the DefectModel table needs to be changed:
-    node = platform.node()
-    lg.debug(f'node {node=}')
 
-    if node == dev_node:
+    if dev_node:
         fsa.drop_all()  # TODO: this is for model/table development only and SHOULD NOT be used with production
 
     # this ensures there is a table there
