@@ -1,8 +1,9 @@
 """Contains the logger setup and a simple script to read the log file into a pandas dataframe."""
 import logging
 import sys
-
 from logging.handlers import RotatingFileHandler
+
+from untracked_config.development_node import ON_DEV_NODE
 
 
 class BreadcrumbFilter(logging.Filter):
@@ -25,13 +26,14 @@ class BreadcrumbFilter(logging.Filter):
 
 
 def setup_logger():
-    # set up the logging
+    # set up the base logger
     logr = logging.getLogger()
-    logr.setLevel(logging.DEBUG)
+    base_log_level = logging.DEBUG if ON_DEV_NODE else logging.INFO
+    logr.setLevel(base_log_level)
 
     # console logger
     c_handler = logging.StreamHandler()
-    c_handler.setLevel(logging.DEBUG)
+    c_handler.setLevel(base_log_level)
     c_format = logging.Formatter('%(asctime)-30s %(breadcrumbs)-45s %(levelname)s: %(message)s')
     c_handler.setFormatter(c_format)
     c_handler.addFilter(BreadcrumbFilter())
@@ -39,14 +41,11 @@ def setup_logger():
 
     # file logger
     f_handler = RotatingFileHandler('mahlo_popup.log', maxBytes=2000000)
-    f_handler.setLevel(logging.DEBUG)
+    f_handler.setLevel(base_log_level)
     f_string = '"%(asctime)s","%(name)s", "%(breadcrumbs)s","%(funcName)s","%(lineno)d","%(levelname)s","%(message)s"'
     f_format = logging.Formatter(f_string)
     f_handler.addFilter(BreadcrumbFilter())
     f_handler.setFormatter(f_format)
-
-    # Add handlers to the logger
-
     logr.addHandler(f_handler)
 
     def handle_exception(exc_type, exc_value, exc_traceback):
