@@ -101,22 +101,6 @@ class MainWindow(tk.Tk):
 
         self._focus_out_func_id = self._set_focus_out_event()
 
-        # if working on the code, print the tk structure
-        if self.debugging:
-            def recursive_print(tk_component, repeat=True):
-                """Print the tkinter window/widget structure"""
-                recurse_tk_structure(tk_component)
-                if repeat:
-                    self.after(5000, lambda x=None: recursive_print(self))
-
-            self.after(1000, lambda: recursive_print(self))  # for debugging, prints out the tkinter structure
-            recurse_hover(self.popup_frame)  # for debugging, shows widget info when mouse cursor moves over it
-
-        # messages from flask
-        self.new_messages = []
-        self.flask_app = None
-        self.after(1000, self.check_for_inbound_messages)
-
         # for querying the tag history database
         self._thist = TagHistoryConnector(f'lam{self.lam_num}')
 
@@ -130,6 +114,23 @@ class MainWindow(tk.Tk):
 
         self.bind('<Configure>', self._save_this_position)
         self.bind('<Escape>', self.escape)
+
+        # #### set timers to run once tkinter gets going ####
+        # if working on the code, print the tk structure
+        if self.debugging:
+            def recursive_print(tk_component, repeat=True):
+                """Print the tkinter window/widget structure"""
+                recurse_tk_structure(tk_component)
+                if repeat:
+                    self.after(5000, lambda x=None: recursive_print(self))
+
+            self.after(1000, lambda: recursive_print(self))  # for debugging, prints out the tkinter structure
+            recurse_hover(self.popup_frame)  # for debugging, shows widget info when mouse cursor moves over it
+
+        # check messages from flask
+        self.new_messages = []
+        self.flask_app = None
+        self.after(1000, self.check_for_inbound_messages)
 
         if self.lam_num:  # don't steal focus on development system
             self.after(5_000, self.ensure_on_top, True)
