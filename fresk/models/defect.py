@@ -18,11 +18,11 @@ class DefectModel(Base):
     db_current_ts = func.current_timestamp()
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    source_lot_number = sqlalchemy.Column(sqlalchemy.String, default='')
-    tabcode = sqlalchemy.Column(sqlalchemy.String, default='')
-    recipe = sqlalchemy.Column(sqlalchemy.String, default='')
+    source_lot_number = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    tabcode = sqlalchemy.Column(sqlalchemy.String)
+    recipe = sqlalchemy.Column(sqlalchemy.String)
     lam_num = sqlalchemy.Column(sqlalchemy.Integer, default=0)
-    file_name = sqlalchemy.Column(sqlalchemy.String, server_default='')
+    file_name = sqlalchemy.Column(sqlalchemy.String)
     flagger_fire = sqlalchemy.Column(sqlalchemy.TIMESTAMP(timezone=True))
     rolls_of_product_post_slit = sqlalchemy.Column(sqlalchemy.Integer, default=3)
     defect_start_ts = sqlalchemy.Column(sqlalchemy.TIMESTAMP(timezone=True), server_default=db_current_ts)
@@ -35,18 +35,19 @@ class DefectModel(Base):
     defect_type = sqlalchemy.Column(sqlalchemy.VARCHAR(13), server_default='''thickness''')
 
     # the section removed
-    rem_l = sqlalchemy.Column(sqlalchemy.Boolean, server_default='''False''')
-    rem_lc = sqlalchemy.Column(sqlalchemy.Boolean, server_default='''False''')
-    rem_c = sqlalchemy.Column(sqlalchemy.Boolean, server_default='''False''')
-    rem_rc = sqlalchemy.Column(sqlalchemy.Boolean, server_default='''False''')
-    rem_r = sqlalchemy.Column(sqlalchemy.Boolean, server_default='''False''')
-    rem_all = sqlalchemy.Column(sqlalchemy.Boolean, server_default='''False''')
-    # TODO: these timestamps are being set to model(table) creation time, unlike the ones above
+    rem_l = sqlalchemy.Column(sqlalchemy.Boolean)
+    rem_lc = sqlalchemy.Column(sqlalchemy.Boolean)
+    rem_c = sqlalchemy.Column(sqlalchemy.Boolean)
+    rem_rc = sqlalchemy.Column(sqlalchemy.Boolean)
+    rem_r = sqlalchemy.Column(sqlalchemy.Boolean)
+    rem_all = sqlalchemy.Column(sqlalchemy.Boolean)
+
+    # defect metadata
     entry_created_ts = sqlalchemy.Column(sqlalchemy.DateTime(timezone=True), server_default=db_current_ts)
     entry_modified_ts = sqlalchemy.Column(sqlalchemy.DateTime(timezone=True), server_default=db_current_ts,
                                           onupdate=db_current_ts)
-    record_creation_source = sqlalchemy.Column(sqlalchemy.String(), server_default='')
-    marked_for_deletion = sqlalchemy.Column(sqlalchemy.Boolean, server_default='''False''')
+    record_creation_source = sqlalchemy.Column(sqlalchemy.String())
+    marked_for_deletion = sqlalchemy.Column(sqlalchemy.Boolean)
     operator_saved_time = sqlalchemy.Column(sqlalchemy.DateTime(timezone=True))
     operator_initials = sqlalchemy.Column(sqlalchemy.String)
     operator_list_id = sqlalchemy.Column(sqlalchemy.Integer)
