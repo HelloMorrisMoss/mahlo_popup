@@ -40,6 +40,7 @@ class DefectModel(Base):
     rem_c = sqlalchemy.Column(sqlalchemy.Boolean, server_default='''False''')
     rem_rc = sqlalchemy.Column(sqlalchemy.Boolean, server_default='''False''')
     rem_r = sqlalchemy.Column(sqlalchemy.Boolean, server_default='''False''')
+    rem_all = sqlalchemy.Column(sqlalchemy.Boolean, server_default='''False''')
     # TODO: these timestamps are being set to model(table) creation time, unlike the ones above
     entry_created_ts = sqlalchemy.Column(sqlalchemy.DateTime(timezone=True), server_default=db_current_ts)
     entry_modified_ts = sqlalchemy.Column(sqlalchemy.DateTime(timezone=True), server_default=db_current_ts,

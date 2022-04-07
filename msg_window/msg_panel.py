@@ -1,7 +1,6 @@
 """Contains the panel that displays the defect information and interface."""
 
 import tkinter as tk
-from datetime import datetime
 from tkinter import ttk
 
 import sqlalchemy.exc
@@ -203,8 +202,6 @@ class MessagePanel(tk.ttk.LabelFrame):
         """
 
         lg.debug('Saving defect record: %s', self.defect_interface)
-        now_ts = datetime.now()  # todo: make this part of .save_to_database and use the database time
-        # self.defect_interface.entry_modified_ts = self.defect_interface.db_now
         with OperatorModel.session() as session:
             # get the operator name
             top_level_win = self.winfo_toplevel()
@@ -227,7 +224,16 @@ class MessagePanel(tk.ttk.LabelFrame):
                 top_level_win.event_generate('<<OperatorNotFound>>')
                 return
 
+        # update column values
         with self.defect_interface.session() as session:
+            # get the state of the toggles and assign that to the columns
+            for togl, tkvar in self._removed_toggles.removed_vars.items():
+                if togl == 'all':
+                    col_name = 'rem_all'
+                else:
+                    col_name = self._removed_toggles.sides_to_defect_columns_dict[togl]
+                self.toggle_strvar_set_column(col_name, tkvar)
+
             self.defect_interface.operator_saved_time = self.defect_interface.db_current_ts
             self.defect_interface.shift_number = dt_to_shift(self.defect_interface.defect_start_ts)
             self.defect_interface.operator_initials = op_initials
@@ -237,25 +243,13 @@ class MessagePanel(tk.ttk.LabelFrame):
             self.current_defects.pop(self.current_defects.index(self.defect_interface))
             self.destroy()
 
+    def toggle_strvar_set_column(self, col_name, tkvar):
+        removed_str = tkvar.get()
 
-# if __name__ == '__main__':
-#     from fresk.models.defect import DefectModel
-#     from fresk.flask_app import start_flask_app
-#     from threading import Thread
-#     from collections import deque
-#     import time
-#
-#     root = tk.Tk()
-#     in_out_q = deque()
-#     flask_thread = Thread(target=start_flask_app, args=(in_out_q, in_out_q))
-#     flask_thread.start()
-#     while not len(in_out_q):
-#         lg.debug(f'waiting for flask {in_out_q}')
-#         time.sleep(1)
-#     app = in_out_q.pop()['flask_app']
-#     with app.app_context():
-#         dd = DefectModel.new_defect()
-#     MessagePanel(root, dd, 0)
+        if ('NOT' not in removed_str) and len(removed_str):
+            setattr(self.defect_interface, col_name, True)
+
+
 if __name__ == '__main__':
     from dev_common import style_component
 

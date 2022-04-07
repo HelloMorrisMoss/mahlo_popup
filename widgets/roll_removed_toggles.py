@@ -2,7 +2,6 @@ import tkinter
 import tkinter as tk
 from tkinter import ttk
 
-from dev_common import StrCol
 from log_setup import lg
 
 
@@ -13,17 +12,18 @@ class RollRemovedToggles(tk.Frame):
 
         self.pad = {'x': 2, 'y': 2}
 
-        sides_to_defect_columns_dict = {'left': 'rem_l', 'left_center': 'rem_lc',
-                                        'center': 'rem_c', 'right_center': 'rem_rc', 'right': 'rem_r'}
+        self.sides_to_defect_columns_dict = {'left': 'rem_l', 'left_center': 'rem_lc',
+                                             'center': 'rem_c', 'right_center': 'rem_rc', 'right': 'rem_r'}
 
-        self.removed_vars = {k: StrCol(self.defect_interface, col) for k, col in sides_to_defect_columns_dict.items()}
+        self.removed_vars = {k: tk.StringVar() for k, col in self.sides_to_defect_columns_dict.items()}
         self.removed_vars.update({'all': tk.StringVar()})
         self._add_foam_removed_toggle_selectors()
 
     def remove_current_toggles(self):
-        for tk, toggle in self._toggle_refs.items():
+        for toggle_key, toggle in self._toggle_refs.items():
+            self.removed_vars[toggle_key].set('')  # clear the removed/not text
             toggle.destroy()
-            del (self.toggle_button_def_dict[tk])
+            del (self.toggle_button_def_dict[toggle_key])
 
     def update_number_of_toggles(self, *args):
         lg.debug(f'updating number of toggles {args=}')
