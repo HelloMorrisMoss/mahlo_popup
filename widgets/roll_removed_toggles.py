@@ -92,12 +92,12 @@ class RollRemovedToggles(tk.Frame):
                                                   4: ['left', 'left_center', 'right_center', 'right'],
                                                   5: ['left', 'left_center', 'center', 'right_center', 'right']}
         self.not_all_list = number_of_buttons_to_definitions_lists[num_of_buttons]
-        side_button_text = {'left': 'Left Edge\n', 'left_center': 'Left of Center\n',
-                            'center': 'Center of Foam\n', 'right_center': 'Right of Center\n',
-                            'right': 'Right Edge\n'}
+        side_button_text = {'left': 'Left Edge', 'left_center': 'Left of Center',
+                            'center': 'Center of Foam', 'right_center': 'Right of Center',
+                            'right': 'Right Edge'}
         side_button_dict = {side: {'params':
-                                       {'onvalue': f'{side_button_text[side]} WAS removed.',
-                                        'offvalue': f'{side_button_text[side]} NOT removed.',
+                                       {'onvalue': f'{side_button_text[side]} roll\n WAS destroyed.',
+                                        'offvalue': f'{side_button_text[side]} roll\n NOT destroyed.',
                                         'textvariable': self.removed_vars[side]},
                                    'grid_params': {'column': 2 * (n + 1), 'columnspan': 2, 'rowspan': 2,
                                                    'row': 2, 'padx': self.pad['x'], 'pady': self.pad['y']},
@@ -107,10 +107,12 @@ class RollRemovedToggles(tk.Frame):
 
         # define the 'all of the section removed' button
         all_button_column = {1: 2, 2: 3, 3: 4, 4: 5, 5: 6}  # the column needs to be dynamic or it will be off center
-        button_def_dict = {'all': {'params': {'text': 'All of this length was removed.',
+        all_removed_text = 'ALL of the width\nof this length was destroyed.'
+        not_all_removed_text = 'NOT all of the width\n of this length was destroyed.'
+        button_def_dict = {'all': {'params': {'text': all_removed_text,
                                               'command': lambda: lg.debug('You press my buttons!'),
-                                              'onvalue': 'ALL of this length was removed.',
-                                              'offvalue': 'NOT all of this length was removed.',
+                                              'onvalue': all_removed_text,
+                                              'offvalue': not_all_removed_text,
                                               'textvariable': self.removed_vars['all']},
                                    'grid_params': {'column': all_button_column[num_of_buttons],
                                                    'row': 0,
@@ -213,8 +215,8 @@ class RollRemovedToggles(tk.Frame):
                     else:
                         # count the sides that are true
                         side_val = self.removed_vars.get(iter_side).get()
-                        sides_count += 'WAS removed' in side_val
-                    lg.debug('iter_side %s, side_val %s, sides_count %s', iter_side, side_val, sides_count)
+                        sides_count += 'WAS' in side_val
+                        lg.debug('iter_side %s, side_val %s, sides_count %s', iter_side, side_val, sides_count)
 
                 if sides_count == len(self.not_all_list):
                     self._set_all_sides(('all',), True)

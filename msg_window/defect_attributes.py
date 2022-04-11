@@ -14,7 +14,7 @@ class HorizontalNumButtonSelector(tk.ttk.LabelFrame):
     """A ttk.LabelFrame prompting for a number between 1 and 5."""
 
     def __init__(self, parent, defect, variable=None):
-        super().__init__(parent, text='Number of finished good rolls', style='Card.TFrame')
+        super().__init__(parent, text='Change the number of finished-good rolls above', style='Card.TFrame')
         self.parent = parent
         self.row = 0
         self.defect = defect
