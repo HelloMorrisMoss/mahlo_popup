@@ -46,6 +46,7 @@ class HorizontalNumButtonSelector(tk.ttk.LabelFrame):
         intval = int(event.widget['text'])
         self.defect.rolls_of_product_post_slit = intval
         self.value.set(intval)
+        self.winfo_toplevel().last_produced_rolls_count = intval
 
 
 class SelectDefectAttributes(tk.ttk.Frame):

@@ -30,10 +30,11 @@ class MainWindow(tk.Tk):
         self.debugging = debugging
         # self.attributes('-toolwindow', True)  # don't show the min/max buttons on the title bar
 
-        self.set_window_icon('untracked_config/window_icon.ico')
+        self.set_window_icon('untracked_config/window_icon.ico')  # window icon
 
         self.lam_num = LAM_NUM  # the laminator number
         self.title(f'Defect Removal Records - lam {self.lam_num}')
+        self.last_produced_rolls_count = 3
 
         # what to do when hiding
         self.current_form = None
@@ -382,7 +383,9 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
             current_length = thist.current_mahlo_length()
             new_defect = DefectModel.new_defect(source_lot_number=lot_num, record_creation_source='operator',
                                                 mahlo_end_length=current_length, mahlo_start_length=current_length,
-                                                lam_num=self.lam_num)
+                                                lam_num=self.lam_num,
+                                                rolls_of_product_post_slit=toplevel.last_produced_rolls_count,
+                                                )
             popup = self.parent.popup_frame  # TODO: replace this with a passed in method call
             popup.check_for_new_defects()
 
