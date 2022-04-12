@@ -30,6 +30,8 @@ class MainWindow(tk.Tk):
         self.debugging = debugging
         # self.attributes('-toolwindow', True)  # don't show the min/max buttons on the title bar
 
+        self.set_window_icon('untracked_config/window_icon.ico')
+
         self.lam_num = LAM_NUM  # the laminator number
         self.title(f'Defect Removal Records - lam {self.lam_num}')
 
@@ -138,6 +140,12 @@ class MainWindow(tk.Tk):
         self.after(10_000, self.check_shift)
 
         self.mainloop()
+
+    def set_window_icon(self, ico_path):
+        try:
+            self.wm_iconbitmap(ico_path)
+        except tkinter.TclError:
+            pass  # icon is not available
 
     def check_shift(self):
         this_shift = dt_to_shift(datetime.datetime.now())
