@@ -59,9 +59,9 @@ class MessagePanel(tk.ttk.LabelFrame):
         self._lengths_frame = ttk.Frame(self)
         self._confirm_frame = ttk.Frame(self)
 
-        self._tabframe.add(self._lot_rolls_type_frame, text='lot #, rolls, defect type')
+        self._tabframe.add(self._lot_rolls_type_frame, text='lot # & defect type')
         self._tabframe.add(self._lengths_frame, text='lengths')
-        self._tabframe.add(self._confirm_frame, text='confirmation')
+        self._tabframe.add(self._confirm_frame, text='rolls & confirmation')
 
         # update the label text when changing tabs
         self._tabframe.bind('<<NotebookTabChanged>>', self.update_message_text)
