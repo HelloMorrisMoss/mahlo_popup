@@ -3,7 +3,7 @@
 import threading
 from collections import deque
 
-from fresk.flask_app import start_flask_app
+from flask_server_files.flask_app import start_flask_app
 from log_setup import lg
 from main_window import MainWindow
 from untracked_config.development_node import ON_DEV_NODE
