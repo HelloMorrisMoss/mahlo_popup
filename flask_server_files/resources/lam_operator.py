@@ -1,7 +1,7 @@
 from flask_restful import reqparse, Resource
 
-from fresk.helpers import remove_empty_parameters
-from fresk.models.lam_operator import OperatorModel
+from flask_server_files.helpers import remove_empty_parameters
+from flask_server_files.models.lam_operator import OperatorModel
 
 
 class Operator(Resource):
@@ -79,4 +79,4 @@ class Operator(Resource):
     # #     defect.save_to_database()
     #
     #
-    #     return fresk.helpers.jsonizable(), return_code
+    #     return flask_server_files.helpers.jsonizable(), return_code

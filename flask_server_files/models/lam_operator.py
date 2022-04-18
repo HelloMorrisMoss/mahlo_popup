@@ -1,7 +1,7 @@
 import sqlalchemy as fsa
 
-from fresk.helpers import jsonize_sqla_model
-from fresk.sqla_instance import Base
+from flask_server_files.helpers import jsonize_sqla_model
+from flask_server_files.sqla_instance import Base
 from log_setup import lg
 
 
