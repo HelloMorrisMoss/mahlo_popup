@@ -8,8 +8,8 @@ from tkinter import ttk
 from dev_common import add_show_messages_button, blank_up, dt_to_shift, exception_one_line, recurse_hover, \
     recurse_tk_structure, \
     restart_program, style_component, window_topmost
-from fresk.models.defect import DefectModel
-from fresk.models.lam_operator import OperatorModel
+from flask_server_files.models.defect import DefectModel
+from flask_server_files.models.lam_operator import OperatorModel
 from log_setup import lg
 from msg_window.popup_frame import DefectMessageFrame
 from scada_tag_query import TagHistoryConnector

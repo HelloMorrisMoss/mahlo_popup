@@ -4,8 +4,8 @@
 
 from unittest import TestCase
 
-from fresk.flask_app import app
-from fresk.sqla_instance import fsa
+from flask_server_files.flask_app import app
+from flask_server_files.sqla_instance import fsa
 
 
 # from flask.ext.testing import TestCase
