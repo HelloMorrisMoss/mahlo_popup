@@ -4,9 +4,9 @@ import sqlalchemy
 from sqlalchemy import func
 
 from dev_common import exception_one_line
-from fresk.helpers import jsonize_sqla_model
-from fresk.models.model_wrapper import ModelWrapper
-from fresk.sqla_instance import Base
+from flask_server_files.helpers import jsonize_sqla_model
+from flask_server_files.models.model_wrapper import ModelWrapper
+from flask_server_files.sqla_instance import Base
 from log_setup import lg
 
 

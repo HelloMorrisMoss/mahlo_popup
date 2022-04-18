@@ -6,7 +6,7 @@ from tkinter import ttk
 import sqlalchemy.exc
 
 from dev_common import dt_to_shift, StrCol
-from fresk.models.lam_operator import OperatorModel
+from flask_server_files.models.lam_operator import OperatorModel
 from log_setup import lg
 from msg_window.defect_attributes import DefectTypePanel, HorizontalNumButtonSelector, LengthSetFrames, LotNumberEntry
 from widgets.roll_removed_toggles import RollRemovedToggles

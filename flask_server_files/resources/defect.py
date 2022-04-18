@@ -1,8 +1,8 @@
 from flask_restful import reqparse, Resource
 
-from fresk.defect_args import all_args, arg_type_dict
-from fresk.helpers import jsonize_sqla_model, remove_empty_parameters
-from fresk.models.defect import DefectModel
+from flask_server_files.defect_args import all_args, arg_type_dict
+from flask_server_files.helpers import jsonize_sqla_model, remove_empty_parameters
+from flask_server_files.models.defect import DefectModel
 from log_setup import lg
 
 

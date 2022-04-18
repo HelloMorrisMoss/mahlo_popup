@@ -1,6 +1,6 @@
 from flask_restful import reqparse, Resource
 
-from fresk.queuesholder import queues
+from flask_server_files.queuesholder import queues
 from log_setup import lg
 
 

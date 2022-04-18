@@ -6,13 +6,13 @@ import waitress
 from flask import g
 from flask_restful import Api
 
-from fresk.queuesholder import queues
-from fresk.resources.database import Database
-from fresk.resources.defect import Defect, DefectList
-from fresk.resources.lam_operator import Operator
-from fresk.resources.signal_popup import Popup
-from fresk.routing import routes_blueprint
-from fresk.sqla_instance import fsa
+from flask_server_files.queuesholder import queues
+from flask_server_files.resources.database import Database
+from flask_server_files.resources.defect import Defect, DefectList
+from flask_server_files.resources.lam_operator import Operator
+from flask_server_files.resources.signal_popup import Popup
+from flask_server_files.routing import routes_blueprint
+from flask_server_files.sqla_instance import fsa
 from log_setup import lg
 from untracked_config.db_uri import DATABASE_URI
 
@@ -93,7 +93,7 @@ def schedule_queue_watcher(in_message_queue, out_message_queue):
 def cleanup(resp_or_exc):
     """Clean up sqlalchemy sessions."""
 
-    from fresk.sqla_instance import Session
+    from flask_server_files.sqla_instance import Session
 
     Session.remove()
 

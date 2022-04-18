@@ -5,9 +5,9 @@ defects_table:  /defect_table renders a simple html view of the defects in the d
 """
 import flask
 
-from fresk.resources.defect import DefectList
+from flask_server_files.resources.defect import DefectList
 
-routes_blueprint = flask.Blueprint('routes', __name__, template_folder='fresk.templates')
+routes_blueprint = flask.Blueprint('routes', __name__, template_folder='flask_server_files.templates')
 
 
 @routes_blueprint.route('/defect_table')

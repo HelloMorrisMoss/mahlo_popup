@@ -3,7 +3,7 @@ import datetime
 
 from flask_restful import reqparse, Resource
 
-from fresk.sqla_instance import fsa
+from flask_server_files.sqla_instance import fsa
 from log_setup import lg
 
 
