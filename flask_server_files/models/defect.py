@@ -125,12 +125,15 @@ class DefectModel(Base):
         return new_def
 
     @classmethod
-    def get_defects_between_dates(cls, start_date, end_date):
+    def get_defects_between_dates(cls, start_date: datetime.datetime, end_date: datetime.datetime, lam_num: int = None):
         start_date = datetime.datetime.fromisoformat(start_date)
         end_date = datetime.datetime.fromisoformat(end_date)
-        results = DefectModel.query. \
+        defect_query = DefectModel.query. \
             filter(DefectModel.defect_start_ts > start_date, DefectModel.defect_start_ts < end_date). \
-            order_by(DefectModel.id.desc()).all()
+            order_by(DefectModel.id.desc())
+        if lam_num is not None:
+            defect_query = defect_query.filter(DefectModel.lam_num == lam_num)
+        results = defect_query.all()
         lg.debug('Data collected: %s records', len(results))
         return results
 
