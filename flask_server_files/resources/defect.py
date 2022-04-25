@@ -70,15 +70,18 @@ class DefectList(Resource):
     parser.add_argument('confirm_all', type=bool, required=False, help='This argument is optional.')
     parser.add_argument('start_date', type=str, required=False, help='Defects with start dates after this. (optional)')
     parser.add_argument('end_date', type=str, required=False, help='Defects with end dates before this. (optional)')
+    parser.add_argument('lam_num', type=str, required=False, help='Defects from this laminator number only. (optional)')
 
     def get(self):
         pargs = self.parser.parse_args()
         start_date = pargs.get('start_date')
         end_date = pargs.get('end_date')
+        lam_num = pargs.get('lam_num')
+        lam_num = int(lam_num) if lam_num is not None else None
         lg.info('Request for defects data received. Start: %s End: %s', start_date, end_date)
         with DefectModel.session() as session:
             if start_date and end_date:
-                results = DefectModel.get_defects_between_dates(start_date, end_date)
+                results = DefectModel.get_defects_between_dates(start_date, end_date, lam_num)
             else:
                 results = DefectModel.query.order_by(
                     DefectModel.id.desc()).all()
