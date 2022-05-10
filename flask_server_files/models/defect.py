@@ -5,7 +5,6 @@ from sqlalchemy import func
 
 from dev_common import exception_one_line
 from flask_server_files.helpers import jsonize_sqla_model
-from flask_server_files.models.model_wrapper import ModelWrapper
 from flask_server_files.sqla_instance import Base
 from log_setup import lg
 
@@ -70,7 +69,7 @@ class DefectModel(Base):
         """
 
         id_df = cls.query.filter_by(id=id_).first()
-        id_df = ModelWrapper(id_df)
+        # id_df = ModelWrapper(id_df)
         return id_df
 
     @classmethod
@@ -125,20 +124,67 @@ class DefectModel(Base):
         return new_def
 
     @classmethod
-    def get_defects_between_dates(cls, start_date: datetime.datetime, end_date: datetime.datetime, lam_num: int = None):
-        start_date = datetime.datetime.fromisoformat(start_date)
-        end_date = datetime.datetime.fromisoformat(end_date)
-        defect_query = DefectModel.query. \
-            filter(DefectModel.defect_start_ts > start_date, DefectModel.defect_start_ts < end_date). \
-            order_by(DefectModel.id.desc())
+    def get_defects_between_dates(cls, start_date: datetime.datetime, end_date: datetime.datetime,
+                                  lam_num: int = None):
+        """Get defects between the dates.
+
+        :param start_date: datetime.datetime
+        :param end_date: datetime.datetime
+        :param lam_num: int
+        :return: List[DefectModel]
+        """
+        start_date = datetime.datetime.fromisoformat(start_date) if isinstance(start_date, str) else start_date
+        end_date = datetime.datetime.fromisoformat(end_date) if isinstance(end_date, str) else end_date
+        filter_list = [DefectModel.defect_start_ts >= start_date,
+                       DefectModel.defect_start_ts <= end_date]
         if lam_num is not None:
-            defect_query = defect_query.filter(DefectModel.lam_num == lam_num)
-        results = defect_query.all()
-        lg.debug('Data collected: %s records', len(results))
-        return results
+            filter_list.append(DefectModel.lam_num == lam_num)
+        query = DefectModel.query.filter(*filter_list)
+        query = query.order_by(DefectModel.id.desc())
+        return query.all()
+
+    @classmethod
+    def get_defects_by_lot(cls, lot_num: str, lam_num: int = None) -> list:
+        """Get defect records that have a matching lot number.
+
+        :param lot_num: str
+        :param lam_num: int, optional
+        :return: List[DefectModel]
+        """
+        filter_list = [DefectModel.source_lot_number == lot_num]
+        if lam_num is not None:
+            filter_list.append(DefectModel.lam_num == lam_num)
+        query = DefectModel.query.filter(*filter_list)
+        return query.all()
+
+    @classmethod
+    def get_defects_between_dates_or_lot(cls, start_date: datetime.datetime,
+                                         end_date: datetime.datetime,
+                                         lot_num: str, lam_num: int = None) -> list:
+        """Get defect records that are between the start and end dates or have a matching lot number.
+
+        :param start_date: datetime.datetime
+        :param end_date: datetime.datetime
+        :param lot_num: str
+        :param lam_num: int, optional
+        :return: List[DefectModel]
+        """
+
+        filter_list = [sqlalchemy.sql.expression.or_(DefectModel.source_lot_number == lot_num,
+                                                     sqlalchemy.sql.expression.and_(
+                                                         DefectModel.defect_start_ts >= start_date,
+                                                         DefectModel.defect_start_ts <= end_date))]
+        if lam_num is not None:
+            filter_list.append(DefectModel.lam_num == lam_num)
+        query = DefectModel.query.filter(*filter_list)
+        return query.all()
+
+    @classmethod
+    def between_dates_filter(cls, end_date, start_date):
+        return
 
     def save_to_database(self):
-        """Save the changed to defect to the database."""
+        """Save (commit) the changes to the defect to the database."""
 
         self.session.add(self)
         try:

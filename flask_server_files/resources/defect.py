@@ -1,3 +1,6 @@
+import datetime
+from typing import List
+
 from flask_restful import reqparse, Resource
 
 from flask_server_files.defect_args import all_args, arg_type_dict
@@ -32,7 +35,7 @@ class Defect(Resource):
 
         # don't pass the Model empty parameters
         data = remove_empty_parameters(data)
-        defect = DefectModel
+        defect = DefectModel.new_defect(**data)
 
         return defect.jsonizable(), 201
 
@@ -71,23 +74,34 @@ class DefectList(Resource):
     parser.add_argument('start_date', type=str, required=False, help='Defects with start dates after this. (optional)')
     parser.add_argument('end_date', type=str, required=False, help='Defects with end dates before this. (optional)')
     parser.add_argument('lam_num', type=str, required=False, help='Defects from this laminator number only. (optional)')
+    parser.add_argument('lot_num_only', type=str, required=False, help='Defects matching this lot number only.')
+    parser.add_argument('lot_num_and', type=str, required=False, help='Defects matching this lot number, in addition'
+                                                                      'to other matches.')
 
     def get(self):
         pargs = self.parser.parse_args()
         start_date = pargs.get('start_date')
         end_date = pargs.get('end_date')
+        start_date = datetime.datetime.fromisoformat(start_date) if isinstance(start_date, str) else start_date
+        end_date = datetime.datetime.fromisoformat(end_date) if isinstance(end_date, str) else end_date
         lam_num = pargs.get('lam_num')
         lam_num = int(lam_num) if lam_num is not None else None
+        lot_num_and = pargs.get('lot_num_and')
+        lot_num_only = pargs.get('lot_num_only')
         lg.info('Request for defects data received. Start: %s End: %s', start_date, end_date)
         with DefectModel.session() as session:
-            if start_date and end_date:
-                results = DefectModel.get_defects_between_dates(start_date, end_date, lam_num)
+            results: List[DefectModel]  # type hint
+            if lot_num_only:
+                results = DefectModel.get_defects_by_lot(lot_num_only, lam_num)
             else:
-                results = DefectModel.query.order_by(
-                    DefectModel.id.desc()).all()
-            result_dict = {}
-            for row in results:
-                result_dict[row.id] = jsonize_sqla_model(row)
+                if start_date and end_date and not lot_num_and:
+                    results = DefectModel.get_defects_between_dates(start_date, end_date, lam_num)
+                elif start_date and end_date and lot_num_and:
+                    results = DefectModel.get_defects_between_dates_or_lot(start_date, end_date, lot_num_and, lam_num)
+                else:
+                    results = DefectModel.find_all()
+
+            result_dict = {row.id: jsonize_sqla_model(row) for row in results}
             DefectModel.session.remove()
         lg.debug('Returning %s defects data results response.', len(result_dict.keys()))
         return {'results_dict': result_dict, 'default_column_order': DefectModel.__table__.columns.keys()}, 200
