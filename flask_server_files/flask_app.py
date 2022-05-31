@@ -3,7 +3,6 @@ import logging
 
 import flask
 import waitress
-from flask import g
 from flask_restful import Api
 
 from flask_server_files.queuesholder import queues
@@ -46,8 +45,8 @@ def start_flask_app(in_message_queue=None, out_message_queue=None):
         with app.app_context():
             queues.in_message_queue = in_message_queue
             queues.out_message_queue = out_message_queue
-            g.in_message_queue = in_message_queue
-            g.out_message_queue = out_message_queue
+            app.in_message_queue = in_message_queue
+            app.out_message_queue = out_message_queue
             schedule_queue_watcher(in_message_queue, out_message_queue)
     else:
         lg.warning('No inbound defect_instance queue!')

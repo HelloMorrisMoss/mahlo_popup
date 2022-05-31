@@ -1,3 +1,3 @@
-from fresk.models.defect import DefectModel
+from flask_server_files.models.defect import DefectModel
 
 d1 = DefectModel.new_defect()

@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from fresk.helpers import jsonize_sqla_model
-from fresk.models.defect import DefectModel
+from flask_server_files.helpers import jsonize_sqla_model
+from flask_server_files.models.defect import DefectModel
 from tests.base_test import BaseTest
 
 
