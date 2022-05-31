@@ -18,3 +18,10 @@ def defects_table():
 	"""
 	import pandas as pd
 	return pd.DataFrame.from_dict(DefectList().get()[0]).T.to_html()
+
+
+@routes_blueprint.route('/popup_operational_check')
+def operational_check():
+	"""Ask the popup if it is operational."""
+
+	return {}, 200
