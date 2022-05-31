@@ -34,3 +34,13 @@ Contains a function that will return the minimum and maximum thickness for the p
     :param specification: str, the specification to use, default is Nitto internal spec.
     :return: tuple, of floats, the minimum and maximum.
     """
+
+## email_cfg_dict.py
+
+Contains a python dictionary used by the email_alert.py module.
+
+    email_cfg_dict = {'email_settings': {'recipient_list': ['name@domain.com'],
+                                     'sender_name': 'sender{num}@nitto.com',
+                                     'smtp_ser ver': '0.0.0.0'
+                                     }}
+    
