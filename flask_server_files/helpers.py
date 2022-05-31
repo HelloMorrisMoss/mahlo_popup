@@ -1,5 +1,7 @@
 import datetime
+from typing import Union
 
+import requests
 from sqlalchemy.types import TIMESTAMP, TypeDecorator
 
 
@@ -47,3 +49,20 @@ def remove_empty_parameters(data):
     """Accepts a dictionary and returns a dict with only the key, values where the values are not None."""
 
     return {key: value for key, value in data.items() if value is not None}
+
+
+def check_for_existing_instance() -> Union[requests.Response, None]:
+    """Attempts to connect to an existing web server to get the status of the popup.
+
+    :return: requests.Response, or None if a connection could not be made.
+    """
+    import requests
+    from log_setup import lg
+
+    try:
+        response: requests.Response = requests.get('http://0.0.0.0:5000/popup_status')
+        lg.debug(response)
+    except requests.exceptions.ConnectionError:
+        response: None = None
+
+    return response

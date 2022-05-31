@@ -1,15 +1,20 @@
 """Starts the flask server and then the popup interface."""
-
+import sys
 import threading
 from collections import deque
 
 from dev_common import exception_one_line
 from flask_server_files.flask_app import start_flask_app
+from flask_server_files.helpers import check_for_existing_instance
 from log_setup import lg
 from main_window import MainWindow
 from untracked_config.development_node import ON_DEV_NODE
 from untracked_config.lam_num import LAM_NUM
 from untracked_config.testing_this import testing_this
+
+# if there is already an instance running, stop now
+if check_for_existing_instance():
+    sys.exit()
 
 # allow communication between flask and the popup
 f2p_queue = deque()
