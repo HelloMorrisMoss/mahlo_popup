@@ -1,0 +1,79 @@
+* {
+    position: relative;
+    /*margin: 2px;*/
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    height: 100%
+}
+
+#header_div, #footer_div, #popup_controls_div {
+    background-image: radial-gradient(farthest-side at 5%, white, #efefff);
+}
+
+#container_div {
+    background-image: radial-gradient(farthest-side, #171c8f, #2f3245);
+    position: relative;
+    min-height: 100%;
+    display: block;
+    width: 100%;
+}
+
+#header_div {
+    height: 8vh;
+    top: 0;
+    display: block;
+    width: 100%;
+    border-bottom: #171c8f 2px groove;
+    vertical-align: bottom;
+    padding-top: 2px;
+}
+
+#title_div {
+    float: left;
+    vertical-align: bottom;
+    min-height: 100%;
+}
+
+#logo_bar_div {
+    float: right;
+}
+
+#popup_controls_div {
+    position: relative;
+    top: auto;
+    clear: both;
+    padding: 0;
+    margin: 0;
+}
+
+#popup_controls_title_div {
+    font-size: large;
+    font-weight: bold;
+    padding: 2px;
+    border-bottom: #2f3245 1px solid;
+}
+
+.control_button_div {
+    background-color: rgba(200, 200, 255, 0.4);
+    padding: 0;
+    margin: 0;
+    font-size: medium;
+    font-weight: normal;
+}
+
+.control_button {
+    font-weight: bold;
+}
+
+#footer_div {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2em;
+    clear: both;
+    font-size: large;
+}

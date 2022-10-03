@@ -1,0 +1,147 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Mahlo Defect Popup Supervisory Controls Page</title>
+    <meta content="Webpage for Mahlo Defect Popup Intermediate Server" name="description">
+    <!--	<meta http-equiv="refresh" content="30" >-->
+    <meta content="no-cache" http-equiv="cache-control"/>
+    <!-- http://meyerweb.com/eric/tools/css/reset/ -->
+    <link href="css/reset/reset.css" rel="stylesheet">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js" type="text/javascript"></script>
+    <![endif]-->
+    <!--  TODO: this isn't working  <link href="{{url_for('static', filename='controls_style.css')}}" rel="stylesheet"/>-->
+    <style>
+        * {
+            position: relative;
+            /*margin: 2px;*/
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%
+        }
+
+        #header_div, #footer_div, #popup_controls_div {
+            background-image: radial-gradient(farthest-side at 5%, white, #efefff);
+        }
+
+        #container_div {
+            background-image: radial-gradient(farthest-side, #171c8f, #2f3245);
+            position: relative;
+            min-height: 100%;
+            display: block;
+            width: 100%;
+        }
+
+        #header_div {
+            height: 8vh;
+            top: 0;
+            display: block;
+            width: 100%;
+            border-bottom: #171c8f 2px groove;
+            vertical-align: bottom;
+            padding-top: 2px;
+        }
+
+        #title_div {
+            float: left;
+            vertical-align: bottom;
+            min-height: 100%;
+        }
+
+        #logo_bar_div {
+            float: right;
+        }
+
+        #popup_controls_div {
+            position: relative;
+            top: auto;
+            clear: both;
+            padding: 0;
+            margin: 0;
+        }
+
+        #popup_controls_title_div {
+            font-size: large;
+            font-weight: bold;
+            padding: 2px;
+            border-bottom: #2f3245 1px solid;
+        }
+
+        .control_button_div {
+            background-color: rgba(200, 200, 255, 0.4);
+            padding: 0;
+            margin: 0;
+            font-size: medium;
+            font-weight: normal;
+        }
+
+        .control_button {
+            font-weight: bold;
+        }
+
+        #footer_div {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 2em;
+            clear: both;
+            font-size: large;
+        }
+    </style>
+</head>
+<body>
+<div id="container_div">
+    <!-- HEADER -->
+    <div id="header_div">
+        <div id="logo_bar_div">
+            <img alt="Company Logo" id="logo" src="{{url_for('static', filename='images/company_logo.svg')}}">
+        </div>
+        <div id="title_div">
+            <h1>Lam-{{lam_num}} Mahlo Screen Defect Popup Supervisory Control Buttons</h1>
+        </div>
+    </div>
+    <!-- CONTENT AREA -->
+    <div id="popup_controls_div">
+        <div id="popup_controls_title_div"><h3>Popup Control Buttons</h3></div>
+        <form action="/controls" method="post">
+            {% for act_str, act_dct in action_dict.items() %}
+            {% for act_key, act_val in act_dct.items() %}
+            {% if act_key == 'description' %}
+            <div class="control_button_div">
+                <input class="control_button" name="{{act_str}}" style="height:2em; width:10em" type="submit"
+                       value="{{act_str}}"/> {{act_val}}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endfor %}
+        </form>
+    </div>
+    <!-- FOOTER -->
+    <div id="footer_div">
+        <div id="footer_links">
+            <a href="http://10.155.0.21:5001/login/?next=%2Fdashboard%2F">Defect Lookup Table</a>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
+
+
+<!--density text-->
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>Title</title>-->
+<!--</head>-->
+<!--<body>-->
+
+<!--</body>-->
+<!--</html>-->

@@ -230,3 +230,5 @@ cython_debug/
 untracked_config/*
 !untracked_config/readme.md
 mahlo_popup.log
+/flask_server_files/static/images/company_logo.png
+/flask_server_files/static/images/company_logo.svg
