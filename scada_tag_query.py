@@ -81,7 +81,7 @@ class TagHistoryConnector(DatabaseConnection):
         :return: int, the tag id.
         """
 
-        id_sql_query = r'''SELECT id FROM sqlth_te WHERE tagpath ILIKE %s'''
+        id_sql_query = r'''SELECT id FROM sqlth_te WHERE tagpath ILIKE %s AND retired IS NULL'''
         self.crs.execute(id_sql_query, (tag_path_ilike_string,))
         results = self.crs.fetchall()
         result_count = len(results)
