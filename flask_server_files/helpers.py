@@ -60,7 +60,7 @@ def check_for_existing_instance() -> Union[requests.Response, None]:
     from log_setup import lg
 
     try:
-        response: requests.Response = requests.get('http://0.0.0.0:5000/popup_status')
+        response: requests.Response = requests.get('http://localhost:5000/popup_status')
         lg.debug(response)
     except requests.exceptions.ConnectionError:
         response: None = None

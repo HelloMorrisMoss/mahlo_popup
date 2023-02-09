@@ -14,7 +14,10 @@ from untracked_config.testing_this import testing_this
 
 # if there is already an instance running, stop now
 if check_for_existing_instance():
+    lg.debug('Existing instance found. Shutting down.')
     sys.exit()
+else:
+    lg.debug('No instance running. Proceeding.')
 
 # allow communication between flask and the popup
 f2p_queue = deque()
