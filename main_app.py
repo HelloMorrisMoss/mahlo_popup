@@ -1,58 +1,60 @@
 """Starts the flask server and then the popup interface."""
-import sys
 import threading
 from collections import deque
 
 from dev_common import exception_one_line
 from flask_server_files.flask_app import start_flask_app
-from flask_server_files.helpers import check_for_existing_instance
+from flask_server_files.helpers import single_instance
 from log_setup import lg
 from main_window import MainWindow
 from untracked_config.development_node import ON_DEV_NODE
 from untracked_config.lam_num import LAM_NUM
 from untracked_config.testing_this import testing_this
 
-# if there is already an instance running, stop now
-if check_for_existing_instance():
-    lg.debug('Existing instance found. Shutting down.')
-    sys.exit()
-else:
-    lg.debug('No instance running. Proceeding.')
-
-# allow communication between flask and the popup
-f2p_queue = deque()
-p2f_queue = deque()
-
-# default
-run_server = True
-run_popup = True
-
-# testing pieces individually
-if ON_DEV_NODE:
-    if testing_this == '1':
-        run_popup = False
-    elif testing_this == '2':
-        run_server = False
-
-else:
-    if not LAM_NUM:
-        run_popup = False  # don't run the popup on the oee server
 try:
-    if run_server and run_popup:
-        # start the flask app in its own thread
-        flask_thread = threading.Thread(target=start_flask_app, args=(p2f_queue, f2p_queue))
-        flask_thread.setDaemon(True)
-        flask_thread.start()
+    # if there is already an instance running, stop now
+    with single_instance('./malo_popup.lock'):
+        # allow communication between flask and the popup
+        f2p_queue = deque()
+        p2f_queue = deque()
 
-        # start the popup (tkinter requires the main thread)
-        MainWindow(inbound_queue=f2p_queue, outbound_queue=p2f_queue)
+        # default
+        run_server = True
+        run_popup = True
 
-    elif run_server:
-        lg.info('Starting the flask webserver without a popup.')
-        start_flask_app(p2f_queue, f2p_queue)
-    elif run_popup:
-        lg.info('Starting popup without a flask server.')
-        MainWindow(inbound_queue=f2p_queue, outbound_queue=p2f_queue)
+        # testing pieces individually
+        if ON_DEV_NODE:
+            if testing_this == '1':
+                run_popup = False
+            elif testing_this == '2':
+                run_server = False
+
+        else:
+            if not LAM_NUM:
+                run_popup = False  # don't run the popup on the oee server
+
+        if run_server and run_popup:
+            # start the flask app in its own thread
+            flask_thread = threading.Thread(target=start_flask_app, args=(p2f_queue, f2p_queue))
+            flask_thread.setDaemon(True)
+            flask_thread.start()
+
+            # start the popup (tkinter requires the main thread)
+            MainWindow(inbound_queue=f2p_queue, outbound_queue=p2f_queue)
+
+        elif run_server:
+            lg.info('Starting the flask webserver without a popup.')
+            start_flask_app(p2f_queue, f2p_queue)
+        elif run_popup:
+            lg.info('Starting popup without a flask server.')
+            MainWindow(inbound_queue=f2p_queue, outbound_queue=p2f_queue)
+
+except OSError as ose:
+    if str(ose) == 'Another instance of the program is already running.':
+        lg.debug(ose)
+    else:
+        lg.error(ose)
+
 except Exception as exc:
     from email_alert import get_email_cfg_dict, set_up_alert
     from traceback import format_exc as fexc
@@ -66,6 +68,7 @@ except Exception as exc:
     {LAM_NUM=}
     {run_popup=}
     {run_server=}
+    {ON_DEV_NODE=}
     stacktrace:
     ''' + exc_text
 

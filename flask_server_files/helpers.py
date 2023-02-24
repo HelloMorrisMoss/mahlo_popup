@@ -1,7 +1,9 @@
+import contextlib
 import datetime
-from typing import Union
+import errno
+import os
+from typing import Any, Callable
 
-import requests
 from sqlalchemy.types import TIMESTAMP, TypeDecorator
 
 
@@ -51,18 +53,31 @@ def remove_empty_parameters(data):
     return {key: value for key, value in data.items() if value is not None}
 
 
-def check_for_existing_instance() -> Union[requests.Response, None]:
-    """Attempts to connect to an existing web server to get the status of the popup.
+@contextlib.contextmanager
+def single_instance(filename: str) -> Callable[[], Any]:
+    """A context manager that ensures only one instance of the program is running at a time.
 
-    :return: requests.Response, or None if a connection could not be made.
+    :param filename: A string representing the location of the lock file.
+    :type filename: str
+
+    :yields: None
+
+    :raises OSError: If the lock file cannot be created exclusively, or if the lock cannot be obtained.
     """
-    import requests
-    from log_setup import lg
 
     try:
-        response: requests.Response = requests.get('http://localhost:5000/popup_status')
-        lg.debug(response)
-    except requests.exceptions.ConnectionError:
-        response: None = None
-
-    return response
+        # Open the lock file in exclusive mode
+        handle = os.open(filename, os.O_CREAT | os.O_EXCL | os.O_RDWR)
+    except OSError as e:
+        # Another instance is already running
+        if e.errno == errno.EEXIST:
+            raise OSError('Another instance of the program is already running.') from e
+        else:
+            # Reraise the exception for other OSError types
+            raise
+    try:
+        yield
+    finally:
+        # Release the lock and delete the file
+        os.close(handle)
+        os.remove(filename)
