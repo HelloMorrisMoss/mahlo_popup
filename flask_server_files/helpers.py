@@ -2,6 +2,7 @@ import contextlib
 import datetime
 import errno
 import os
+import time
 from typing import Any, Callable
 
 from sqlalchemy.types import TIMESTAMP, TypeDecorator
@@ -54,27 +55,38 @@ def remove_empty_parameters(data):
 
 
 @contextlib.contextmanager
-def single_instance(filename: str) -> Callable[[], Any]:
+def single_instance(filename: str, timeout: float = 10.0) -> Callable[[], Any]:
     """A context manager that ensures only one instance of the program is running at a time.
 
     :param filename: A string representing the location of the lock file.
     :type filename: str
+    :param timeout: The maximum number of seconds to wait for the lock, defaults to 10.0.
+    :type timeout: float
 
     :yields: None
 
     :raises OSError: If the lock file cannot be created exclusively, or if the lock cannot be obtained.
     """
 
-    try:
-        # Open the lock file in exclusive mode
-        handle = os.open(filename, os.O_CREAT | os.O_EXCL | os.O_RDWR)
-    except OSError as e:
-        # Another instance is already running
-        if e.errno == errno.EEXIST:
-            raise OSError('Another instance of the program is already running.') from e
-        else:
-            # Reraise the exception for other OSError types
-            raise
+    start_time = time.monotonic()
+    while True:
+        try:
+            # Open the lock file in exclusive mode
+            handle = os.open(filename, os.O_CREAT | os.O_EXCL | os.O_RDWR)
+        except OSError as e:
+            # Another instance is already running
+            if e.errno == errno.EEXIST:
+                # Check if the lock has timed out
+                if time.monotonic() - start_time > timeout:
+                    os.remove(filename)
+                else:
+                    time.sleep(0.1)
+                    continue
+            else:
+                # Reraise the exception for other OSError types
+                raise
+        break
+
     try:
         yield
     finally:
