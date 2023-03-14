@@ -1,8 +1,10 @@
 """Starts the flask server and then the popup interface."""
 import threading
 from collections import deque
+from traceback import format_exc as fexc
 
 from dev_common import exception_one_line
+from email_alert import get_email_cfg_dict, set_up_alert
 from flask_server_files.flask_app import start_flask_app
 from flask_server_files.helpers import single_instance
 from log_setup import lg
@@ -22,6 +24,13 @@ try:
         run_server = True
         run_popup = True
 
+        email_body_context = f'''Exception context:
+            {LAM_NUM=}
+            {run_popup=}
+            {run_server=}
+            {ON_DEV_NODE=}
+            '''
+
         # testing pieces individually
         if ON_DEV_NODE:
             if testing_this == '1':
@@ -32,6 +41,15 @@ try:
         else:
             if not LAM_NUM:
                 run_popup = False  # don't run the popup on the oee server
+
+            else:
+                # probably running on a mahlo pc, make it known that it's starting up
+                subject = f'Mahlo Popup on lam{LAM_NUM} is starting up since no other instance is running.'
+                body = email_body_context
+
+                cfg = get_email_cfg_dict(lam_num=LAM_NUM)
+                set_up_alert(cfg, subject=subject,
+                             body=body)
 
         if run_server and run_popup:
             # start the flask app in its own thread
@@ -56,21 +74,12 @@ except OSError as ose:
         lg.error(ose)
 
 except Exception as exc:
-    from email_alert import get_email_cfg_dict, set_up_alert
-    from traceback import format_exc as fexc
-
     exc_text = fexc().replace('\\n', '\n')
     lg.error(exception_one_line(exc))
 
     # if anything goes wrong at this level, the program is crashing, it needs to be known, send an e-mail
     subject = f'Mahlo Popup on lam{LAM_NUM} has had an unhandled exception and is shutting down'
-    body = f'''Exception context:
-    {LAM_NUM=}
-    {run_popup=}
-    {run_server=}
-    {ON_DEV_NODE=}
-    stacktrace:
-    ''' + exc_text
+    body = email_body_context + 'stacktrace:' + exc_text
 
     cfg = get_email_cfg_dict(lam_num=LAM_NUM)
     set_up_alert(cfg, subject=subject,
