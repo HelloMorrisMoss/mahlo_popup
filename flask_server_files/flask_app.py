@@ -14,6 +14,7 @@ from flask_server_files.routing import routes_blueprint
 from flask_server_files.sqla_instance import fsa
 from log_setup import lg
 from untracked_config.db_uri import DATABASE_URI
+from untracked_config.server_settings import host, port, server_threads
 
 # create and config the flask app
 app = flask.Flask(__name__)
@@ -53,9 +54,7 @@ def start_flask_app(in_message_queue=None, out_message_queue=None):
 
     fsa.init_app(app)
 
-    host = '0.0.0.0'  # accessible to outside connections
-    port = 5000
-    waitress.serve(app, host=host, port=port, threads=2)
+    waitress.serve(app, host=host, port=port, threads=server_threads)
     lg.debug('after waitress!')
 
 
