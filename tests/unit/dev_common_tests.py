@@ -1,4 +1,9 @@
+import os
+import shutil
+import tempfile
 import unittest
+
+from dev_common import blank_up
 
 
 class DevCommonTests(unittest.TestCase):
@@ -24,3 +29,29 @@ class DevCommonTests(unittest.TestCase):
             with self.subTest(i=subt):
                 test_dt = datetime.datetime(year=2022, month=1, day=1, hour=hour, minute=minute, second=second)
                 self.assertEqual(dt_to_shift(test_dt), control_shift)
+
+
+class TestBlankUp(unittest.TestCase):
+
+    def setUp(self):
+        # create a temporary directory
+        self.test_dir = tempfile.mkdtemp()
+
+        # create a test file inside the temporary directory
+        self.test_file = os.path.join(self.test_dir, 'test.txt')
+        with open(self.test_file, 'w') as f:
+            f.write('test')
+
+    def tearDown(self):
+        # remove the temporary directory and its contents
+        shutil.rmtree(self.test_dir)
+
+    def test_blank_up(self):
+        # call the function and check that a backup file was created
+        blank_up(self.test_file)
+        backup_files = [file for file in os.listdir(self.test_dir) if file.startswith('test_BACKUP_')]
+        self.assertEqual(len(backup_files), 1)
+
+        # check that the original file was replaced with an empty file
+        with open(self.test_file, 'r') as f:
+            self.assertEqual(f.read(), '')
