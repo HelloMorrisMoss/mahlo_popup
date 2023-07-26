@@ -291,7 +291,7 @@ def blank_up(file_path, after_backup_function=touch):
     import time
 
     timestr = time.strftime("%Y%m%d-%H%M%S")
-    fp, ext = os.path.extsep(file_path)
+    fp, ext = os.path.splitext(file_path)
     new_fp = f'{fp}_BACKUP_{timestr}{ext}'
     os.rename(file_path, new_fp)
     lg.info('Backing up last_position.txt to %s', new_fp)
