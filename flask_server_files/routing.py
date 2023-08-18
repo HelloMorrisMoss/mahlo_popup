@@ -43,7 +43,7 @@ def operational_check():
         for mn, msg in enumerate(app.in_message_queue):
             status_received = msg.get('popup_status')
 
-            # ocne a message has been received stop checking
+            # once a message has been received stop checking
             if status_received:
                 break
         if status_received:
@@ -55,6 +55,16 @@ def operational_check():
     lg.debug(p_status)
 
     return p_status, 200
+
+
+@routes_blueprint.route('/server_status', methods=['GET'])
+def server_operational_check():
+    """Ask the server if it is operational."""
+    from flask import current_app as app
+
+    server_status = {'server_status': {'program_unique_id': app.program_unique_id}}
+
+    return server_status, 200
 
 
 act_keys = action_dict.keys()
@@ -75,7 +85,7 @@ def supervisory_controls_page():
             lg.debug('Checking for %s', actn)
             if action_requested := request.form.get(actn):
                 lg.debug('Action requested: %s', action_requested)
-                form_response = requests.post('http://localhost:5000/popup', json={'action': action_requested}, )
+                form_response = requests.post('http://localhost:5000/popup', json={'action': action_requested})
                 if form_response.status_code != 200:
                     lg.warn(f'Action post error: {form_response.__dict__=}')
     return flask.render_template('pop_up_supervisory_controls.html', action_list=act_keys, action_dict=action_dict,

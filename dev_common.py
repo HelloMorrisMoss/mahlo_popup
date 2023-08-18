@@ -311,5 +311,5 @@ def exception_one_line(exception_obj):
     :return: str, the message string.
     """
     from traceback import format_exception
-    return ''.join(format_exception(FileNotFoundError, exception_obj, exception_obj.__traceback__)
+    return ''.join(format_exception(type(exception_obj), exception_obj, exception_obj.__traceback__)
                    ).replace('\n', '\\n')
