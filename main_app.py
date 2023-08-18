@@ -54,7 +54,7 @@ try:
         if run_server and run_popup:
             # start the flask app in its own thread
             flask_thread = threading.Thread(target=start_flask_app, args=(p2f_queue, f2p_queue))
-            flask_thread.setDaemon(True)
+            flask_thread.daemon = True
             flask_thread.start()
 
             # start the popup (tkinter requires the main thread)
