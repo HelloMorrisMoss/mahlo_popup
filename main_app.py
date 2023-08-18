@@ -1,4 +1,5 @@
 """Starts the flask server and then the popup interface."""
+import os
 import threading
 from collections import deque
 from traceback import format_exc as fexc
@@ -16,7 +17,13 @@ from untracked_config.testing_this import testing_this
 
 try:
     # if there is already an instance running, stop now
-    with single_instance('./malo_popup.lock'):
+    lock_file_path = './malo_popup.lock'
+    try:
+        os.remove(lock_file_path)
+    except FileNotFoundError:
+        pass  # good
+
+    with single_instance(lock_file_path):
         # allow communication between flask and the popup
         f2p_queue = deque()
         p2f_queue = deque()
@@ -74,19 +81,21 @@ try:
             MainWindow(inbound_queue=f2p_queue, outbound_queue=p2f_queue)
 
 except OSError as ose:
-    if str(ose) == 'Another instance of the program is already running.':
-        lg.debug(ose)
+    if str(ose) in ('Another instance of the program is already running.',
+                    "[WinError 32] The process cannot access the file because it is being used by another process: "
+                    "'./malo_popup.lock'"):
+        lg.debug(ose)  # normal
     else:
         lg.error(ose)
 
 except Exception as exc:
     exc_text = fexc().replace('\\n', '\n')
     lg.error(exception_one_line(exc))
+    if not ON_DEV_NODE:
+        # if anything goes wrong at this level, the program is crashing, it needs to be known, send an e-mail
+        subject = f'Mahlo Popup on lam{LAM_NUM} has had an unhandled exception and is shutting down'
+        body = email_body_context + 'stacktrace:' + exc_text
 
-    # if anything goes wrong at this level, the program is crashing, it needs to be known, send an e-mail
-    subject = f'Mahlo Popup on lam{LAM_NUM} has had an unhandled exception and is shutting down'
-    body = email_body_context + 'stacktrace:' + exc_text
-
-    cfg = get_email_cfg_dict(lam_num=LAM_NUM)
-    set_up_alert(cfg, subject=subject,
-                 body=body)
+        cfg = get_email_cfg_dict(lam_num=LAM_NUM)
+        set_up_alert(cfg, subject=subject,
+                     body=body)
