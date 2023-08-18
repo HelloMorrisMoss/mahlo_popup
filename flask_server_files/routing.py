@@ -70,12 +70,13 @@ def supervisory_controls_page():
     if request.method == 'GET':
         lg.debug('supervisory page loading.')
     elif request.method == 'POST':  # button pressed
-        lg.debug('supervisory page POST RECIEVED')
+        lg.debug('supervisory page POST RECEIVED')
         for actn in act_keys:  # loop through the button actions and send a request to this web server for the action
             lg.debug('Checking for %s', actn)
             if action_requested := request.form.get(actn):
                 lg.debug('Action requested: %s', action_requested)
-                form_response = requests.post('http://localhost:5000/popup', data={'action': action_requested})
-
+                form_response = requests.post('http://localhost:5000/popup', json={'action': action_requested}, )
+                if form_response.status_code != 200:
+                    lg.warn(f'Action post error: {form_response.__dict__=}')
     return flask.render_template('pop_up_supervisory_controls.html', action_list=act_keys, action_dict=action_dict,
                                  lam_num=LAM_NUM, form_response=form_response)
