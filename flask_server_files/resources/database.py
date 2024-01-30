@@ -17,9 +17,11 @@ def create_tables():
 
     if ON_DEV_NODE:
         fsa.drop_all()  # TODO: this is for model/table development only and SHOULD NOT be used with production
+        lg.debug('Database tables have been deleted.')
 
     # this ensures there is a table there
     fsa.create_all()
+    lg.debug('Database tables have been created.')
 
 
 class Database(Resource):

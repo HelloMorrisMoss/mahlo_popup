@@ -17,11 +17,17 @@ class TagIds:
                     'lot_number': 'mahlo/lam1/batchid',
                     'length': 'MAHLO/LAM1/MdMeterCount',
                     'shift_number': 'Miscellaneous Tags/Shift',
+                    'recipe': 'MAHLO/LAM1/KeyName',
+                    'file_name': 'MAHLO/LAM1/FileName',
+                    'tabcode': 'MAHLO/LAM1/TiRollCount',
                     },
                 'lam2': {
                     'lot_number': 'mahlo/lam2/batchid',
                     'length': 'MAHLO/LAM2/MdMeterCount',
                     'shift_number': 'Miscellaneous Tags/Shift',
+                    'recipe': 'MAHLO/LAM2/KeyName',
+                    'file_name': 'MAHLO/LAM2/FileName',
+                    'tabcode': 'MAHLO/LAM2/TiRollCount',
                     },
 
                 }
@@ -132,6 +138,18 @@ class TagHistoryConnector(DatabaseConnection):
 
     def get_current_shift_number(self):
         result_row = self.get_recent_values(self.tag_ids.shift_number, 1)
+        return result_row[0][1]
+
+    def get_current_recipe(self):
+        result_row = self.get_recent_values(self.tag_ids.recipe, 1)
+        return result_row[0][3]
+
+    def get_current_file_name(self):
+        result_row = self.get_recent_values(self.tag_ids.file_name, 1)
+        return result_row[0][3]
+
+    def get_current_tabcode(self):
+        result_row = self.get_recent_values(self.tag_ids.tabcode, 1)
         return result_row[0][1]
 
 
