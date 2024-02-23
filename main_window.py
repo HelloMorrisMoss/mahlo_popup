@@ -81,6 +81,7 @@ class MainWindow(tk.Tk):
         self.number_of_messages_button = add_show_messages_button(self, 0, self.show_hideables)
         self.number_of_messages_button.grid(row=0, column=0, sticky='nesw')
         self.number_of_messages_button.grid_remove()
+        self._additional_message = ''
         self.subscribe_message_button_to_defect_display_count()
         self.columnconfigure(0, weight=1)  # to make the button able to fill the width
         self.rowconfigure(0, weight=1)  # to make the button able to fill the height
@@ -141,6 +142,14 @@ class MainWindow(tk.Tk):
         self.after(10_000, self.check_shift)
 
         self.mainloop()
+
+    @property
+    def additional_message(self):
+        return self._additional_message
+
+    @additional_message.setter
+    def additional_message(self, new_message: str):
+        self._additional_message = new_message
 
     def set_window_icon(self, ico_path):
         try:
@@ -247,7 +256,7 @@ class MainWindow(tk.Tk):
 
         def update_function(value):
             """Update the number_of_messages_button's text to the number of defects displayed."""
-            self.number_of_messages_button.config(text=str(value))
+            self.number_of_messages_button.config(text=str(value) + self.additional_message)
 
         self.popup_frame.current_defects.subscribe(self.number_of_messages_button, update_function)
 
