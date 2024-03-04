@@ -369,7 +369,11 @@ class MainWindow(tk.Tk):
                             if isinstance(new_msg, str):
                                 self.additional_message = action_dict.get('additional_message_text')
                                 self.popup_frame.current_defects.publish()
+                            if action_dict.get('button_color') is not None:
+                                warn_style = ttk.Style()
+                                warn_style.configure("BW.TButton", background="white")
 
+                                self.number_of_messages_button.configure(style="BW.TButton")
                     else:
                         # clear out any messages that cannot be used so that they don't accumulate
                         unused_messge = action_dict
