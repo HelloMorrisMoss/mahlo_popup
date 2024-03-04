@@ -15,6 +15,7 @@ from flask_server_files.resources.signal_popup import Popup
 from flask_server_files.routing import routes_blueprint
 from flask_server_files.sqla_instance import fsa
 from log_setup import lg
+from resources.btn_msg import ButtonMessage
 from untracked_config.db_uri import DATABASE_URI
 from untracked_config.server_settings import host, port, server_threads
 
@@ -33,6 +34,7 @@ api.add_resource(Popup, '/popup')
 api.add_resource(DefectList, '/defects')
 api.add_resource(Database, '/database')
 api.add_resource(Operator, '/operator')
+api.add_resource(ButtonMessage, '/button_msg')
 
 app.register_blueprint(routes_blueprint)
 
@@ -80,6 +82,7 @@ def schedule_queue_watcher(in_message_queue, out_message_queue):
                     msg = in_message_queue.pop()
                     out_message_queue.append({'message': 'hello'})
                     lg.debug('Regular check at %s found a defect_instance: %s', datetime.datetime.now(), msg)
+
                 except IndexError:
                     lg.warning('Index error in while loop. Should never happen.')
                     break  # the deque is empty TODO: the while and try except SHOULD be redundant

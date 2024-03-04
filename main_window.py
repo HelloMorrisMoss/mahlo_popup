@@ -254,11 +254,11 @@ class MainWindow(tk.Tk):
         """Subscribes the self.number_of_messages_button to the length of the defect list.
          The list calls a function to update the text on the button when the number of defects change."""
 
-        def update_function(value):
-            """Update the number_of_messages_button's text to the number of defects displayed."""
-            self.number_of_messages_button.config(text=str(value) + self.additional_message)
+        self.popup_frame.current_defects.subscribe(self.number_of_messages_button, self.update_function)
 
-        self.popup_frame.current_defects.subscribe(self.number_of_messages_button, update_function)
+    def update_function(self, value):
+        """Update the number_of_messages_button's text to the number of defects displayed."""
+        self.number_of_messages_button.config(text=str(value) + self.additional_message)
 
     def show_hideables(self, event=None):
         """Show the defect message panels, control panel, etc."""
@@ -363,6 +363,13 @@ class MainWindow(tk.Tk):
                                                             'current_form': self.current_form,
                                                             'operator': self.current_operator.get()
                                                             }})
+                    elif action_str == 'set_additional_msg':
+                        new_msg = action_dict.get('additional_message_text')
+                        if new_msg is not None:
+                            if isinstance(new_msg, str):
+                                self.additional_message = action_dict.get('additional_message_text')
+                                self.popup_frame.current_defects.publish()
+
                     else:
                         # clear out any messages that cannot be used so that they don't accumulate
                         unused_messge = action_dict
