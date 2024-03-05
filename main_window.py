@@ -3,6 +3,7 @@ import datetime
 import json
 import tkinter
 import tkinter as tk
+from pprint import pprint
 from tkinter import ttk
 
 from dev_common import add_show_messages_button, blank_up, dt_to_shift, exception_one_line, recurse_hover, \
@@ -370,10 +371,30 @@ class MainWindow(tk.Tk):
                                 self.additional_message = action_dict.get('additional_message_text')
                                 self.popup_frame.current_defects.publish()
                             if action_dict.get('button_color') is not None:
-                                warn_style = ttk.Style()
-                                warn_style.configure("BW.TButton", background="white")
+                                lg.debug('Window button color changing. %s', action_dict)
+                                # todo: setup the styles somewhere else
 
-                                self.number_of_messages_button.configure(style="BW.TButton")
+                                import tkinter.ttk as ttk
+
+                                def get_ttk_style_dict(style_name: str):
+                                    arg_list = ['background', 'foreground', 'font', 'bordercolor', 'relief', 'padding',
+                                                'anchor', 'justify', 'wraplength', 'width', 'height', 'spacing',
+                                                'compound', 'image', 'text', 'underline', 'state', 'arrowcolor',
+                                                'arrowpadding', 'arrowsize', 'backgroundimage', 'anchor', 'corner',
+                                                'shift', 'tabposition', 'tabstyle']
+                                    ts = ttk.Style()
+                                    return {arg: value for arg, value in
+                                            ((arg, ts.lookup(style_name, arg)) for arg in arg_list) if value != ''}
+
+                                accent_style = get_ttk_style_dict('Accent.TButton')
+                                accent_style['background'] = 'orange'
+                                pprint(accent_style)
+
+                                warn_style = ttk.Style()
+                                warn_style.configure('Warn.TButton', **accent_style)
+                                # ttk.Style().lookup()
+
+                                self.number_of_messages_button.configure(style='Warn.TButton')
                     else:
                         # clear out any messages that cannot be used so that they don't accumulate
                         unused_messge = action_dict
