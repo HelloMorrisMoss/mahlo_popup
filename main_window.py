@@ -82,10 +82,18 @@ class MainWindow(tk.Tk):
         self.number_of_messages_button = add_show_messages_button(self, 0, self.show_hideables)
         self.number_of_messages_button.grid(row=0, column=0, sticky='nesw')
         self.number_of_messages_button.grid_remove()
-        self._additional_message = ''
         self.subscribe_message_button_to_defect_display_count()
         self.columnconfigure(0, weight=1)  # to make the button able to fill the width
         self.rowconfigure(0, weight=1)  # to make the button able to fill the height
+
+        # additional message label
+        self._additional_message = tk.StringVar()
+        self._additional_message.set('default text')
+        self.additional_message_label = tk.Label(self, textvariable=self._additional_message)
+        self.additional_message_label.configure(background='orange', font=('Segoe Ui', 15, 'bold'))
+        self.show_add_msg_label(None)
+        # todo: only allow dismissing on full window
+        self.additional_message_label.bind('<Button-1>', self.hide_add_msg_label)
 
         # operator and shift
         self.current_operator = tk.StringVar()
@@ -150,7 +158,14 @@ class MainWindow(tk.Tk):
 
     @additional_message.setter
     def additional_message(self, new_message: str):
-        self._additional_message = new_message
+        print(f'setting add msg to {new_message}')
+        self._additional_message.set(new_message)
+
+    def hide_add_msg_label(self, event=None):
+        self.additional_message_label.grid_remove()
+
+    def show_add_msg_label(self, event=None):
+        self.additional_message_label.grid(row=1, column=0, sticky='ew')
 
     def set_window_icon(self, ico_path):
         try:
@@ -259,7 +274,7 @@ class MainWindow(tk.Tk):
 
     def update_function(self, value):
         """Update the number_of_messages_button's text to the number of defects displayed."""
-        self.number_of_messages_button.config(text=str(value) + self.additional_message)
+        self.number_of_messages_button.config(text=str(value))
 
     def show_hideables(self, event=None):
         """Show the defect message panels, control panel, etc."""
@@ -368,33 +383,9 @@ class MainWindow(tk.Tk):
                         new_msg = action_dict.get('additional_message_text')
                         if new_msg is not None:
                             if isinstance(new_msg, str):
-                                self.additional_message = action_dict.get('additional_message_text')
-                                self.popup_frame.current_defects.publish()
-                            if action_dict.get('button_color') is not None:
-                                lg.debug('Window button color changing. %s', action_dict)
-                                # todo: setup the styles somewhere else
-
-                                import tkinter.ttk as ttk
-
-                                def get_ttk_style_dict(style_name: str):
-                                    arg_list = ['background', 'foreground', 'font', 'bordercolor', 'relief', 'padding',
-                                                'anchor', 'justify', 'wraplength', 'width', 'height', 'spacing',
-                                                'compound', 'image', 'text', 'underline', 'state', 'arrowcolor',
-                                                'arrowpadding', 'arrowsize', 'backgroundimage', 'anchor', 'corner',
-                                                'shift', 'tabposition', 'tabstyle']
-                                    ts = ttk.Style()
-                                    return {arg: value for arg, value in
-                                            ((arg, ts.lookup(style_name, arg)) for arg in arg_list) if value != ''}
-
-                                accent_style = get_ttk_style_dict('Accent.TButton')
-                                accent_style['background'] = 'orange'
-                                pprint(accent_style)
-
-                                warn_style = ttk.Style()
-                                warn_style.configure('Warn.TButton', **accent_style)
-                                # ttk.Style().lookup()
-
-                                self.number_of_messages_button.configure(style='Warn.TButton')
+                                self._additional_message.set(action_dict.get('additional_message_text'))
+                                self.show_add_msg_label()
+                                # todo: label color
                     else:
                         # clear out any messages that cannot be used so that they don't accumulate
                         unused_messge = action_dict
