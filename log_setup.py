@@ -1,6 +1,7 @@
 """Contains the logger setup and a simple script to read the log file into a pandas dataframe."""
 import logging
 import sys
+import uuid
 from logging.handlers import RotatingFileHandler
 
 from untracked_config.development_node import ON_DEV_NODE
@@ -42,7 +43,15 @@ def setup_logger():
     # file logger
     f_handler = RotatingFileHandler('mahlo_popup.log', maxBytes=2000000)
     f_handler.setLevel(base_log_level)
-    f_string = '"%(asctime)s","%(name)s", "%(breadcrumbs)s","%(funcName)s","%(lineno)d","%(levelname)s","%(message)s"'
+    f_string = ('"%(asctime)s",'
+                '"%(name)s",'
+                f'"{str(uuid.uuid4())[:8]}",'
+                '"%(breadcrumbs)s",'
+                '"%(funcName)s",'
+                '"%(lineno)d",'
+                '"%(levelname)s",'
+                '"%(message)s"'
+                )
     f_format = logging.Formatter(f_string)
     f_handler.addFilter(BreadcrumbFilter())
     f_handler.setFormatter(f_format)
