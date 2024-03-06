@@ -1,5 +1,7 @@
 import datetime
 import logging
+from collections import deque
+from functools import partial
 
 import flask
 import requests
@@ -89,7 +91,7 @@ def schedule_queue_watcher(in_message_queue, out_message_queue):
     logging.getLogger('apscheduler').setLevel(logging.WARNING)  # don't need to know everything the daemon does
     scheduler.add_job(regular_check_function, 'interval', seconds=10)
 
-    def check_that_port_is_mine():
+    def check_that_port_is_mine(out_bound_messages: deque):
         """Regularly checks the status of the local server port to ensure this program instance is in control.
 
         This function sends a GET request to the local 'server_status' page to check the status of the local server
@@ -107,27 +109,43 @@ def schedule_queue_watcher(in_message_queue, out_message_queue):
         Note: This function is intended to serve as a workaround for an issue where multiple program instances are
         running simultaneously due to an issue that has not been identified.
         """
+        # raise RuntimeError("checking how this is handled")
+        # todo: the errors get logged, but do not stop anything from running
+        #  no sign of these in the logs, though
+        # os.abort()  # this shuts the program down without a trace...
+
+        # this looks to leave behind a no longer locked lock file
+        # restart_arguments = [sys.executable, sys.executable, *sys.argv]
+        # lg.info('restart args: %s', restart_arguments)
+        # os.execl(*restart_arguments)
+
+        restart_signal = None
+        # restart_signal = RuntimeError('sending restart signal')  # for development
+
         try:
             response = requests.get(f'http://localhost:{port}/server_status', timeout=8000)
+            if response.status_code == 200:
+                if response.json().get('server_status').get('program_unique_id') != app.program_unique_id:
+                    restart_signal = RuntimeError('Routine check of port control does not have a matching '
+                                                  'program_unique_id, another session must have control of the port. '
+                                                  'Aborting this instance, now!')
+                else:
+                    app.port_check_errors = 0
+            else:
+                lg.warning('Failure during routine check of port control. %s', response)
+                app.port_check_errors += 1
+                if app.port_check_errors > 3:
+                    restart_signal = RuntimeError('Unable to check port control for %d times, shutting down this program '
+                                                  'instance, now!', app.port_check_errors)
         except requests.exceptions.ConnectionError as conerr:
             lg.critical('Routine check of port control could not connect. No one has control of the port! Restarting '
                         'program, now! %s', conerr)
-            restart_program()
-        if response.status_code == 200:
-            if response.json().get('server_status').get('program_unique_id') != app.program_unique_id:
-                raise RuntimeError('Routine check of port control does not have a matching program_unique_id, another '
-                                   'session must have control of the port. Aborting this instance, now!')
-            else:
-                app.port_check_errors = 0
-        else:
-            lg.warning('Failure during routine check of port control. %s', response)
-            app.port_check_errors += 1
-            if app.port_check_errors > 3:
-                raise RuntimeError('Unable to check port control for %d times, shutting down this program instance, '
-                                   'now!', app.port_check_errors)
+            restart_signal = conerr
 
-    scheduler.add_job(check_that_port_is_mine, 'interval', seconds=10)
+        if restart_signal:
+            out_bound_messages.append({'action': 'restart_popup', 'error': restart_signal})
 
+    scheduler.add_job(partial(check_that_port_is_mine, out_message_queue), 'interval', seconds=10)
     scheduler.start()
 
 

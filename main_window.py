@@ -339,7 +339,8 @@ class MainWindow(tk.Tk):
                     elif action_str == 'reset_position':
                         self.geometry('+0+0')
                     elif action_str == 'restart_popup':
-                        lg.info('Restarting Mahlo Defect Record Popup.')
+                        merr = action_dict.get('error')
+                        lg.info('%s%sRestarting Mahlo Defect Record Popup.', merr, ' :' if merr else '')
                         restart_program()
                     elif action_str == 'shift_change':
                         self.current_shift = self._thist.get_current_shift_number()
@@ -354,14 +355,17 @@ class MainWindow(tk.Tk):
                                                             'current_form': self.current_form,
                                                             'operator': self.current_operator.get()
                                                             }})
+                    elif action_str == 'error':
+
+                        raise merr
                     else:
                         # clear out any messages that cannot be used so that they don't accumulate
-                        unused_messge = action_dict
-                        lg.warning('Unhandled message received in popup: %s', unused_messge)
+                        unused_message = action_dict
+                        lg.warning('Unhandled message received in popup: %s', unused_message)
         self.after(500, self.check_for_inbound_messages)
 
     def ensure_on_top(self, repeat=False):
-        """Check if the window is visible,if not, bring it to the front."""
+        """Check if the window is visible, if not, bring it to the front."""
 
         self.deiconify()
         window_topmost(self)
