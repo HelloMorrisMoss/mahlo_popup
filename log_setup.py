@@ -7,6 +7,9 @@ from logging.handlers import RotatingFileHandler
 from untracked_config.development_node import ON_DEV_NODE
 
 
+program_unique_id = uuid.uuid4()
+
+
 class BreadcrumbFilter(logging.Filter):
     """Provides %(breadcrumbs) field for the logger formatter.
 
@@ -45,7 +48,7 @@ def setup_logger():
     f_handler.setLevel(base_log_level)
     f_string = ('"%(asctime)s",'
                 '"%(name)s",'
-                f'"{str(uuid.uuid4())[:8]}",'
+                f'"{str(program_unique_id)[:8]}",'
                 '"%(process)d",'
                 '"%(breadcrumbs)s",'
                 '"%(funcName)s",'

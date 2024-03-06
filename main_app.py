@@ -1,15 +1,15 @@
 """Starts the flask server and then the popup interface."""
+
 import os
 import threading
 from collections import deque
 from traceback import format_exc as fexc
-from uuid import uuid4
 
 from dev_common import exception_one_line
 from email_alert import get_email_cfg_dict, set_up_alert
 from flask_server_files.flask_app import start_flask_app
 from flask_server_files.helpers import single_instance
-from log_setup import lg
+from log_setup import lg, program_unique_id
 from main_window import MainWindow
 from untracked_config.development_node import ON_DEV_NODE
 from untracked_config.lam_num import LAM_NUM
@@ -27,8 +27,6 @@ try:
         # allow communication between flask and the popup
         f2p_queue = deque()
         p2f_queue = deque()
-
-        program_unique_id = uuid4()
 
         f2p_queue.append({'program_unique_id': program_unique_id})
         p2f_queue.append({'program_unique_id': program_unique_id})
