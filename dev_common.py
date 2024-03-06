@@ -301,13 +301,15 @@ def blank_up(file_path, after_backup_function=touch):
 def restart_program():
     """Restarts the popup and server."""
 
-    os.execl(sys.executable, sys.executable, *sys.argv)
+    restart_arguments = [sys.executable, sys.executable, *sys.argv]
+    lg.info('restart args: %s', restart_arguments)
+    os.execl(*restart_arguments)
 
 
 def exception_one_line(exception_obj):
     """Get the exception traceback text as a one line string. New lines are replaces with escaped '\\n'.
 
-    :param exception_obj: builtins.Ex.ception, the exception.
+    :param exception_obj: builtins.Exception, the exception.
     :return: str, the message string.
     """
     from traceback import format_exception
