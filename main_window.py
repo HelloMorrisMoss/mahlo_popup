@@ -3,6 +3,7 @@ import datetime
 import json
 import tkinter
 import tkinter as tk
+from functools import partial
 from tkinter import ttk
 
 from dev_common import add_show_messages_button, blank_up, dt_to_shift, exception_one_line, recurse_hover, \
@@ -340,8 +341,7 @@ class MainWindow(tk.Tk):
                         self.geometry('+0+0')
                     elif action_str == 'restart_popup':
                         merr = action_dict.get('error')
-                        lg.info('%s%sRestarting Mahlo Defect Record Popup.', merr, ' :' if merr else '')
-                        restart_program()
+                        restart_program(lg, merr)
                     elif action_str == 'shift_change':
                         self.current_shift = self._thist.get_current_shift_number()
                         self.event_generate('<<ShiftChange>>')
@@ -355,9 +355,6 @@ class MainWindow(tk.Tk):
                                                             'current_form': self.current_form,
                                                             'operator': self.current_operator.get()
                                                             }})
-                    elif action_str == 'error':
-
-                        raise merr
                     else:
                         # clear out any messages that cannot be used so that they don't accumulate
                         unused_message = action_dict
@@ -485,7 +482,8 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         toplevel.bind('<<ShiftChange>>', reset_operator_selection)
 
         # restart the program button
-        self.restart_button = ttk.Button(self, text='Restart', command=restart_program)
+        restart_button_partial = partial(restart_program, lg, 'Restart button pressed (GUI).')
+        self.restart_button = ttk.Button(self, text='Restart', command=restart_button_partial)
         self.columnconfigure(1000, weight=1)
         self.restart_button.grid(row=3, column=1000, sticky='e', padx=self.pad['x'],  # put it all the way to the right
                                  pady=self.pad['y'])

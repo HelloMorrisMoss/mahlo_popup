@@ -46,7 +46,14 @@ action_dict = {
         'return_result': ({'popup_result': 'Changing shift'}, 200),
         'description': 'Tell the popup that a shift change is happening, resetting the operator selected to "NO '
                        'OPERATOR".',
-        }}
+        },
+    'test_flask_error': {
+        'debug_message': 'send an error message to the popup window',
+        'action_params': {'action': 'restart_popup', 'error': RuntimeError('Testing sending an error from flask.')},
+        'return_result': ({'popup_result': 'Sending error message.'}, 200),
+        'description': 'Tell the popup that a critical error has occurred in flask and to restart the program.',
+        }
+}
 
 
 class Popup(Resource):
@@ -68,6 +75,7 @@ class Popup(Resource):
             lg.debug('Action to take: %s', action_to_take)
             if db_msg := action_to_take.get('debug_message') is not None:
                 lg.debug(db_msg)
+
             queues.out_message_queue.append(action_to_take['action_params'])
             return action_to_take['return_result']
         else:

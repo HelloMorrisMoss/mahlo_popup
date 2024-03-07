@@ -59,7 +59,10 @@ def setup_logger():
 
     class CustomFormatter(logging.Formatter):
         def format(self, record):
-            record.msg = record.msg.replace('"', '\'')
+            try:
+                record.msg = record.msg.replace('"', '\'')
+            except AttributeError:
+                pass  # the msg is not always a string, if it's not, then there are no quotes
             return logging.Formatter.format(self, record)
 
     f_format = CustomFormatter(f_string)
