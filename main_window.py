@@ -18,7 +18,7 @@ from untracked_config.lam_num import LAM_NUM
 
 
 class MainWindow(tk.Tk):
-    """The main tkinter window that the defect_instance panels, controls, etc reside in."""
+    """The main tkinter window that the defect_instance panels, controls, etc. reside in."""
 
     def __init__(self, inbound_queue, outbound_queue, debugging=False, *args, **kwargs):
         """Initialize the main window.
@@ -92,14 +92,14 @@ class MainWindow(tk.Tk):
         self._additional_message.set('No Message.')
         self.additional_message_label = tk.Label(self, textvariable=self._additional_message)
         self.additional_message_label.configure(background='orange', font=('Segoe Ui', 15, 'bold'))
-        self.show_add_msg_label(None)
+        self.show_addl_msg_label(None)
         self.additional_message_label.bind('<Button-1>', self.hide_addl_msg_label)
 
         # operator and shift
         self.current_operator = tk.StringVar()
         self.current_shift = None  # this gets set later
 
-        # the buttons that aren't for a specific popup (add, settings, etc)
+        # the buttons that aren't for a specific popup (add, settings, etc.)
         self.controls_panel = IndependentControlsPanel(self, 'Control Panel', hide_option=self._hide_option,
                                                        grid_pad=self.pad, autohide_var=self._auto_hide,
                                                        autoshow_var=self._auto_show, ghost_hide=self._ghost_hide,
@@ -154,23 +154,27 @@ class MainWindow(tk.Tk):
 
     @property
     def additional_message(self):
-        return self._additional_message
+        return self._additional_message.get()
 
     @additional_message.setter
     def additional_message(self, new_message: str):
+        """Set a message on the additional message label."""
+
         lg.debug('Setting additional msg to %s', new_message)
         self._additional_message.set(new_message)
 
     def hide_addl_msg_label(self, event=None):
         """Hide the additional message label."""
+
         self.additional_message_label.grid_remove()
 
     def addl_msg_label_clicked(self, event=None):
         """Hide the additional message label when clicked on while the window is full-sized."""
+
         if self.current_form == 'main_window':
             self.hide_addl_msg_label(event=event)
 
-    def show_add_msg_label(self, event=None):
+    def show_addl_msg_label(self, event=None):
         self.additional_message_label.grid(row=1, column=0, sticky='ew')
 
     def set_window_icon(self, ico_path):
@@ -257,7 +261,7 @@ class MainWindow(tk.Tk):
     def _auto_hide_window(self, event: tkinter.Event):
         """If auto-hide is selected, hide/shrink the window."""
 
-        # check if auto hide is set, the window still hasn't focus, and it was the main window that lost focus
+        # check if auto hide is set, the window still doesn't have focus, and it was the main window that lost focus
         if self._auto_hide.get() and self.focus_displayof() is None and event.widget is self:
             lg.debug('auto hiding window')
             self.hide_hideables(event)
@@ -388,12 +392,32 @@ class MainWindow(tk.Tk):
                                                             'operator': self.current_operator.get()
                                                             }})
                     elif action_str == 'set_additional_msg':
+                        lg.debug('changing additional message: %s', action_dict)
+                        themes = {'info': {'background': 'black', 'foreground': 'white'},
+                                  'note': {'background': 'white', 'foreground': 'black'},
+                                  'warning': {'background': 'orange', 'foreground': 'black'},
+                                  'critical': {'background': 'red', 'foreground': 'black'},
+                                  }
+                        default_theme = 'info'
+
                         new_msg = action_dict.get('additional_message_text')
                         if new_msg is not None:
-                            if isinstance(new_msg, str):
+                            if new_msg:
+                                lg.debug('Setting new additional message text. "%s"', new_msg)
                                 self._additional_message.set(action_dict.get('additional_message_text'))
-                                self.show_add_msg_label()
-                                # todo: label color
+                                self.show_addl_msg_label()
+                        if action_dict.get('clear_additional_msg'):
+                            lg.debug('Clearing additional message text.')
+                            self.hide_addl_msg_label()
+                            self._additional_message.set('')
+                            self.additional_message_label.configure(**themes[default_theme])
+                        if color_theme := action_dict.get('color_theme'):
+                            lg.debug('Changing addl msg color theme')
+                            self.additional_message_label.configure(**themes[color_theme])
+                        if action_dict.get('reset_theme'):
+                            lg.debug('Resetting addl msg theme to default.')
+                            self.additional_message_label.configure(**themes[default_theme])
+
                     else:
                         # clear out any messages that cannot be used so that they don't accumulate
                         unused_message = action_dict
