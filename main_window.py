@@ -89,12 +89,11 @@ class MainWindow(tk.Tk):
 
         # additional message label
         self._additional_message = tk.StringVar()
-        self._additional_message.set('default text')
+        self._additional_message.set('No Message.')
         self.additional_message_label = tk.Label(self, textvariable=self._additional_message)
         self.additional_message_label.configure(background='orange', font=('Segoe Ui', 15, 'bold'))
         self.show_add_msg_label(None)
-        # todo: only allow dismissing on full window
-        self.additional_message_label.bind('<Button-1>', self.hide_add_msg_label)
+        self.additional_message_label.bind('<Button-1>', self.hide_addl_msg_label)
 
         # operator and shift
         self.current_operator = tk.StringVar()
@@ -159,11 +158,17 @@ class MainWindow(tk.Tk):
 
     @additional_message.setter
     def additional_message(self, new_message: str):
-        print(f'setting add msg to {new_message}')
+        lg.debug('Setting additional msg to %s', new_message)
         self._additional_message.set(new_message)
 
-    def hide_add_msg_label(self, event=None):
+    def hide_addl_msg_label(self, event=None):
+        """Hide the additional message label."""
         self.additional_message_label.grid_remove()
+
+    def addl_msg_label_clicked(self, event=None):
+        """Hide the additional message label when clicked on while the window is full-sized."""
+        if self.current_form == 'main_window':
+            self.hide_addl_msg_label(event=event)
 
     def show_add_msg_label(self, event=None):
         self.additional_message_label.grid(row=1, column=0, sticky='ew')
