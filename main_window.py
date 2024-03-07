@@ -7,12 +7,12 @@ from functools import partial
 from tkinter import ttk
 
 from dev_common import add_show_messages_button, blank_up, dt_to_shift, exception_one_line, recurse_hover, \
-    recurse_tk_structure, \
-    restart_program, style_component, window_topmost
+    recurse_tk_structure, style_component, window_topmost
 from flask_server_files.models.defect import DefectModel
 from flask_server_files.models.lam_operator import OperatorModel
 from log_setup import lg
 from msg_window.popup_frame import DefectMessageFrame
+from restart_error import RestartError
 from scada_tag_query import TagHistoryConnector
 from untracked_config.lam_num import LAM_NUM
 
@@ -27,10 +27,11 @@ class MainWindow(tk.Tk):
         :type outbound_queue: collections.deque, outbound messages from flask
         :type debugging: bool, whether to execute extra debugging code
         """
+        termd = kwargs.pop('termination_dict')
         super().__init__(*args, **kwargs)
         self.debugging = debugging
         # self.attributes('-toolwindow', True)  # don't show the min/max buttons on the title bar
-
+        self.termd = termd
         self.set_window_icon('untracked_config/window_icon.ico')  # window icon
 
         self.lam_num = LAM_NUM  # the laminator number
@@ -341,7 +342,7 @@ class MainWindow(tk.Tk):
                         self.geometry('+0+0')
                     elif action_str == 'restart_popup':
                         merr = action_dict.get('error')
-                        restart_program(lg, merr)
+                        self.terminate_with_cause(merr)
                     elif action_str == 'shift_change':
                         self.current_shift = self._thist.get_current_shift_number()
                         self.event_generate('<<ShiftChange>>')
@@ -360,6 +361,12 @@ class MainWindow(tk.Tk):
                         unused_message = action_dict
                         lg.warning('Unhandled message received in popup: %s', unused_message)
         self.after(500, self.check_for_inbound_messages)
+
+    def terminate_with_cause(self, merr):
+        """Signal the post-tkinter program to restart after cleanup as well as ending tkinter."""
+
+        self.quit()
+        self.termd.append(merr)
 
     def ensure_on_top(self, repeat=False):
         """Check if the window is visible, if not, bring it to the front."""
@@ -482,8 +489,8 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         toplevel.bind('<<ShiftChange>>', reset_operator_selection)
 
         # restart the program button
-        restart_button_partial = partial(restart_program, lg, 'Restart button pressed (GUI).')
-        self.restart_button = ttk.Button(self, text='Restart', command=restart_button_partial)
+        restart_partial = partial(self.parent.terminate_with_cause, RestartError('Restart button pressed (GUI).'))
+        self.restart_button = ttk.Button(self, text='Restart', command=restart_partial)
         self.columnconfigure(1000, weight=1)
         self.restart_button.grid(row=3, column=1000, sticky='e', padx=self.pad['x'],  # put it all the way to the right
                                  pady=self.pad['y'])

@@ -8,7 +8,6 @@ import requests
 import waitress
 from flask_restful import Api
 
-from dev_common import restart_program
 from flask_server_files.queuesholder import queues
 from flask_server_files.resources.database import Database
 from flask_server_files.resources.defect import Defect, DefectList
