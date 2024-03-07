@@ -1,16 +1,17 @@
 """Starts the flask server and then the popup interface."""
+
 import os
 import threading
 from collections import deque
 from traceback import format_exc as fexc
-from uuid import uuid4
 
-from dev_common import exception_one_line
+from dev_common import exception_one_line, restart_program
 from email_alert import get_email_cfg_dict, set_up_alert
 from flask_server_files.flask_app import start_flask_app
 from flask_server_files.helpers import single_instance
-from log_setup import lg
+from log_setup import lg, program_unique_id
 from main_window import MainWindow
+from restart_error import RestartError
 from untracked_config.development_node import ON_DEV_NODE
 from untracked_config.lam_num import LAM_NUM
 from untracked_config.testing_this import testing_this
@@ -27,8 +28,7 @@ try:
         # allow communication between flask and the popup
         f2p_queue = deque()
         p2f_queue = deque()
-
-        program_unique_id = uuid4()
+        termination_queue = deque()
 
         f2p_queue.append({'program_unique_id': program_unique_id})
         p2f_queue.append({'program_unique_id': program_unique_id})
@@ -71,14 +71,21 @@ try:
             flask_thread.start()
 
             # start the popup (tkinter requires the main thread)
-            MainWindow(inbound_queue=f2p_queue, outbound_queue=p2f_queue)
-
+            MainWindow(inbound_queue=f2p_queue, outbound_queue=p2f_queue, termination_dict=termination_queue)
         elif run_server:
             lg.info('Starting the flask webserver without a popup.')
             start_flask_app(p2f_queue, f2p_queue)
         elif run_popup:
             lg.info('Starting popup without a flask server.')
             MainWindow(inbound_queue=f2p_queue, outbound_queue=p2f_queue)
+
+        if termination_queue:
+            lg.info('termination source returned!')
+            raise termination_queue.pop()
+
+except RestartError as rse:
+    lg.info('RestartError found.')
+    restart_program(lg, rse)
 
 except OSError as ose:
     if str(ose) in ('Another instance of the program is already running.',

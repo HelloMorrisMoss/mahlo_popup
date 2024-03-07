@@ -32,7 +32,7 @@ class Defect(Resource):
 
         # don't pass the Model empty parameters
         data = remove_empty_parameters(data)
-        defect = DefectModel
+        defect = DefectModel(**data)
 
         return defect.jsonizable(), 201
 

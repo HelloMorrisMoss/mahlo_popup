@@ -1,9 +1,13 @@
 """Contains the logger setup and a simple script to read the log file into a pandas dataframe."""
 import logging
 import sys
+import uuid
 from logging.handlers import RotatingFileHandler
 
 from untracked_config.development_node import ON_DEV_NODE
+
+
+program_unique_id = uuid.uuid4()
 
 
 class BreadcrumbFilter(logging.Filter):
@@ -21,7 +25,7 @@ class BreadcrumbFilter(logging.Filter):
     """
 
     def filter(self, record):
-        record.breadcrumbs = "{}.{}.{}".format(record.module, record.funcName, record.lineno)
+        record.breadcrumbs = '{}.{}.{}'.format(record.module, record.funcName, record.lineno)
         return True
 
 
@@ -42,8 +46,26 @@ def setup_logger():
     # file logger
     f_handler = RotatingFileHandler('mahlo_popup.log', maxBytes=2000000)
     f_handler.setLevel(base_log_level)
-    f_string = '"%(asctime)s","%(name)s", "%(breadcrumbs)s","%(funcName)s","%(lineno)d","%(levelname)s","%(message)s"'
-    f_format = logging.Formatter(f_string)
+    f_string = ('"%(asctime)s",'
+                '"%(name)s",'
+                f'"{str(program_unique_id)[:8]}",'
+                '"%(process)d",'
+                '"%(breadcrumbs)s",'
+                '"%(funcName)s",'
+                '"%(lineno)d",'
+                '"%(levelname)s",'
+                '"%(message)s"'
+                )
+
+    class CustomFormatter(logging.Formatter):
+        def format(self, record):
+            try:
+                record.msg = record.msg.replace('"', '\'')
+            except AttributeError:
+                pass  # the msg is not always a string, if it's not, then there are no quotes
+            return logging.Formatter.format(self, record)
+
+    f_format = CustomFormatter(f_string)
     f_handler.addFilter(BreadcrumbFilter())
     f_handler.setFormatter(f_format)
     logr.addHandler(f_handler)
@@ -55,7 +77,7 @@ def setup_logger():
             sys.__excepthook__(exc_type, exc_value, exc_traceback)
             return
 
-        logr.critical("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+        logr.critical('Uncaught exception', exc_info=(exc_type, exc_value, exc_traceback))
 
     sys.excepthook = handle_exception
 
@@ -68,9 +90,9 @@ if __name__ != '__main__':
 else:
     import pandas as pd
 
-    column_names = ['tstamp', 'program', 'breadcrumbs', 'callable', 'line#', 'level',
+    column_names = ['tstamp', 'program', 'uid', 'pid', 'breadcrumbs', 'callable', 'line#', 'level',
                     'message']  # + [f'col{n}' for n in range(8)]
-    ldf = pd.read_csv('untracked_config/20220321 mahlo lam1 log - mahlo_popup.log', names=column_names)
+    ldf = pd.read_csv('mahlo_popup.log', names=column_names)
     col_name = 'tstamp'
     ldf = ldf[len(ldf) - 5000::]
     ldf[col_name] = pd.to_datetime(ldf[col_name])

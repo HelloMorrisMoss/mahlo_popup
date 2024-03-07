@@ -1,5 +1,6 @@
 """For development helpers, in their own module to avoid circular imports and keep things organized."""
 import datetime
+import logging
 import os
 import sys
 import tkinter
@@ -294,16 +295,27 @@ def blank_up(file_path, after_backup_function=touch):
     touch(file_path)
 
 
-def restart_program():
-    """Restarts the popup and server."""
+def restart_program(lg: logging.Logger = None, source: any = None):
+    """Restarts the popup and server. Optionally logs the restart and source.
 
-    os.execl(sys.executable, sys.executable, *sys.argv)
+    :param lg: logging.Logger, default None, a logger to use to record the restart.
+    :param source: any, default None, a source to
+    """
+
+    try:
+        if lg:
+            lg.info('Restarting program.%s%s',  'Source: ' if source else '', source)
+    except Exception as uhe:
+        lg.info('Restarting program. Provided source could not be parsed: %s', uhe)
+    finally:
+        restart_arguments = [sys.executable, sys.executable, *sys.argv]
+        os.execl(*restart_arguments)
 
 
 def exception_one_line(exception_obj):
     """Get the exception traceback text as a one line string. New lines are replaces with escaped '\\n'.
 
-    :param exception_obj: builtins.Ex.ception, the exception.
+    :param exception_obj: builtins.Exception, the exception.
     :return: str, the message string.
     """
     from traceback import format_exception
