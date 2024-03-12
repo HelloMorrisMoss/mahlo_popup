@@ -93,7 +93,8 @@ class MainWindow(tk.Tk):
         self.additional_message_label = tk.Label(self, textvariable=self._additional_message)
         self.additional_message_label.configure(background='orange', font=('Segoe Ui', 15, 'bold'))
         self.show_addl_msg_label(None)
-        self.additional_message_label.bind('<Button-1>', self.hide_addl_msg_label)
+        self.additional_message_label.bind('<Button-1>', partial(self.addl_msg_label_clicked,
+                                                                 command=self.show_hideables))
 
         # operator and shift
         self.current_operator = tk.StringVar()
@@ -168,11 +169,17 @@ class MainWindow(tk.Tk):
 
         self.additional_message_label.grid_remove()
 
-    def addl_msg_label_clicked(self, event=None):
-        """Hide the additional message label when clicked on while the window is full-sized."""
+    def addl_msg_label_clicked(self, event=None, command=None):
+        """Hide the additional message label when clicked on while the window is full-sized or show the window.
+
+        Uses the callable 'command' provided when clicked and the window is not 'main_window' state. If none is provided
+        no action will be taken.
+        """
 
         if self.current_form == 'main_window':
             self.hide_addl_msg_label(event=event)
+        else:
+            command()
 
     def show_addl_msg_label(self, event=None):
         self.additional_message_label.grid(row=1, column=0, sticky='ew')
