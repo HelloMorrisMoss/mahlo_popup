@@ -1,4 +1,5 @@
 """To add a popup window to the Mahlo HMI PC at the laminators. Designed to be called from the command line over ssl."""
+
 import datetime
 import json
 import tkinter
@@ -87,14 +88,31 @@ class MainWindow(tk.Tk):
         self.columnconfigure(0, weight=1)  # to make the button able to fill the width
         self.rowconfigure(0, weight=1)  # to make the button able to fill the height
 
+        # frame to hold additional message labels
+        self.labels_frame = tk.Frame(self)
+        self.labels_frame.columnconfigure(0, weight=1)  # to make the short label able to fill the width
+        self.labels_frame.rowconfigure(0, weight=1)  # to make the short label able to fill the height
+
+        def addl_msg_cfg(am_label):
+            """Set default and common configuration for the additional message labels."""
+            am_label.configure(background='orange', font=('Segoe Ui Bold', 12))
+            am_label.bind('<Button-1>', self.addl_msg_label_clicked)
+            am_label.grid(column=0, row=0, sticky='we')
+
+        # short additional message label
+        self._additional_message_short = tk.StringVar()
+        self._additional_message_short.set('Short Message')
+        self._additional_message_short_label = tk.Label(self.labels_frame,
+                                                        textvariable=self._additional_message_short)
+        addl_msg_cfg(self._additional_message_short_label)
+
         # additional message label
         self._additional_message = tk.StringVar()
         self._additional_message.set('No Message.')
-        self.additional_message_label = tk.Label(self, textvariable=self._additional_message)
-        self.additional_message_label.configure(background='orange', font=('Segoe Ui', 15, 'bold'))
-        self.show_addl_msg_label(None)
-        self.additional_message_label.bind('<Button-1>', partial(self.addl_msg_label_clicked,
-                                                                 command=self.show_hideables))
+        self.additional_message_label = tk.Label(self.labels_frame, textvariable=self._additional_message)
+        addl_msg_cfg(self.additional_message_label)
+        self.additional_message_label.additional_hide_action = self.additional_message_label.grid_remove
+        self.hideables.append(self.additional_message_label)
 
         # operator and shift
         self.current_operator = tk.StringVar()
@@ -167,7 +185,7 @@ class MainWindow(tk.Tk):
     def hide_addl_msg_label(self, event=None):
         """Hide the additional message label."""
 
-        self.additional_message_label.grid_remove()
+        self.labels_frame.grid_remove()
 
     def addl_msg_label_clicked(self, event=None, command=None):
         """Hide the additional message label when clicked on while the window is full-sized or show the window.
@@ -179,10 +197,10 @@ class MainWindow(tk.Tk):
         if self.current_form == 'main_window':
             self.hide_addl_msg_label(event=event)
         else:
-            command()
+            self.show_hideables()
 
-    def show_addl_msg_label(self, event=None):
-        self.additional_message_label.grid(row=1, column=0, sticky='ew')
+    def show_addl_msg_labels(self, event=None):
+        self.labels_frame.grid(row=1, column=0, sticky='ew')
 
     def set_window_icon(self, ico_path):
         try:
@@ -232,7 +250,7 @@ class MainWindow(tk.Tk):
                 last_pos_dict = None
             if last_pos_dict != pos_dict:
                 with open(self.last_pos_filepath, 'w') as pos_file:
-                    lg.debug(f'saving new position: {pos_dict}')
+                    lg.debug('saving new position: %s', pos_dict)
                     json.dump(pos_dict, pos_file, indent=4)
 
     def closing_handler(self):
@@ -350,6 +368,9 @@ class MainWindow(tk.Tk):
                 # self.attributes('-toolwindow', True)  # hide max/minimize buttons
                 for hider in self.hideables:
                     hider.grid_remove()
+                    if hasattr(hider, 'additional_hide_action'):
+                        additional_hide_action = getattr(hider, 'additional_hide_action')
+                        additional_hide_action()
                 self.number_of_messages_button.grid(row=0, column=0)
 
                 self.button_sized()
@@ -407,12 +428,14 @@ class MainWindow(tk.Tk):
                                   }
                         default_theme = 'info'
 
-                        new_msg = action_dict.get('additional_message_text')
-                        if new_msg is not None:
-                            if new_msg:
-                                lg.debug('Setting new additional message text. "%s"', new_msg)
+                        new_message = action_dict.get('additional_message_text')
+                        if new_message is not None:
+                            if new_message:
+                                lg.debug('Setting new additional message text. "%s"', new_message)
                                 self._additional_message.set(action_dict.get('additional_message_text'))
-                                self.show_addl_msg_label()
+                                new_msg = action_dict.get('additional_message_short_text')
+                                self._additional_message_short.set('Message.' if new_msg is None else new_msg)
+                                self.show_addl_msg_labels()
                         if action_dict.get('clear_additional_msg'):
                             lg.debug('Clearing additional message text.')
                             self.hide_addl_msg_label()
@@ -421,6 +444,7 @@ class MainWindow(tk.Tk):
                         if color_theme := action_dict.get('color_theme'):
                             lg.debug('Changing addl msg color theme')
                             self.additional_message_label.configure(**themes[color_theme])
+                            self._additional_message_short_label.configure(**themes[color_theme])
                         if action_dict.get('reset_theme'):
                             lg.debug('Resetting addl msg theme to default.')
                             self.additional_message_label.configure(**themes[default_theme])
