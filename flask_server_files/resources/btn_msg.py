@@ -56,3 +56,6 @@ class ButtonMessage(Resource):
             flask_server_files.queuesholder.queues.out_message_queue.append(action_send_dict)
             response_dict = {'success': True}
             return response_dict, 201
+
+    def put(self):
+        self.post()
