@@ -52,7 +52,14 @@ action_dict = {
         'action_params': {'action': 'restart_popup', 'error': RuntimeError('Testing sending an error from flask.')},
         'return_result': ({'popup_result': 'Sending error message.'}, 200),
         'description': 'Tell the popup that a critical error has occurred in flask and to restart the program.',
-        }
+    },
+    'update_lot_number': {
+        'debug_message': 'update the current lot number from HMI',
+        'action_params': {'action': 'update_lot_number', 'new_lot_number': ''},
+        'required_extra_params': ('new_lot_number',),
+        'return_result': ({'popup_result': 'Lot number received.'}, 200),
+        'description': 'Tell the popup that a new lot number has been entered.',
+    },
 }
 
 
@@ -66,7 +73,7 @@ class Popup(Resource):
     def post():
         parser = reqparse.RequestParser()
         parser.add_argument('action', type=str, required=True, help='You must provide a command action.')
-        # parser.add_argument('source', type=str, required=True, help='You must provide a command action.')
+        parser.add_argument('new_lot_number', type=str, required=False, help='The new lot number as a string.')
 
         data = parser.parse_args()
         lg.debug('action received: %s', data['action'])
