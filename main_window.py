@@ -448,6 +448,9 @@ class MainWindow(tk.Tk):
                         if action_dict.get('reset_theme'):
                             lg.debug('Resetting addl msg theme to default.')
                             self.additional_message_label.configure(**themes[default_theme])
+                    elif action_str == 'update_lot_number':
+                        new_lot_number = action_dict.get('new_lot_number')
+                        lg.debug('Popup has received a new lot number: %s', new_lot_number)
 
                     else:
                         # clear out any messages that cannot be used so that they don't accumulate
