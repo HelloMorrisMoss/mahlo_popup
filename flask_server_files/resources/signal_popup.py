@@ -62,7 +62,8 @@ class Popup(Resource):
         # g.popup = dev_popup(json.dumps(get_dummy_dict(5.6)))
         raise NotImplementedError('This had been built with dicts and has not been remade using sqlalchemy version.')
 
-    def post(self):
+    @staticmethod
+    def post():
         parser = reqparse.RequestParser()
         parser.add_argument('action', type=str, required=True, help='You must provide a command action.')
         # parser.add_argument('source', type=str, required=True, help='You must provide a command action.')
@@ -75,6 +76,23 @@ class Popup(Resource):
             lg.debug('Action to take: %s', action_to_take)
             if db_msg := action_to_take.get('debug_message') is not None:
                 lg.debug(db_msg)
+            # optional extra data
+            if (extra_params := action_to_take.get('optional_extra_params')) is not None:
+                for extra_param in extra_params:
+                    if (extra_value := data.get(extra_param)) is not None:
+                        action_to_take['action_params'][extra_param] = extra_value
+                        lg.debug('Extra param received: {%s: %s}', extra_param, extra_value)
+
+            # required extra data - the action cannot complete without this
+            if (extra_params := action_to_take.get('required_extra_params')) is not None:
+                for extra_param in extra_params:
+                    if (extra_value := data.get(extra_param)) is not None:
+                        action_to_take['action_params'][extra_param] = extra_value
+                        lg.debug('Extra param received: {%s: %s}', extra_param, extra_value)
+                    else:
+                        lg.debug('Missing an extra parmeter: %s', extra_param)
+                        return {'popup_result': f'This action requires additional parameters:'
+                                                f' {", ".join(extra_params)}'}, 400
 
             queues.out_message_queue.append(action_to_take['action_params'])
             return action_to_take['return_result']
