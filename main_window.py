@@ -12,6 +12,7 @@ from dev_common import add_show_messages_button, blank_up, dt_to_shift, exceptio
 from flask_server_files.models.defect import DefectModel
 from flask_server_files.models.lam_operator import OperatorModel
 from log_setup import lg
+from lot_number_checks import LotChecker
 from msg_window.popup_frame import DefectMessageFrame
 from restart_error import RestartError
 from scada_tag_query import TagHistoryConnector
@@ -27,6 +28,8 @@ class MainWindow(tk.Tk):
         :type inbound_queue: collections.deque, inbound messages from flask
         :type outbound_queue: collections.deque, outbound messages from flask
         :type debugging: bool, whether to execute extra debugging code
+        args: positional arguments for the tkinter.Tk main window.
+        kwargs: key word arguments for the tkinter.Tk main window.
         """
         termd = kwargs.pop('termination_dict')
         super().__init__(*args, **kwargs)
@@ -137,6 +140,9 @@ class MainWindow(tk.Tk):
         self._thist = TagHistoryConnector(f'lam{self.lam_num}')
 
         self.current_shift = self._thist.get_current_shift_number()
+
+        # lot number checker
+        self.lot_checker = LotChecker(LAM_NUM)
 
         # when trying to close the window from the interface
         self.protocol("WM_DELETE_WINDOW", self.closing_handler)
@@ -451,7 +457,11 @@ class MainWindow(tk.Tk):
                     elif action_str == 'update_lot_number':
                         new_lot_number = action_dict.get('new_lot_number')
                         lg.debug('Popup has received a new lot number: %s', new_lot_number)
-
+                        cd = self.lot_checker.check_lot(new_lot_number)
+                        if not cd['valid_ln']:
+                            message = self.lot_checker.get_lot_issue_message(cd)
+                            lg.debug('Lot number looks questionable: %s', message)
+                            self.new_messages.append({'action': 'set_additional_msg'} | message)
                     else:
                         # clear out any messages that cannot be used so that they don't accumulate
                         unused_message = action_dict
