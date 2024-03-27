@@ -18,7 +18,7 @@ from untracked_config.testing_this import testing_this
 
 try:
     # if there is already an instance running, stop now
-    lock_file_path = './malo_popup.lock'
+    lock_file_path = './mahlo_popup.lock'
     try:
         os.remove(lock_file_path)
     except FileNotFoundError:
