@@ -6,7 +6,6 @@ from logging.handlers import RotatingFileHandler
 
 from untracked_config.development_node import ON_DEV_NODE
 
-
 program_unique_id = uuid.uuid4()
 
 
@@ -87,6 +86,10 @@ def setup_logger():
 if __name__ != '__main__':
     # protect against multiple loggers from importing in multiple files
     lg = setup_logger() if not logging.getLogger().hasHandlers() else logging.getLogger()
+
+    if ON_DEV_NODE:  # suppress log spam from dependencies
+        logging.getLogger('requests').setLevel(logging.INFO)
+        logging.getLogger('urllib3').setLevel(logging.INFO)
 else:
     import pandas as pd
 
