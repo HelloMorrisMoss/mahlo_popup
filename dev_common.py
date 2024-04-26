@@ -9,6 +9,7 @@ from tkinter import ttk
 from typing import Type, TypeVar
 
 from log_setup import lg
+from untracked_config.lam_num import LAM_NUM
 
 
 def recurse_tk_structure(obj: tk.Widget, name='starting_level', indent=0, print_structure: callable = print,
@@ -321,3 +322,37 @@ def exception_one_line(exception_obj):
     from traceback import format_exception
     return ''.join(format_exception(type(exception_obj), exception_obj, exception_obj.__traceback__)
                    ).replace('\n', '\\n')
+
+
+def get_email_body_context(run_popup, run_server, on_dev_node, hostname) -> str:
+    """Get a string containing contextual information about this program being run.
+
+        :param run_popup: bool, whether the program should try to run the popup GUI.
+        :param run_server: bool, whether the program should try to run the API/web server.
+        :param on_dev_node: bool, whether the system where the program is running is considered a development node.
+        :param hostname: str, the name of the host system where the program is running.
+        :return: str
+
+    """
+    email_body_context = f'''Exception context:
+        {LAM_NUM=}
+        {run_popup=}
+        {run_server=}
+        {on_dev_node=}
+        {hostname=}
+        app_start_time={datetime.datetime.now()}
+        current_user={os.getlogin()}
+        '''.strip()
+
+    try:
+        import git
+
+        head = git.Repo(search_parent_directories=True).head
+        email_body_context += (f'''
+        git_commit_ts={str(head.object.authored_datetime)}
+        git_hash={head.object.hexsha}''')
+
+    except ImportError:
+        lg.warning('GitPython is not installed.')
+
+    return email_body_context
