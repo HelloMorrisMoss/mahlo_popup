@@ -2,11 +2,12 @@
 import datetime
 import logging
 import os
+import subprocess
 import sys
 import tkinter
 import tkinter as tk
 from tkinter import ttk
-from typing import Type, TypeVar
+from typing import Type, TypeVar, Union
 
 from log_setup import lg
 from untracked_config.lam_num import LAM_NUM
@@ -305,7 +306,7 @@ def restart_program(lg: logging.Logger = None, source: any = None):
 
     try:
         if lg:
-            lg.info('Restarting program.%s%s',  'Source: ' if source else '', source)
+            lg.info('Restarting program.%s%s', 'Source: ' if source else '', source)
     except Exception as uhe:
         lg.info('Restarting program. Provided source could not be parsed: %s', uhe)
     finally:
@@ -334,6 +335,10 @@ def get_email_body_context(run_popup, run_server, on_dev_node, hostname) -> str:
         :return: str
 
     """
+
+    # todo: add a untracked_config/last_shutdown.(json,txt?) that contains the timestamp and shutdown reason
+    #  (restart button, escape key, etc.) and include that information in the information below if present
+
     email_body_context = f'''Exception context:
         {LAM_NUM=}
         {run_popup=}
@@ -342,6 +347,7 @@ def get_email_body_context(run_popup, run_server, on_dev_node, hostname) -> str:
         {hostname=}
         app_start_time={datetime.datetime.now()}
         current_user={os.getlogin()}
+        system_boot_time={get_boot_time_str()}
         '''.strip()
 
     try:
@@ -353,6 +359,47 @@ def get_email_body_context(run_popup, run_server, on_dev_node, hostname) -> str:
         git_hash={head.object.hexsha}''')
 
     except ImportError:
-        lg.warning('GitPython is not installed.')
+        lg.warning('GitPython is not installed. Commit info will not be included in e-mail body context.')
 
     return email_body_context
+
+
+def get_boot_time_str(format: str = None) -> str:
+    """Get the boot time as a string.
+
+    :param format: str, the datetime.datetime format string to use. Defaults to ISO format.
+
+    :return: str, the datetime.datetime as a formatted string.
+    """
+    return_value = ''
+    try:
+        windows_boot_time = get_windows_boot_time()
+        if format:
+            return_value = windows_boot_time.strftime(format)
+        else:
+            return_value = windows_boot_time.isoformat()
+    except Exception as uhe:
+        lg.warning(uhe)
+        return_value = exception_one_line(uhe)
+
+    return return_value
+
+
+def get_windows_boot_time() -> Union[datetime.datetime, None]:
+    """Get the Windows boot time as a datetime.datetime object.
+
+    :return: datetime.datetime, the Windows boot time, or None if it cannot be retrieved.
+
+    """
+    # # this works but it has a small lag as powershell starts up; doesn't work on the old Mahlo HMIs (old powershell)
+    # datetime.datetime.strptime(subprocess.check_output(['powershell',
+    # '(gcim Win32_OperatingSystem).LastBootUpTime']).strip().decode('UTF-8'), '%A, %B %d, %Y %I:%M:%S %p')
+
+    command = "net stats workstation"
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
+    output, error = process.communicate()
+    if process.returncode == 0:
+        return datetime.datetime.strptime(output[output.index('since ') + 6: output.index('\n\n\n  Bytes')],
+                                          '%m/%d/%Y %I:%M:%S %p')
+    else:
+        return None
