@@ -4,36 +4,36 @@ from flask_server_files.queuesholder import queues
 from log_and_alert.log_setup import lg
 
 action_dict = {
-    'shrink':
-        {'debug_message': 'shrinking popup',
-         'action_params': {'action': 'shrink'},
-         'return_result': ({'popup_result': 'Shrinking popup window.'}, 200),
-         'description': 'Shrink the window to button size, no change if already button.',
-         },
-    'show':
-        {'debug_message': 'showing popup',
-         'action_params': {'action': 'show'},
-         'return_result': ({'popup_result': 'Showing popup window.'}, 200),
-         'description': 'Show the full window if there are defects active, no change if already full.',
-         },
+    'shrink': {
+        'debug_message': 'shrinking popup',
+        'action_params': {'action': 'shrink'},
+        'return_result': ({'popup_result': 'Shrinking popup window.'}, 200),
+        'description': 'Shrink the window to button size, no change if already button.',
+    },
+    'show': {
+        'debug_message': 'showing popup',
+        'action_params': {'action': 'show'},
+        'return_result': ({'popup_result': 'Showing popup window.'}, 200),
+        'description': 'Show the full window if there are defects active, no change if already full.',
+    },
     'show_force': {
         'debug_message': 'showing popup',
         'action_params': {'action': 'show_force'},
         'return_result': ({'popup_result': 'Showing popup window (force).'}, 200),
         'description': 'Show the full window even if no defects active, no change if already full.',
-        },
+    },
     'defects_updated': {
         'debug_message': 'tell popup there are defect updates',
         'action_params': {'action': 'check_defect_updates'},
         'return_result': ({'popup_result': 'Checking for new defects.'}, 200),
         'description': 'Tell the window to check for updates to the defects in the database.',
-        },
-    'reset_position':
-        {'debug_message': 'tell popup to return to screen origin',
-         'action_params': {'action': 'reset_position'},
-         'return_result': ({'popup_result': 'Resetting popup position.'}, 200),
-         'description': 'Return the window to the top left corner of the screen.',
-         },
+    },
+    'reset_position': {
+        'debug_message': 'tell popup to return to screen origin',
+        'action_params': {'action': 'reset_position'},
+        'return_result': ({'popup_result': 'Resetting popup position.'}, 200),
+        'description': 'Return the window to the top left corner of the screen.',
+    },
     'restart_popup':
         {'debug_message': 'tell popup to restart',
          'action_params': {'action': 'restart_popup'},
@@ -46,7 +46,7 @@ action_dict = {
         'return_result': ({'popup_result': 'Changing shift'}, 200),
         'description': 'Tell the popup that a shift change is happening, resetting the operator selected to "NO '
                        'OPERATOR".',
-        },
+    },
     'test_flask_error': {
         'debug_message': 'send an error message to the popup window',
         'action_params': {'action': 'restart_popup', 'error': RuntimeError('Testing sending an error from flask.')},
@@ -59,6 +59,7 @@ action_dict = {
         'required_extra_params': ('new_lot_number',),
         'return_result': ({'popup_result': 'Lot number received.'}, 200),
         'description': 'Tell the popup that a new lot number has been entered.',
+        'exclude_from_web_controls': True,
     },
 }
 

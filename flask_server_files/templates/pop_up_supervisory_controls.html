@@ -110,14 +110,17 @@
         <div id="popup_controls_title_div"><h3>Popup Control Buttons</h3></div>
         <form action="/controls" method="post">
             {% for act_str, act_dct in action_dict.items() %}
-            {% for act_key, act_val in act_dct.items() %}
-            {% if act_key == 'description' %}
-            <div class="control_button_div">
-                <input class="control_button" name="{{act_str}}" style="height:2em; width:10em" type="submit"
-                       value="{{act_str}}"/> {{act_val}}
-            </div>
-            {% endif %}
-            {% endfor %}
+                {% if not act_dct['exclude_from_web_controls'] %}
+                    {% for act_key, act_val in act_dct.items() %}
+                        {% if act_key == 'description' %}
+                            <div class="control_button_div">
+                                <input class="control_button" name="{{ act_str }}" style="height:2em; width:10em"
+                                       type="submit"
+                                       value="{{ act_str }}"/> {{ act_val }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
             {% endfor %}
         </form>
     </div>
