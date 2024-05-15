@@ -5,7 +5,7 @@ import tkinter as tk
 from tkinter import ttk
 
 from dev_common import NumStrVar, reasons, style_component
-from log_setup import lg
+from log_and_alert.log_setup import lg
 from widgets.length_entry import UpDownButtonFrame
 from widgets.numpad_entry import NumpadEntry
 

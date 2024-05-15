@@ -11,7 +11,7 @@ from dev_common import add_show_messages_button, blank_up, dt_to_shift, exceptio
     recurse_tk_structure, style_component, window_topmost
 from flask_server_files.models.defect import DefectModel
 from flask_server_files.models.lam_operator import OperatorModel
-from log_setup import lg
+from log_and_alert.log_setup import lg
 from lot_number_checks import LotChecker
 from msg_window.popup_frame import DefectMessageFrame
 from restart_error import RestartError

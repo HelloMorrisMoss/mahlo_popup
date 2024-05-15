@@ -5,7 +5,7 @@ from ttkwidgets.frames import ScrolledFrame
 
 from dev_common import exception_one_line
 from flask_server_files.models.defect import DefectModel
-from log_setup import lg
+from log_and_alert.log_setup import lg
 from msg_window.msg_panel import MessagePanel
 from publishing_vars import PublishingLengthList
 

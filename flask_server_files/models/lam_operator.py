@@ -2,7 +2,7 @@ import sqlalchemy as fsa
 
 from flask_server_files.helpers import jsonize_sqla_model
 from flask_server_files.sqla_instance import Base
-from log_setup import lg
+from log_and_alert.log_setup import lg
 
 
 class OperatorModel(Base):

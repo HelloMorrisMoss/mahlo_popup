@@ -2,7 +2,7 @@ import tkinter
 import tkinter as tk
 from tkinter import ttk
 
-from log_setup import lg
+from log_and_alert.log_setup import lg
 
 
 class RollRemovedToggles(tk.Frame):

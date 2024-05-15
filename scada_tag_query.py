@@ -2,7 +2,7 @@
 
 from psycopg2 import connect, sql
 
-from log_setup import lg
+from log_and_alert.log_setup import lg
 from untracked_config.th_creds import connection_dict
 
 

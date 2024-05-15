@@ -16,7 +16,7 @@ from flask_server_files.resources.lam_operator import Operator
 from flask_server_files.resources.signal_popup import Popup
 from flask_server_files.routing import routes_blueprint
 from flask_server_files.sqla_instance import fsa
-from log_setup import lg
+from log_and_alert.log_setup import lg
 from untracked_config.db_uri import DATABASE_URI
 from untracked_config.server_settings import host, port, server_threads
 

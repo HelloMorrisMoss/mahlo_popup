@@ -4,7 +4,7 @@ import datetime
 from flask_restful import reqparse, Resource
 
 from flask_server_files.sqla_instance import fsa
-from log_setup import lg
+from log_and_alert.log_setup import lg
 
 
 def create_tables():

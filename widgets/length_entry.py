@@ -2,7 +2,7 @@ f"""Contains a frame containing an entry with a number pad for a numeric value a
 
 import tkinter as tk
 
-from log_setup import lg
+from log_and_alert.log_setup import lg
 from widgets.helpers import get_current_length
 from widgets.numpad_entry import NumpadEntry
 

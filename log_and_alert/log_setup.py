@@ -43,7 +43,7 @@ def setup_logger():
     logr.addHandler(c_handler)
 
     # file logger
-    f_handler = RotatingFileHandler('mahlo_popup.log', maxBytes=2000000)
+    f_handler = RotatingFileHandler('../mahlo_popup.log', maxBytes=2000000)
     f_handler.setLevel(base_log_level)
     f_string = ('"%(asctime)s",'
                 '"%(name)s",'
@@ -95,7 +95,7 @@ else:
 
     column_names = ['tstamp', 'program', 'uid', 'pid', 'breadcrumbs', 'callable', 'line#', 'level',
                     'message']  # + [f'col{n}' for n in range(8)]
-    ldf = pd.read_csv('mahlo_popup.log', names=column_names)
+    ldf = pd.read_csv('../mahlo_popup.log', names=column_names)
     col_name = 'tstamp'
     ldf = ldf[len(ldf) - 5000::]
     ldf[col_name] = pd.to_datetime(ldf[col_name])

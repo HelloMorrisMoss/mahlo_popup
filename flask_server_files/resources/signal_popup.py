@@ -1,7 +1,7 @@
 from flask_restful import reqparse, Resource
 
 from flask_server_files.queuesholder import queues
-from log_setup import lg
+from log_and_alert.log_setup import lg
 
 action_dict = {
     'shrink':

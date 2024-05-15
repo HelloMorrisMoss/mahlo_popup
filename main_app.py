@@ -4,11 +4,12 @@ import threading
 from collections import deque
 from traceback import format_exc as fexc
 
-from dev_common import exception_one_line, restart_program, get_email_body_context, record_restart
-from email_alert import get_email_cfg_dict, set_up_alert
+from dev_common import exception_one_line, restart_program, get_email_body_context
 from flask_server_files.flask_app import start_flask_app
 from flask_server_files.helpers import single_instance
-from log_setup import lg, program_unique_id
+from log_and_alert.email_alert import get_email_cfg_dict, set_up_alert
+from log_and_alert.log_setup import lg, program_unique_id
+from log_and_alert.program_restart_records import record_restart
 from main_window import MainWindow
 from restart_error import RestartError
 from untracked_config.development_node import ON_DEV_NODE, HOSTNAME

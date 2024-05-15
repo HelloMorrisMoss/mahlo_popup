@@ -11,7 +11,7 @@ from flask import request
 
 from flask_server_files.resources.defect import DefectList
 from flask_server_files.resources.signal_popup import action_dict
-from log_setup import lg
+from log_and_alert.log_setup import lg
 from untracked_config.lam_num import LAM_NUM
 
 routes_blueprint = flask.Blueprint('routes', __name__, template_folder='flask_server_files.templates')
