@@ -4,7 +4,7 @@ import threading
 from collections import deque
 from traceback import format_exc as fexc
 
-from dev_common import exception_one_line, restart_program, get_email_body_context
+from dev_common import exception_one_line, restart_program, get_email_body_context, record_restart
 from email_alert import get_email_cfg_dict, set_up_alert
 from flask_server_files.flask_app import start_flask_app
 from flask_server_files.helpers import single_instance
@@ -76,7 +76,13 @@ try:
 
 except RestartError as rse:
     lg.info('RestartError found.')
-    restart_program(lg, rse)
+    try:
+        # Record the restart event
+        record_restart(rse)
+    except Exception as recording_exception:
+        lg.exception("An error occurred during the handling of another error", recording_exception)
+    finally:
+        restart_program(lg, rse)
 
 except OSError as ose:
     if str(ose) in ('Another instance of the program is already running.',

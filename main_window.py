@@ -468,9 +468,10 @@ class MainWindow(tk.Tk):
                         lg.warning('Unhandled message received in popup: %s', unused_message)
         self.after(500, self.check_for_inbound_messages)
 
-    def terminate_with_cause(self, merr):
+    def terminate_with_cause(self, merr, *args, **kwargs):
         """Signal the post-tkinter program to restart after cleanup as well as ending tkinter."""
 
+        merr.additional_information = {'operator': self.controls_panel.current_operator.get()}
         self.quit()
         self.termd.append(merr)
 
@@ -493,7 +494,7 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         self.parent = parent_container
         self._next_column = 0
         self.lam_num = lam_num_controls
-        self.current_operator = kwargs.pop('current_operator')
+        self.current_operator: tk.StringVar = kwargs.pop('current_operator')
         self.pad = kwargs.get('grid_pad')
 
         toplevel = self.winfo_toplevel()
@@ -552,7 +553,7 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
             self._ghost_fader.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
                                    pady=self.pad['y'])
 
-        # drop down to select the current operator
+        # drop down to select the current operator  todo: getting the list may be better located removed from the gui
         with OperatorModel.session() as session:
             active_operators_this_lam = OperatorModel.get_active_operators(self.lam_num)
             operator_names = [(op.first_name, op.last_name) for op in active_operators_this_lam]
