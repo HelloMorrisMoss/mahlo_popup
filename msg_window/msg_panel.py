@@ -4,10 +4,10 @@ import tkinter as tk
 from tkinter import ttk
 
 import sqlalchemy.exc
-from logging.log_setup import lg
 
 from dev_common import dt_to_shift, StrCol
 from flask_server_files.models.lam_operator import OperatorModel
+from log_and_alert.log_setup import lg
 from msg_window.defect_attributes import DefectTypePanel, HorizontalNumButtonSelector, LengthSetFrames, LotNumberEntry
 from widgets.roll_removed_toggles import RollRemovedToggles
 

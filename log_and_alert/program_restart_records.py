@@ -1,3 +1,13 @@
+"""To record and access records in a SQLite database table of the program being restarted by users.
+
+create_restart_table_if_not_existing: if the table does not exist, it will create it.
+record_restart: save the details of a restart to the database.
+get_all_restart_records: get all of the restart records from the database.
+get_last_restart_record: get the last recorded restart record from the database.
+get_restart_record_table_headers: get the headers from the restart records table.
+print_restart_record_records: print to the console/terminal the entries from the table.
+"""
+
 import datetime
 import json
 import sqlite3
