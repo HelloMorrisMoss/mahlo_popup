@@ -3,6 +3,7 @@ import sqlalchemy as fsa
 from flask_server_files.helpers import jsonize_sqla_model
 from flask_server_files.sqla_instance import Base
 from log_and_alert.log_setup import lg
+from models.model_wrapper import ModelWrapper
 
 
 class OperatorModel(Base):
@@ -55,6 +56,21 @@ class OperatorModel(Base):
             certified_lam_dict[0] = certified_lam_dict[1]  # for development
             lam_column_dict = certified_lam_dict[lam_number]
             return cls.query.filter(OperatorModel.date_removed == None).filter(lam_column_dict).all()
+
+    @classmethod
+    def find_by_id(cls, id_, get_sqalchemy=False, wrap_model=True):
+        """Get a DefectModel of a record by its id.
+
+        :param id_: int, the id.
+        :param get_sqalchemy: bool
+        :return: DefectModel
+        """
+
+        id_df = cls.query.filter_by(id=id_).first()
+        id_df = id_df if id_df is not None else id_df  # todo: pretty sure this line does nothing?
+        if wrap_model:
+            id_df = ModelWrapper(id_df)
+        return id_df
 
     @classmethod
     def check_for_initials(cls, initials):

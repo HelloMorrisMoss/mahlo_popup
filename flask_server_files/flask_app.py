@@ -12,7 +12,7 @@ from flask_server_files.queuesholder import queues
 from flask_server_files.resources.btn_msg import ButtonMessage
 from flask_server_files.resources.database import Database
 from flask_server_files.resources.defect import Defect, DefectList
-from flask_server_files.resources.lam_operator import Operator
+from flask_server_files.resources.lam_operator import Operator, Operators
 from flask_server_files.resources.signal_popup import Popup
 from flask_server_files.routing import routes_blueprint
 from flask_server_files.sqla_instance import fsa
@@ -35,6 +35,7 @@ api.add_resource(Popup, '/popup')
 api.add_resource(DefectList, '/defects')
 api.add_resource(Database, '/database')
 api.add_resource(Operator, '/operator')
+api.add_resource(Operators, '/operators')
 api.add_resource(ButtonMessage, '/button_msg')
 
 app.register_blueprint(routes_blueprint)
