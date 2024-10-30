@@ -9,9 +9,9 @@ from log_and_alert.log_setup import lg
 class Operator(Resource):
     defect_parser = reqparse.RequestParser()
     # todo: is there a reason this isn't using arg_type_dict.items()?
-    all_args = 'id', 'first_name', 'last_name', 'lam_1_certified', 'lam_2_certified', 'lam_num'
+    all_args = 'id', 'first_name', 'last_name', 'lam_1_certified', 'lam_2_certified', 'lam_num', 'enabled'
     arg_type_dict = {'id': int, 'first_name': str, 'last_name': str, 'lam_1_certified': bool, 'lam_2_certified': bool,
-                     'lam_num': int}
+                     'lam_num': int, 'enabled': bool}
 
     for arg in all_args:
         defect_parser.add_argument(arg, type=arg_type_dict[arg], required=False, help='This argument is optional.')
@@ -29,7 +29,6 @@ class Operator(Resource):
                 ops = OperatorModel.get_active_operators(lam_num)
             else:
                 ops = OperatorModel.get_active_operators()
-                print(f'{ops=}')
 
             if ops:
                 ops_list = []
@@ -39,7 +38,6 @@ class Operator(Resource):
             else:
                 response = {'operator': 'No operators found'}, 404
             OperatorModel.session.remove()
-        print(f'{response=}')
         return response
 
     def post(self):
@@ -69,6 +67,16 @@ class Operator(Resource):
                 print(f'{existing_op=}')
                 if existing_op is not None:
                     op_changes = 0
+                    if data.get('enabled') is not None:
+                        enable = data.pop('enabled')
+                        if enable:
+                            print('enabling')
+                            existing_op.enable_operator()
+                            pass
+                        elif enable is False:  # specifically false
+                            print('disabling')
+                            existing_op.disable_operator()
+                            pass
                     for key, arg in data.items():
                         current_val = getattr(existing_op, key)
                         if current_val != arg:

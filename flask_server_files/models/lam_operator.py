@@ -1,4 +1,6 @@
 import sqlalchemy as fsa
+from sqlalchemy import func
+from typing_extensions import Self
 
 from flask_server_files.helpers import jsonize_sqla_model
 from flask_server_files.sqla_instance import Base
@@ -50,15 +52,17 @@ class OperatorModel(Base):
         """Get a list of         """
 
         if lam_number is None:
-            return cls.query.filter(OperatorModel.date_removed == None).all()
+            # return cls.query.filter(OperatorModel.date_removed == None).all()
+            return cls.query.all()
         else:
             certified_lam_dict = {1: OperatorModel.lam_1_certified, 2: OperatorModel.lam_2_certified}
             certified_lam_dict[0] = certified_lam_dict[1]  # for development
             lam_column_dict = certified_lam_dict[lam_number]
-            return cls.query.filter(OperatorModel.date_removed == None).filter(lam_column_dict).all()
+            # return cls.query.filter(OperatorModel.date_removed == None).filter(lam_column_dict).all()
+            return cls.query.filter(lam_column_dict).all()
 
     @classmethod
-    def find_by_id(cls, id_, get_sqalchemy=False, wrap_model=True):
+    def find_by_id(cls, id_, get_sqalchemy=False, wrap_model=True) -> Self:
         """Get a DefectModel of a record by its id.
 
         :param id_: int, the id.
@@ -80,12 +84,29 @@ class OperatorModel(Base):
         return jsonize_sqla_model(self)
 
     def save_to_database(self):
-        """Save the changed to defect to the database."""
+        """Save the changes to operator to the database."""
 
         with self.session() as session:
             session.add(self)
             session.commit()
             self.session.remove()
+
+    def disable_operator(self):
+        """Set the operator's date removed to now if they are not already disabled."""
+
+        if self.date_removed is None:
+            self.date_removed = func.current_timestamp()
+            return True
+        return False
+
+    def enable_operator(self):
+        """Set the operator's date removed to null if they are not already enabled."""
+
+        if self.date_removed is not None:
+            self.date_removed = None
+            return True
+        return False
+
 
 
 if __name__ == '__main__':
