@@ -15,7 +15,7 @@ from log_and_alert.log_setup import lg
 from lot_number_checks import LotChecker
 from msg_window.popup_frame import DefectMessageFrame
 from restart_error import RestartError
-from scada_tag_query import TagHistoryConnector
+from scada_outbound_connections.scada_tag_query import TagHistoryConnector
 from untracked_config.lam_num import LAM_NUM
 
 
