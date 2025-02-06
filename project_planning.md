@@ -214,3 +214,18 @@ Ignition end of things brainstorming:
 
 * default reason toggle isn't starting out highlighted
 * instructions on screen
+
+20250206 todo:
+
+* issue: possibly the operators, possibly an issue (network?) creating multiple copies of defect records not needed
+  * when restart is pressed report how many defect panels are displayed
+  * add logging of button presses
+  * button to clear all open: save setting to no removed material, mark for deletion
+  * single defect display at once [this could be an issue if the auto-detect project ever starts up again]
+    * option 1: don't allow creating a new one if there's one open
+    * option 2: new defect button -> save setting to no removed material, mark for deletion
+* do something about log startup attempt lock file in use spam:
+  * "main_app.<module>.87","<module>","87","ERROR","[WinError 32] The process cannot access the file because it is being
+    used by another process: './mahlo_popup.lock'"
+* record lot number entry errors: "Begin work on lot number sqlalchemy model; incorrect_lot_number_model"
+* watch for scada interruptions
