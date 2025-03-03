@@ -4,7 +4,7 @@ import sys
 import uuid
 from logging.handlers import RotatingFileHandler
 
-from untracked_config.development_node import ON_DEV_NODE
+from untracked_config.configuration_data import ON_DEV_NODE
 
 program_unique_id = uuid.uuid4()
 

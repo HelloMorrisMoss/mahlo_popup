@@ -3,7 +3,7 @@
 from psycopg2 import connect, sql
 
 from log_and_alert.log_setup import lg
-from untracked_config.th_creds import connection_dict
+from untracked_config.configuration_data import connection_dict
 
 
 class TagIds:

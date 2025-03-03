@@ -17,8 +17,7 @@ from flask_server_files.resources.signal_popup import Popup
 from flask_server_files.routing import routes_blueprint
 from flask_server_files.sqla_instance import fsa
 from log_and_alert.log_setup import lg
-from untracked_config.db_uri import DATABASE_URI
-from untracked_config.server_settings import host, port, server_threads
+from untracked_config.configuration_data import DATABASE_URI, host, port, server_threads
 
 # create and config the flask app
 app = flask.Flask(__name__)
@@ -61,6 +60,9 @@ def start_flask_app(in_message_queue=None, out_message_queue=None):
         lg.warning('No inbound defect_instance queue!')
 
     fsa.init_app(app)
+    # with app.app_context() as ac:
+    #     from flask_server_files.resources.database import create_tables
+    #     create_tables()
 
     waitress.serve(app, host=host, port=port, threads=server_threads)
     lg.debug('after waitress!')

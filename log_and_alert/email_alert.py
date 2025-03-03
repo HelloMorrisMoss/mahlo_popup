@@ -63,7 +63,7 @@ def get_email_cfg_dict(lam_num: int = None):
     :param lam_num: int, the laminator number
     :return: dict
     """
-    from untracked_config.email_cfg_dict import email_cfg_dict
+    from untracked_config.configuration_data import email_cfg_dict
 
     if lam_num is not None:
         f_sender = email_cfg_dict['email_settings']['sender_name'].format(num=lam_num)

@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.scoping import scoped_session
 
-from untracked_config.db_uri import DATABASE_URI
+from untracked_config.configuration_data import DATABASE_URI
 
 # engine = create_engine(DATABASE_URI, connect_args={'check_same_thread': False})
 engine = create_engine(DATABASE_URI, pool_pre_ping=True)
