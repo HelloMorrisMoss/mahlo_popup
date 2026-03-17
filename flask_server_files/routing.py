@@ -4,6 +4,7 @@ defects_table:  /defect_table renders a simple html view of the defects in the d
 
 """
 import datetime
+import logging
 
 import flask
 import requests
@@ -77,16 +78,25 @@ def supervisory_controls_page():
     :return: str, html
     """
     form_response = None
-    if request.method == 'GET':
-        lg.debug('supervisory page loading.')
-    elif request.method == 'POST':  # button pressed
+    if request.method == 'POST':  # button pressed
         lg.debug('supervisory page POST RECEIVED')
-        for actn in act_keys:  # loop through the button actions and send a request to this web server for the action
-            lg.debug('Checking for %s', actn)
-            if action_requested := request.form.get(actn):
-                lg.debug('Action requested: %s', action_requested)
-                form_response = requests.post('http://localhost:5000/popup', json={'action': action_requested})
-                if form_response.status_code != 200:
-                    lg.warn(f'Action post error: {form_response.__dict__=}')
+        # Check for logging level update
+        if new_level := request.form.get('logging_level'):
+            lg.info('Setting logging level to %s', new_level)
+            lg.setLevel(new_level)
+            for handler in lg.handlers:
+                handler.setLevel(new_level)
+        else:
+            for actn in act_keys:  # loop through the button actions and send a request to this web server for the action
+                lg.debug('Checking for %s', actn)
+                if action_requested := request.form.get(actn):
+                    lg.debug('Action requested: %s', action_requested)
+                    form_response = requests.post('http://localhost:5000/popup', json={'action': action_requested})
+                    if form_response.status_code != 200:
+                        lg.warn(f'Action post error: {form_response.__dict__=}')
+    elif request.method == 'GET':
+        lg.debug('supervisory page loading.')
+
+    current_level = logging.getLevelName(lg.getEffectiveLevel())
     return flask.render_template('pop_up_supervisory_controls.html', action_list=act_keys, action_dict=action_dict,
-                                 lam_num=LAM_NUM, form_response=form_response)
+                                 lam_num=LAM_NUM, form_response=form_response, current_level=current_level)
