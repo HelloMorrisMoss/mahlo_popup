@@ -61,5 +61,7 @@ msg_window/             # Messaging interface
 5. **Batch Clearing**: `Clear Old Records` iterates through active message panels, sets their state to "nothing
    removed", marks records for deletion, and saves them.
 6. **Confirmation Logic**: Multi-click countdown for system restart implemented with `after()` for timeout resets.
+   System restart is triggered via `SystemRestartError`, allowing centralized handling of context gathering, logging,
+   and email notifications.
 7. **Grid Selection**: `OperatorGridWindow` dynamically builds a grid of buttons from the operator list, including
    alphabetical disabled headers for navigation.

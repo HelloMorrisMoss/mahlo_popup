@@ -2,6 +2,7 @@
 
 import datetime
 import json
+import os
 import tkinter
 import tkinter as tk
 from functools import partial
@@ -14,7 +15,7 @@ from flask_server_files.models.lam_operator import OperatorModel
 from log_and_alert.log_setup import lg
 from lot_number_checks import LotChecker
 from msg_window.popup_frame import DefectMessageFrame
-from restart_error import RestartError
+from restart_error import RestartError, SystemRestartError
 from scada_outbound_connections.scada_tag_query import TagHistoryConnector
 from untracked_config.lam_num import LAM_NUM
 
@@ -614,12 +615,44 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
 
         toplevel.bind('<<ShiftChange>>', reset_operator_selection)
 
+        # restart buttons container to keep them together on the right
+        self.restart_buttons_container = ttk.Frame(self)
+        self.restart_buttons_container.grid(row=3, column=1000, sticky='e')
+        self.columnconfigure(1000, weight=1)
+
         # restart the program button
         restart_partial = partial(self.parent.terminate_with_cause, RestartError('Restart button pressed (GUI).'))
-        self.restart_button = ttk.Button(self, text='Restart', command=restart_partial)
-        self.columnconfigure(1000, weight=1)
-        self.restart_button.grid(row=3, column=1000, sticky='e', padx=self.pad['x'],  # put it all the way to the right
-                                 pady=self.pad['y'])
+        self.restart_popup_button = ttk.Button(self.restart_buttons_container, text='Restart Popup', command=restart_partial)
+        self.restart_popup_button.grid(row=0, column=0, padx=self.pad['x'],
+                                       pady=self.pad['y'])
+
+        # restart the HMI/PC button
+        self.restart_countdown = 3
+        self.restart_timer_id = None
+
+        def reset_restart_button():
+            self.restart_countdown = 3
+            if self.restart_hmi_button.winfo_exists():
+                self.restart_hmi_button.config(text=f'Restart Mahlo HMI ({self.restart_countdown})')
+            self.restart_timer_id = None
+
+        def restart_system():
+            if self.restart_countdown > 0:
+                self.restart_countdown -= 1
+                self.restart_hmi_button.config(text=f'Restart Mahlo HMI ({self.restart_countdown})')
+
+                if self.restart_timer_id:
+                    self.after_cancel(self.restart_timer_id)
+
+                if self.restart_countdown > 0:
+                    self.restart_timer_id = self.after(10000, reset_restart_button)
+                else:
+                    # at 0, perform restart
+                    self.parent.terminate_with_cause(SystemRestartError('Restart HMI button pressed (GUI).'))
+
+        self.restart_hmi_button = ttk.Button(self.restart_buttons_container, text='Restart Mahlo HMI (3)', command=restart_system)
+        self.restart_hmi_button.grid(row=0, column=1, padx=self.pad['x'],
+                                     pady=self.pad['y'])
 
     def next_column(self):
         """Get an integer representing the next tk grid column to use."""

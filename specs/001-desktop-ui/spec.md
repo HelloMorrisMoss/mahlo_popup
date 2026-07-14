@@ -86,8 +86,8 @@ mocked).
 **Acceptance Scenarios**:
 
 1. **Given** the "Restart Mahlo HMI (3)" button, **When** clicked, **Then** the countdown decreases.
-2. **Given** the countdown is at 0, **When** clicked, **Then** an email notification is sent and the system restart is
-   initiated.
+2. **Given** the countdown is at 0, **When** clicked, **Then** an email notification containing contextual information (
+   laminator number, hostname, etc.) and the operator's name is sent, and the system restart is initiated.
 3. **Given** the button was clicked but not again for 10 seconds, **When** timer expires, **Then** the countdown resets
    to 3.
 
@@ -140,7 +140,8 @@ As an operator, I want an easier way to find and select my name from a large lis
 - **FR-001**: System MUST maintain a responsive UI.
 - **FR-002**: System MUST support "Always on Top" functionality.
 - **FR-003**: System MUST persist window position across restarts.
-- **FR-004**: System restart MUST be protected by a multi-click confirmation and send email notification.
+- **FR-004**: System restart MUST be protected by a multi-click confirmation and send email notification including
+  contextual information.
 
 ## Success Criteria *(mandatory)*
 
