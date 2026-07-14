@@ -58,3 +58,8 @@ msg_window/             # Messaging interface
 2. **Queue Monitoring**: Periodic polling (via `after()`) of the inbound queue to process messages from background threads.
 3. **Event Handling**: Binding physical and virtual events to UI actions.
 4. **State Management**: Local tracking of operator selections and system status to drive UI updates.
+5. **Batch Clearing**: `Clear Old Records` iterates through active message panels, sets their state to "nothing
+   removed", marks records for deletion, and saves them.
+6. **Confirmation Logic**: Multi-click countdown for system restart implemented with `after()` for timeout resets.
+7. **Grid Selection**: `OperatorGridWindow` dynamically builds a grid of buttons from the operator list, including
+   alphabetical disabled headers for navigation.

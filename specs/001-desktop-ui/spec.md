@@ -60,10 +60,59 @@ As an operator, I want to access help and system messages.
 
 ---
 
+### User Story 6 - Batch Clearing Defect Records (Priority: P2)
+
+As an operator, I want to clear all open defect records at once when they are no longer relevant.
+**Why this priority**: Efficiency for the operator when many stale records accumulate.
+**Independent Test**: Click "Clear Old Records" and verify all panels are closed and records are marked for deletion in
+the database.
+
+**Acceptance Scenarios**:
+
+1. **Given** an operator is selected, **When** "Clear Old Records" is clicked, **Then** all open defect records are
+   saved with "nothing removed" status, `marked_for_deletion` is set to True, and the panels are closed.
+2. **Given** no operator is selected, **When** "Clear Old Records" is clicked, **Then** a warning is displayed and no
+   records are cleared.
+
+---
+
+### User Story 7 - HMI System Restart (Priority: P2)
+
+As an operator, I want a way to restart the HMI computer from the application when troubleshooting.
+**Why this priority**: Troubleshooting support for the plant floor.
+**Independent Test**: Verify the countdown mechanism and that an email is logged/sent before the restart command (
+mocked).
+
+**Acceptance Scenarios**:
+
+1. **Given** the "Restart Mahlo HMI (3)" button, **When** clicked, **Then** the countdown decreases.
+2. **Given** the countdown is at 0, **When** clicked, **Then** an email notification is sent and the system restart is
+   initiated.
+3. **Given** the button was clicked but not again for 10 seconds, **When** timer expires, **Then** the countdown resets
+   to 3.
+
+---
+
+### User Story 8 - Enhanced Operator Selection (Priority: P2)
+
+As an operator, I want an easier way to find and select my name from a large list.
+**Why this priority**: Improved usability on touchscreens.
+**Independent Test**: Open the operator grid window and select a name.
+
+**Acceptance Scenarios**:
+
+1. **Given** the operator grid window is open, **When** an operator button is clicked, **Then** that operator is
+   selected in the main dropdown and the grid window closes.
+2. **Given** the operator grid window is open, **Then** operators are displayed in a flex-fill grid with alphabetical
+   headers.
+
+---
+
 ### Edge Cases
 
 - What happens when the inbound queue overflows?
 - How does the system handle a loss of connection to the Flask backend?
+- Multiple simultaneous "Clear Old Records" attempts.
 
 ## Requirements *(mandatory)*
 
@@ -73,6 +122,9 @@ As an operator, I want to access help and system messages.
 - **UI-002**: Implement a polling mechanism using `after()` to check for queue messages.
 - **UI-003**: Ensure the UI remains responsive during high message volumes.
 - **UI-004**: Handle thread-safe communication using `collections.deque`.
+- **UI-005**: `IndependentControlsPanel` MUST include "Clear Old Records", "Restart Popup", and "Restart Mahlo HMI"
+  buttons.
+- **UI-006**: Operator selection MUST provide both a dropdown and a grid-based selection window.
 
 ### API Requirements (Flask)
 
@@ -81,12 +133,14 @@ As an operator, I want to access help and system messages.
 ### Database Migrations (SQLAlchemy)
 
 - **DB-001**: Log defect data to the PostgreSQL database via the SQLAlchemy models.
+- **DB-002**: Support `marked_for_deletion` attribute on defect records.
 
 ### Functional Requirements
 
 - **FR-001**: System MUST maintain a responsive UI.
 - **FR-002**: System MUST support "Always on Top" functionality.
 - **FR-003**: System MUST persist window position across restarts.
+- **FR-004**: System restart MUST be protected by a multi-click confirmation and send email notification.
 
 ## Success Criteria *(mandatory)*
 
@@ -95,6 +149,8 @@ As an operator, I want to access help and system messages.
 - **SC-001**: UI remains responsive (no freezing) during message processing.
 - **SC-002**: Window position is correctly restored upon launch.
 - **SC-003**: Messages from the inbound queue are processed within < 100ms.
+- **SC-004**: "Clear Old Records" processes all records in < 2 seconds.
+- **SC-005**: Operator grid displays all active operators alphabetically.
 
 ## Assumptions
 

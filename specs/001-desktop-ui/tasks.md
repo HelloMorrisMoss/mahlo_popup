@@ -25,3 +25,11 @@
 - [ ] T010 Add unit tests for custom widgets logic
 - [ ] T011 Implement UI integration tests
 - [ ] T012 Document internal queue message format schema
+
+## Phase 6: Extended Controls (Update 2026-07-14)
+
+- [ ] T013 [US6] Add "Clear Old Records" button with `marked_for_deletion` logic
+- [ ] T014 [US7] Implement multi-click system restart button with email notification
+- [ ] T015 [US7] Rename original restart button to "Restart Popup"
+- [ ] T016 [US8] Create `OperatorGridWindow` with flex-fill grid and headers
+- [ ] T017 [US8] Add grid selection trigger to `IndependentControlsPanel`
