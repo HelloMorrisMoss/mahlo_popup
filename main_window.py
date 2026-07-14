@@ -566,6 +566,25 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         self.operator_selector.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
                                     pady=self.pad['y'])
 
+
+        # clear old records button
+        def clear_old_records():
+            if self.current_operator.get() == self._default_operator:
+                flash_select_label_on()
+                return
+
+            popup = self.parent.popup_frame
+            # Copy the list to avoid issues when panels are destroyed during iteration
+            panels = list(popup.messages_frames)
+            for panel in panels:
+                panel._removed_toggles.set_all_not_removed()
+                panel.defect_interface.marked_for_deletion = True
+                panel.save_response()
+
+        self.clear_records_button = ttk.Button(self, text='Clear Old Records', command=clear_old_records)
+        self.clear_records_button.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
+                                       pady=self.pad['y'])
+
         # in case an operator is not selected, a flashing warning label
         self.select_operator_label = ttk.Label(self, text='Please select an operator.', background='#ffcc00',
                                                foreground='#000000')
@@ -607,6 +626,8 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
 
         self._next_column += 10
         return self._next_column
+
+
 
 
 if __name__ == '__main__':
