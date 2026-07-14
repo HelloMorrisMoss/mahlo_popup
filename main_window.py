@@ -2,7 +2,6 @@
 
 import datetime
 import json
-import os
 import tkinter
 import tkinter as tk
 from functools import partial
@@ -567,6 +566,14 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         self.operator_selector.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
                                     pady=self.pad['y'])
 
+        # grid button for operator selection
+        def show_operator_grid():
+            OperatorGridWindow(self, operator_name_list[1:], self.current_operator, self._default_operator)
+
+        self.operator_grid_button = ttk.Button(self, text='⣿⣿⣿', width=4, command=show_operator_grid)
+        self.operator_grid_button.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
+                                       pady=self.pad['y'])
+
 
         # clear old records button
         def clear_old_records():
@@ -659,6 +666,58 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
 
         self._next_column += 10
         return self._next_column
+
+
+class OperatorGridWindow(tk.Toplevel):
+    """A window showing a grid of operators for selection."""
+
+    def __init__(self, parent, operator_names, current_operator_var, default_operator):
+        super().__init__(parent)
+        self.title("Operator Selection")
+        self.current_operator_var = current_operator_var
+        self.default_operator = default_operator
+
+        window_topmost(self)
+
+        # style for blue headers
+        self.style = ttk.Style(self)
+        self.style.configure("Header.TButton", font=('Segoe UI', 9, 'bold'))
+        self.style.map("Header.TButton", 
+                       foreground=[('disabled', 'blue')],
+                       font=[('disabled', ('Segoe UI', 9, 'bold'))])
+
+        items = []
+        last_char = ''
+        for name in operator_names:
+            if not name:
+                continue
+            first_char = name[0].upper()
+            if first_char != last_char:
+                items.append((first_char, True))
+                last_char = first_char
+            items.append((name, False))
+
+        rows_per_col = 15
+        for i, (text, is_header) in enumerate(items):
+            col = i // rows_per_col
+            row = i % rows_per_col
+            if is_header:
+                btn = ttk.Button(self, text=text, state='disabled', style="Header.TButton")
+            else:
+                btn = ttk.Button(self, text=text, command=partial(self.select_operator, text))
+            btn.grid(row=row, column=col, sticky='nesw', padx=2, pady=2)
+
+        self.bind("<FocusOut>", lambda e: self.destroy())
+        self.focus_set()
+
+    def select_operator(self, name):
+        """Select the operator and close the window."""
+        self.current_operator_var.set(name)
+        # Ensure main window is full sized for subsequent actions
+        toplevel = self.master.winfo_toplevel()
+        if hasattr(toplevel, 'full_sized'):
+            toplevel.full_sized()
+        self.destroy()
 
 
 
