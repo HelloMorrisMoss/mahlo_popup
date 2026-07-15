@@ -17,7 +17,9 @@ from flask_server_files.resources.signal_popup import Popup
 from flask_server_files.routing import routes_blueprint
 from flask_server_files.sqla_instance import fsa
 from log_and_alert.log_setup import lg
-from untracked_config.configuration_data import DATABASE_URI, host, port, server_threads
+from monitors.host_monitor import watchdog_check_printsvr
+from untracked_config.configuration_data import DATABASE_URI, host, port, server_threads, \
+    printsvr_check_interval_seconds
 
 # create and config the flask app
 app = flask.Flask(__name__)
@@ -151,6 +153,7 @@ def schedule_queue_watcher(in_message_queue, out_message_queue):
             out_bound_messages.append({'action': 'restart_popup', 'error': restart_signal})
 
     scheduler.add_job(partial(check_that_port_is_mine, out_message_queue), 'interval', seconds=10)
+    scheduler.add_job(watchdog_check_printsvr, 'interval', seconds=printsvr_check_interval_seconds)
     scheduler.start()
 
 

@@ -28,7 +28,7 @@
 ## Phase 6: User Story 4 - Host System Watchdog
 
 - [x] T015 [US4] Implement `PrintSVR.exe` monitoring logic in APScheduler
-- [ ] T016 [US4] Implement watchdog restart logic (detached process, correct CWD) and failure notification via
+- [x] T016 [US4] Implement watchdog restart logic (detached process, correct CWD) and failure notification via
   `/button_msg`
 
 ## Phase 7: User Story 5 - PDF Report Monitoring
