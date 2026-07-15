@@ -1,3 +1,5 @@
+> ⚠️ **STALE**: spec.md was refined on 2026-07-15. Run `/speckit.refine.propagate` to update this plan.
+
 # Tasks: Flask REST API
 
 **Input**: Design documents from `/specs/002-flask-api/`

@@ -1,3 +1,5 @@
+> ⚠️ **STALE**: spec.md was refined on 2026-07-15. Run `/speckit.refine.propagate` to update this plan.
+
 # Implementation Plan: Flask REST API
 
 **Branch**: `production` | **Date**: 2026-07-10 | **Spec**: [specs/002-flask-api/spec.md]
