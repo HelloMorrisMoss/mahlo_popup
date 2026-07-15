@@ -1,6 +1,6 @@
-> ⚠️ **STALE**: spec.md was refined on 2026-07-15. Run `/speckit.refine.propagate` to update this plan.
-
 # Tasks: Flask REST API
+
+**Propagated**: 2026-07-15 — Updated from spec.md refinement (Host System Watchdog and PDF Report Monitoring Service)
 
 **Input**: Design documents from `/specs/002-flask-api/`
 
@@ -24,6 +24,17 @@
 - [x] T009 [US3] Implement APScheduler integration
 - [x] T010 [US3] Create `regular_check_function` for queue processing
 - [x] T011 [US3] Implement `check_that_port_is_mine` logic
+
+## Phase 6: User Story 4 - Host System Watchdog
+
+- [x] T015 [US4] Implement `PrintSVR.exe` monitoring logic in APScheduler
+- [ ] T016 [US4] Implement watchdog restart logic (detached process, correct CWD) and failure notification via
+  `/button_msg`
+
+## Phase 7: User Story 5 - PDF Report Monitoring
+
+- [ ] T017 [US5] Implement PDF discovery logic for `pdf_root_directory` and date subfolders
+- [ ] T018 [US5] Implement `HostMonitor` resource for `/host_monitor` endpoint
 
 ## Phase N: Polish & Gaps
 - [ ] T012 Implement robust API authentication/security

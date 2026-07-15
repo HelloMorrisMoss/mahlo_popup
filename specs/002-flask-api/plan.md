@@ -1,6 +1,6 @@
-> ⚠️ **STALE**: spec.md was refined on 2026-07-15. Run `/speckit.refine.propagate` to update this plan.
-
 # Implementation Plan: Flask REST API
+
+**Propagated**: 2026-07-15 — Updated from spec.md refinement (Host System Watchdog and PDF Report Monitoring Service)
 
 **Branch**: `production` | **Date**: 2026-07-10 | **Spec**: [specs/002-flask-api/spec.md]
 
@@ -63,3 +63,9 @@ flask_server_files/
 3. **Threading & Queues**: The `start_flask_app` function takes inbound/outbound queues and shares them with the app context.
 4. **Background Watcher**: `schedule_queue_watcher` starts a background thread to poll the inbound queue and check port control.
 5. **Waitress Integration**: Production-ready server serving the Flask app on a configured host and port.
+6. **Host System Watchdog**: Integrated into APScheduler, this logic monitors the `PrintSVR.exe` process and attempts
+   automatic recovery if it is found to be not running. Recovery attempts MUST start the process as an independent,
+   detached entity, with the correct working directory as the binary parent directory, to ensure it persists after the
+   popup closes.
+7. **PDF Report Monitoring Service**: Provides a mechanism to scan the local filesystem for recently generated PDF
+   reports based on date-named directory patterns and creation time windows.
