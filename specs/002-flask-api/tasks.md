@@ -33,8 +33,8 @@
 
 ## Phase 7: User Story 5 - PDF Report Monitoring
 
-- [ ] T017 [US5] Implement PDF discovery logic for `pdf_root_directory` and date subfolders
-- [ ] T018 [US5] Implement `HostMonitor` resource for `/host_monitor` endpoint
+- [x] T017 [US5] Implement PDF discovery logic for `pdf_root_directory` and date subfolders
+- [x] T018 [US5] Implement `HostMonitor` resource for `/host_monitor` endpoint
 
 ## Phase N: Polish & Gaps
 - [ ] T012 Implement robust API authentication/security
