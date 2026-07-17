@@ -30,11 +30,19 @@ The primary user interface for operators on the plant floor.
 
 ### 3. Help Window (`help_window/`)
 
-A standalone, dynamically configurable help system.
+A standalone, dynamically configurable help system designed for industrial touchscreens.
 
 - **Technology**: Tkinter, JSON-based templates.
-- **Functionality**: Provides cached, touchscreen-friendly documentation with background update checks.
-- **Independence**: Can be run independently of the `MainWindow` for maintenance and testing.
+- **Components**:
+  - `HelpApp`: Standalone entry point.
+  - `ContentManager`: Handles recursive scanning of JSON templates, metadata extraction, and multi-level caching.
+  - `HelpFrame`: Orchestrates the layout, behavior controls (Stay on Top, Focus Loss), and background update loops.
+  - `NavFrame`: Scrollable, sectioned navigation sidebar.
+  - `ArticleViewer`: Renders mixed text/image content and handles inter-article linking.
+- **Functionality**:
+  - **Caching**: Metadata is cached for near-instant startup.
+  - **Background Synchronization**: Automatically checks for content updates on disk and notifies the user.
+  - **Independence**: Can be run independently of the `MainWindow` to minimize impact on core operations.
 
 ### 4. Web Server (`flask_server_files/`)
 

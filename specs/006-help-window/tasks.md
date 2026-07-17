@@ -22,12 +22,12 @@
 
 ## Phase 4: Background Processing & Polish
 
-- [ ] T010 Implement background update check mechanism
-- [ ] T011 Implement "Update Available" UI notification and auto-caching
-- [ ] T012 Implement error handling for malformed templates (broken indicator)
+- [x] T010 Implement background update check mechanism
+- [x] T011 Implement "Update Available" UI notification and auto-caching
+- [x] T012 Implement error handling for malformed templates (broken indicator)
 
 ## Phase 5: Verification & Documentation
 
 - [x] T013 Create unit tests for `ContentManager` (loading/caching/errors)
-- [ ] T014 Perform manual verification on touchscreen (if available) or via mouse
-- [ ] T015 Update `ARCHITECTURE.md` with the new component details
+- [x] T014 Perform manual verification on touchscreen (if available) or via mouse
+- [x] T015 Update `ARCHITECTURE.md` with the new component details

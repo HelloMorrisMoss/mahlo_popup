@@ -118,25 +118,38 @@ class ContentManager:
     def check_for_updates(self) -> bool:
         """
         Checks if any files in content_dir have changed since last scan.
+        If changes are detected, it updates the cache file but keeps current articles
+        in memory until scan_content is called.
         """
-        if not self.articles:
-            return True
-
-        for article in self.articles:
-            path = article.get("file_path")
-            if not os.path.exists(path):
-                return True
-            if os.path.getmtime(path) > article.get("mtime", 0):
-                return True
-
-        # Also check if count changed (new files added)
-        all_json_files = []
-        for root, _, files in os.walk(self.content_dir):
+        # Perform a fresh scan to see what's actually on disk
+        new_articles = []
+        for root, dirs, files in os.walk(self.content_dir):
+            rel_path = os.path.relpath(root, self.content_dir)
+            section = "" if rel_path == "." else rel_path
             for file in files:
                 if file.endswith(".json"):
-                    all_json_files.append(os.path.join(root, file))
+                    file_path = os.path.join(root, file)
+                    article_meta = self._parse_template_metadata(file_path, section)
+                    new_articles.append(article_meta)
 
-        if len(all_json_files) != len(self.articles):
+        new_articles.sort(key=lambda x: (x['section'], x['title']))
+
+        # Compare with current articles
+        if len(new_articles) != len(self.articles):
+            self._save_to_cache(new_articles)
             return True
 
+        for old, new in zip(self.articles, new_articles):
+            if old["file_path"] != new["file_path"] or old["mtime"] < new["mtime"]:
+                self._save_to_cache(new_articles)
+                return True
+
         return False
+
+    def _save_to_cache(self, articles: List[Dict]):
+        """Internal helper to save a specific list of articles to cache."""
+        try:
+            with open(self.cache_file, 'w', encoding='utf-8') as f:
+                json.dump(articles, f, indent=4)
+        except Exception as e:
+            lg.error(f"Error saving cache: {e}")

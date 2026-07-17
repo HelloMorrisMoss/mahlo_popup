@@ -40,6 +40,23 @@ class HelpFrame(ttk.Frame):
         )
         self.toggle_nav_btn.pack(side="left", padx=10)
 
+        # Update Notification (Hidden by default)
+        self.update_frame = ttk.Frame(self.controls)
+        self.update_label = ttk.Label(
+            self.update_frame,
+            text="Update available!",
+            foreground="orange",
+            font=("Segoe UI", 9, "bold")
+        )
+        self.update_label.pack(side="left", padx=5)
+        self.reload_btn = ttk.Button(
+            self.update_frame,
+            text="Reload",
+            command=self.refresh_list,
+            style="Accent.TButton"
+        )
+        self.reload_btn.pack(side="left", padx=5)
+
         # Use PanedWindow for resizable side-by-side layout
         self.paned = ttk.PanedWindow(self, orient="horizontal")
         self.paned.pack(fill="both", expand=True)
@@ -58,6 +75,21 @@ class HelpFrame(ttk.Frame):
 
         # Initial behavior
         self._update_window_behavior()
+
+        # Start background update check
+        self.after(5000, self._check_for_content_updates)
+
+    def _check_for_content_updates(self):
+        """Periodically checks for content updates on disk."""
+        try:
+            if self.content_manager.check_for_updates():
+                self.update_frame.pack(side="left", padx=20)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Error checking for updates: {e}")
+
+        # Check again in 30 seconds
+        self.after(30000, self._check_for_content_updates)
 
     def toggle_nav(self):
         """Toggles the visibility of the navigation sidebar."""
@@ -107,6 +139,8 @@ class HelpFrame(ttk.Frame):
         """Refreshes the article list from the content manager."""
         articles = self.content_manager.scan_content()
         self.nav_frame.populate(articles)
+        self.update_frame.pack_forget()
+        self.content_manager.save_cache()
 
     def _on_article_selected(self, article_meta: Dict):
         """Callback when an article is selected in the NavFrame."""
