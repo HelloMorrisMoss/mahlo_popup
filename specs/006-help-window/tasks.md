@@ -31,3 +31,4 @@
 - [x] T013 Create unit tests for `ContentManager` (loading/caching/errors)
 - [x] T014 Perform manual verification on touchscreen (if available) or via mouse
 - [x] T015 Update `ARCHITECTURE.md` with the new component details
+- [x] T016 Create `help_window/README.md` and `run_help.py` entry point
