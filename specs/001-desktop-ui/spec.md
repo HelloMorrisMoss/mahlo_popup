@@ -4,7 +4,10 @@
 
 **Created**: 2026-07-10
 
-**Status**: Migrated
+**Status**: Completed (Migrated)
+
+**Refined**: 2026-07-16 — Refined "Always on Top" functionality to prevent Windows taskbar from flashing/activating.
+**Implemented**: 2026-07-16 — Applied win32gui fix with `SWP_NOACTIVATE` and `wm_frame()`.
 
 **Input**: User description: "The primary desktop interface for the Mahlo Popup application, built using Tkinter."
 
@@ -39,7 +42,9 @@ As an operator, I want the application to stay on top and remember its position 
 **Independent Test**: Move the window, restart the app, and verify it returns to the same position.
 
 **Acceptance Scenarios**:
-1. **Given** the "Always on Top" setting is enabled, **When** another application is focused, **Then** Mahlo Popup remains visible.
+
+1. **Given** the "Always on Top" setting is enabled, **When** another application is focused, **Then** Mahlo Popup
+   remains visible and the Windows taskbar does not activate or flash.
 2. **Given** the application window is moved, **When** the application is restarted, **Then** it opens at the last saved coordinates.
 
 ---
@@ -138,7 +143,8 @@ As an operator, I want an easier way to find and select my name from a large lis
 ### Functional Requirements
 
 - **FR-001**: System MUST maintain a responsive UI.
-- **FR-002**: System MUST support "Always on Top" functionality.
+- **FR-002**: System MUST support "Always on Top" functionality without activating the Windows taskbar or stealing focus
+  during periodic checks.
 - **FR-003**: System MUST persist window position across restarts.
 - **FR-004**: System restart MUST be protected by a multi-click confirmation and send email notification including
   contextual information.

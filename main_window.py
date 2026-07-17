@@ -132,7 +132,7 @@ class MainWindow(tk.Tk):
         self.hideables.append(self.controls_panel)
 
         # move the window to the front
-        window_topmost(self)
+        self.ensure_on_top_check(self)
 
         self._focus_out_func_id = self._set_focus_out_event()
 
@@ -171,7 +171,13 @@ class MainWindow(tk.Tk):
         self.after(1000, self.check_for_inbound_messages)
 
         if self.lam_num:  # don't steal focus on development system
-            self.after(5_000, self.ensure_on_top, True)
+            # the window by design should never be iconified (minimized)
+            # setting and unsetting now makes sure the popup starts on top
+            self.iconify()
+            self.deiconify()
+            self.after(5_000, self.ensure_on_top_check, True)
+        else:
+            lg.debug('Development system detected, "always on top" functionality is NOT enabled.')
 
         self.after(10_000, self.check_shift)
 
@@ -330,7 +336,7 @@ class MainWindow(tk.Tk):
 
             self.number_of_messages_button.grid_remove()  # hide the messages button
             self.full_sized()
-            self.ensure_on_top()
+            self.ensure_on_top_check()
 
     def full_sized(self):
         """Show the full sized window."""
@@ -475,15 +481,26 @@ class MainWindow(tk.Tk):
         self.quit()
         self.termd.append(merr)
 
-    def ensure_on_top(self, repeat=False):
-        """Check if the window is visible, if not, bring it to the front."""
+    def ensure_on_top_check(self, repeat=False, lift=False):
+        """Check if the window is visible, if not, bring it to the front.
 
-        self.deiconify()
-        window_topmost(self)
-        self.focus_get()
+        Ensures that the window is visible and brought to the top of the window stack. If
+        the `repeat` flag is set, the operation is repeated with a delay. The `lift` flag
+        indicates whether the window should be moved above all other windows.
+        * Warning: 'lift' will show the taskbar where the window's icon will flash.
+
+        :param repeat: Specifies whether this operation should be repeated after 60 seconds.
+            If True, the `ensure_on_top` function will call itself recursively with a delay.
+        :param lift: Determines whether the window should be lifted on top of other
+            windows when this method is invoked. If True, the window will be raised
+            above all others.
+        :return: None
+        """
+
+        window_topmost(self, lift=lift)
 
         if repeat:
-            self.after(60_000, self.ensure_on_top, True)
+            self.after(60_000, self.ensure_on_top_check, True)
 
 
 class IndependentControlsPanel(tk.ttk.LabelFrame):

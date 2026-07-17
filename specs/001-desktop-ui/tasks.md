@@ -1,5 +1,7 @@
 # Tasks: Desktop UI (Tkinter)
 
+**Propagated**: 2026-07-16 — Updated from spec.md refinement (Refined "Always on Top" functionality).
+
 **Input**: Design documents from `/specs/001-desktop-ui/`
 
 ## Phase 1: Setup
@@ -19,7 +21,7 @@
 
 ## Phase 5: User Story 3 - Window Management
 - [x] T008 [US3] Implement window position persistence
-- [x] T009 [US3] Implement "Always on Top" functionality
+- [x] T009 [US3] Implement "Always on Top" functionality (refined to prevent taskbar activation via win32gui)
 
 ## Phase N: Polish & Gaps
 - [ ] T010 Add unit tests for custom widgets logic

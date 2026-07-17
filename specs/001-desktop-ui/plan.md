@@ -1,5 +1,7 @@
 # Implementation Plan: Desktop UI (Tkinter)
 
+**Propagated**: 2026-07-16 — Updated from spec.md refinement (Refined "Always on Top" functionality).
+
 **Branch**: `production` | **Date**: 2026-07-10 | **Spec**: [specs/001-desktop-ui/spec.md]
 
 ## Summary
@@ -56,12 +58,14 @@ msg_window/             # Messaging interface
 
 1. **Main Loop**: Standard Tkinter `mainloop()` running in the main thread.
 2. **Queue Monitoring**: Periodic polling (via `after()`) of the inbound queue to process messages from background threads.
-3. **Event Handling**: Binding physical and virtual events to UI actions.
-4. **State Management**: Local tracking of operator selections and system status to drive UI updates.
-5. **Batch Clearing**: `Clear Old Records` iterates through active message panels, sets their state to "nothing
+3. **Window Topmost**: Implementation of periodic "Always on Top" checks using `win32gui.SetWindowPos` with
+   `SWP_NOACTIVATE` to ensure visibility without taskbar activation.
+4. **Event Handling**: Binding physical and virtual events to UI actions.
+5. **State Management**: Local tracking of operator selections and system status to drive UI updates.
+6. **Batch Clearing**: `Clear Old Records` iterates through active message panels, sets their state to "nothing
    removed", marks records for deletion, and saves them.
-6. **Confirmation Logic**: Multi-click countdown for system restart implemented with `after()` for timeout resets.
+7. **Confirmation Logic**: Multi-click countdown for system restart implemented with `after()` for timeout resets.
    System restart is triggered via `SystemRestartError`, allowing centralized handling of context gathering, logging,
    and email notifications.
-7. **Grid Selection**: `OperatorGridWindow` dynamically builds a grid of buttons from the operator list, including
+8. **Grid Selection**: `OperatorGridWindow` dynamically builds a grid of buttons from the operator list, including
    alphabetical disabled headers for navigation.
