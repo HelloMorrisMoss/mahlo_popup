@@ -4,7 +4,7 @@ This project uses a hybrid architecture. Agents are divided by their primary thr
 
 ## 1. Desktop UI Agent
 
-- **Ownership**: `main_window.py`, `widgets/`, `Azure-ttk-theme-main/`
+- **Ownership**: `main_window.py`, `help_window/`, `widgets/`, `Azure-ttk-theme-main/`
 - **Context**: Tkinter event loop, main thread responsiveness, Azure theme application.
 - **Rules**:
     - MUST NOT perform blocking I/O in the main thread.

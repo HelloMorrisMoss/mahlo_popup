@@ -28,7 +28,15 @@ The primary user interface for operators on the plant floor.
 - **Main Thread**: Runs the Tkinter event loop.
 - **Communication**: Polls `f2p_queue` (Flask-to-Popup) for real-time updates (e.g., new defect signals from SCADA).
 
-### 3. Web Server (`flask_server_files/`)
+### 3. Help Window (`help_window/`)
+
+A standalone, dynamically configurable help system.
+
+- **Technology**: Tkinter, JSON-based templates.
+- **Functionality**: Provides cached, touchscreen-friendly documentation with background update checks.
+- **Independence**: Can be run independently of the `MainWindow` for maintenance and testing.
+
+### 4. Web Server (`flask_server_files/`)
 
 A background service providing RESTful endpoints and web views.
 
@@ -37,12 +45,12 @@ A background service providing RESTful endpoints and web views.
 - **Background Tasks**: `APScheduler` monitors communication queues and ensures the program maintains control of its
   assigned network port.
 
-### 4. Data Layer (`flask_server_files/models/`)
+### 5. Data Layer (`flask_server_files/models/`)
 
 - **Technology**: SQLAlchemy ORM with a PostgreSQL backend.
 - **Models**: Defines the schema for `DefectModel`, `OperatorModel`, etc.
 
-### 5. Integrations
+### 6. Integrations
 
 - **SCADA (`ignition_scada/`)**: Logic for interacting with Ignition SCADA tags and events.
 - **Outbound Connections (`scada_outbound_connections/`)**: Handles messaging back to SCADA systems.
