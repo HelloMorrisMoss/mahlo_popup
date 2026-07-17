@@ -10,9 +10,9 @@
 
 ## Phase 2: UI Foundation
 
-- [ ] T004 Create `HelpFrame` with side-by-side layout (nav and content)
-- [ ] T005 Implement `NavFrame` with folder-based section headers
-- [ ] T006 Integrate refined `ArticleViewer` into `HelpFrame`
+- [x] T004 Create `HelpFrame` with side-by-side layout (nav and content)
+- [x] T005 Implement `NavFrame` with folder-based section headers
+- [x] T006 Integrate refined `ArticleViewer` into `HelpFrame`
 
 ## Phase 3: Dynamic Features & Interaction
 

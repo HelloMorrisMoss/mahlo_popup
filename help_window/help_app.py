@@ -7,6 +7,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from dev_common import style_component
 from help_window.help_frame import HelpFrame
+from help_window.content_manager import ContentManager
 
 
 class HelpApp(tk.Tk):
@@ -20,12 +21,14 @@ class HelpApp(tk.Tk):
         self.title("Mahlo Help System")
         self.geometry("1024x768")
 
+        # Initialize Content Manager
+        content_dir = os.path.join(os.path.dirname(__file__), "help_content")
+        self.content_manager = ContentManager(content_dir)
+
         # Apply Azure theme
-        # We need to pass the parent directory as path_override if we are running from root
-        # but if we are running from root, path_override='' works because Azure-ttk-theme-main is in root.
         style_component(self)
 
-        self.help_frame = HelpFrame(self)
+        self.help_frame = HelpFrame(self, self.content_manager)
         self.help_frame.pack(expand=True, fill="both")
 
 
