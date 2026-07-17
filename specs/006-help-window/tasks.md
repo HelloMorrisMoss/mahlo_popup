@@ -16,9 +16,9 @@
 
 ## Phase 3: Dynamic Features & Interaction
 
-- [ ] T007 Implement inter-article linking in `ArticleViewer`
-- [ ] T008 Implement window behavior controls (Focus loss behavior, Stay on Top)
-- [ ] T009 Implement navigation list toggle (show/hide)
+- [x] T007 Implement inter-article linking in `ArticleViewer`
+- [x] T008 Implement window behavior controls (Focus loss behavior, Stay on Top)
+- [x] T009 Implement navigation list toggle (show/hide)
 
 ## Phase 4: Background Processing & Polish
 

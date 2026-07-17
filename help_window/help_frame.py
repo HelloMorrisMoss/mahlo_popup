@@ -1,3 +1,5 @@
+import os
+import tkinter as tk
 from tkinter import ttk
 from typing import Dict
 
@@ -15,6 +17,28 @@ class HelpFrame(ttk.Frame):
     def __init__(self, parent, content_manager: ContentManager, **kwargs):
         super().__init__(parent, **kwargs)
         self.content_manager = content_manager
+        self.parent = parent  # Usually the HelpApp (tk.Tk)
+
+        # Control Bar (Top)
+        self.controls = ttk.Frame(self, padding=5)
+        self.controls.pack(fill="x")
+
+        self.stay_open_var = tk.BooleanVar(value=True)
+        self.stay_open_chk = ttk.Checkbutton(
+            self.controls,
+            text="Stay Open / On Top",
+            variable=self.stay_open_var,
+            command=self._update_window_behavior
+        )
+        self.stay_open_chk.pack(side="left", padx=10)
+
+        self.nav_visible = True
+        self.toggle_nav_btn = ttk.Button(
+            self.controls,
+            text="Hide Navigation",
+            command=self.toggle_nav
+        )
+        self.toggle_nav_btn.pack(side="left", padx=10)
 
         # Use PanedWindow for resizable side-by-side layout
         self.paned = ttk.PanedWindow(self, orient="horizontal")
@@ -31,6 +55,53 @@ class HelpFrame(ttk.Frame):
         # Load initial content
         self.refresh_list()
         self._load_default_article()
+
+        # Initial behavior
+        self._update_window_behavior()
+
+    def toggle_nav(self):
+        """Toggles the visibility of the navigation sidebar."""
+        if self.nav_visible:
+            self.paned.forget(self.nav_frame)
+            self.toggle_nav_btn.configure(text="Show Navigation")
+            self.nav_visible = False
+        else:
+            self.paned.insert(0, self.nav_frame, weight=1)
+            self.toggle_nav_btn.configure(text="Hide Navigation")
+            self.nav_visible = True
+
+    def _update_window_behavior(self):
+        """Updates stay-on-top and focus-out behavior based on 'Stay Open' setting."""
+        from dev_common import window_topmost
+
+        root = self.winfo_toplevel()
+        if self.stay_open_var.get():
+            window_topmost(root, set_to=True)
+            root.unbind("<FocusOut>")
+        else:
+            window_topmost(root, set_to=False)
+            # Close window when it loses focus
+            # We use a delay to avoid closing when focus moves to a child widget
+            root.bind("<FocusOut>", self._on_focus_out)
+
+    def _on_focus_out(self, event):
+        """Handles focus loss."""
+        # We use a small delay to see where the focus went
+        self.after(200, self._check_focus)
+
+    def _check_focus(self):
+        """Actual check for focus loss."""
+        try:
+            root = self.winfo_toplevel()
+            if not root.winfo_exists():
+                return
+
+            focused = root.focus_get()
+            if focused is None:
+                # Focus went to another application
+                root.destroy()
+        except Exception:
+            pass
 
     def refresh_list(self):
         """Refreshes the article list from the content manager."""
