@@ -4,9 +4,9 @@
 
 ## Phase 1: Setup & Infrastructure
 
-- [ ] T001 Create `help_window/` directory structure and `help_app.py` skeleton
-- [ ] T002 Implement `ContentManager` for scanning and parsing JSON templates
-- [ ] T003 Implement caching logic in `ContentManager`
+- [x] T001 Create `help_window/` directory structure and `help_app.py` skeleton
+- [x] T002 Implement `ContentManager` for scanning and parsing JSON templates
+- [x] T003 Implement caching logic in `ContentManager`
 
 ## Phase 2: UI Foundation
 
@@ -28,6 +28,6 @@
 
 ## Phase 5: Verification & Documentation
 
-- [ ] T013 Create unit tests for `ContentManager` (loading/caching/errors)
+- [x] T013 Create unit tests for `ContentManager` (loading/caching/errors)
 - [ ] T014 Perform manual verification on touchscreen (if available) or via mouse
 - [ ] T015 Update `ARCHITECTURE.md` with the new component details
