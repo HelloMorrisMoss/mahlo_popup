@@ -2,7 +2,8 @@
 
 **Branch**: `feature/help-window` | **Date**: 2026-07-17 | **Spec**: [specs/006-help-window/spec.md]
 
-**Propagated**: 2026-07-20 — Updated from spec.md refinement
+**Propagated**: 2026-07-20 — Updated media scaling requirements and metadata definitions for consistency with refined
+spec.md.
 
 ## Summary
 
@@ -78,6 +79,14 @@ help_window/             # New directory for the help window component
    * Videos will be embedded as a new block type using `tk.Text.window_create`.
    * Initial implementation will use `tkVideoPlayer` for native integration, with a modular design to allow a VLC-based
      backend if needed for performance.
+   * **Media Scaling**:
+       * **Responsive Scaling**: Implement logic to ensure all media fits within the `ArticleViewer` width, overriding
+         explicit metadata if necessary to prevent overflow.
+       * Images will be resized using `Pillow` while maintaining the aspect ratio.
+       * Videos will be resized using `tkVideoPlayer.set_size()`.
+       * **Metadata Support**: Parse optional JSON metadata: `size` presets (`thumbnail` to `fill`), static `width`/
+         `height`, or `width_pct`.
+       * Responsive resizing will be handled via the `<Configure>` event of the `ArticleViewer`.
 6. **Window Management**:
     * Implements `<FocusOut>` event binding to either close or stay open.
     * "Stay on Top" toggle using `root.attributes("-topmost", True)`.

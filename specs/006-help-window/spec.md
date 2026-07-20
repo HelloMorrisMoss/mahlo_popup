@@ -6,8 +6,8 @@
 
 **Status**: Refined
 
-**Refined**: 2026-07-20 — Added User Story 5 and requirements HLP-007, HLP-013, HLP-014 for video player support and
-silent playback in loud industrial environments.
+**Refined**: 2026-07-20 — Refined media scaling requirements (HLP-015, HLP-016) and metadata definitions for better
+clarity and technical precision.
 
 **Input**: User description for a dynamically configurable help window suitable for industrial HMI touchscreens.
 
@@ -91,6 +91,10 @@ video block and verify the video player appears.
 2. **Given** an article template containing a "video" block, **When** the article is loaded, **Then** an inline video
    player is displayed within the content flow.
 3. **Given** a video player is displayed, **When** the play button is clicked, **Then** the video playback starts.
+4. **Given** an article with a large image or video, **When** the article is loaded, **Then** the media is automatically
+   scaled to fit within the visible width of the article viewer.
+5. **Given** a media block with "size" metadata (e.g., "small"), **When** the article is loaded, **Then** the media is
+   scaled according to the specified size relative to the viewer width.
 
 ## Requirements *(mandatory)*
 
@@ -111,6 +115,12 @@ video block and verify the video player appears.
 - **HLP-013**: Video player MUST support basic playback controls (Play/Pause/Seek) and silent operation by default.
 - **HLP-014**: Video player implementation SHOULD be modular to allow switching between different backend
   implementations.
+- **HLP-015**: Responsive Media Scaling: Images and videos MUST be automatically scaled to fit within the article
+  viewer's visible width. This constraint is mandatory and supersedes any configured dimensions or presets (per HLP-016)
+  that would result in content overflowing the viewer area.
+- **HLP-016**: Media Metadata Support: The article JSON structure MUST support optional metadata for media blocks to
+  define display sizes. Supported formats include named presets (`thumbnail`, `small`, `medium`, `large`, `fill`),
+  absolute pixel dimensions (e.g., "1441x1080"), and percentages of the available viewer width.
 
 ### Technical Requirements
 

@@ -40,10 +40,20 @@ To add a new article:
    [
      {"type": "header", "content": "My Article"},
      {"type": "paragraph", "content": "Some description here."},
-     {"type": "image", "content": "path/to/image.png"},
+     {"type": "image", "content": "path/to/image.png", "size": "medium"},
+     {"type": "video", "content": "path/to/video.mp4", "width_pct": 80},
      {"type": "link", "content": "Click for More", "target": "other_article.json"}
    ]
    ```
+
+### Media Metadata
+
+Images and videos support optional metadata for scaling:
+
+- `size`: `thumbnail` (25%), `small` (50%), `medium` (75%), `large` (90%), `fill` (100% of viewer width).
+- `width_pct`: Numeric percentage of viewer width (e.g., `80`).
+- `width`, `height`: Static dimensions in pixels (e.g., `"1441x1080"` or separate `width`: 400, `height`: 300).
+
 3. The system will automatically detect and include the new article on next launch (or via the background update
    notification).
 

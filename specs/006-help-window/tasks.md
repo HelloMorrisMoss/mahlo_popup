@@ -2,7 +2,7 @@
 
 **Input**: Design documents from `/specs/006-help-window/`
 
-**Propagated**: 2026-07-20 — Updated from spec.md refinement
+**Propagated**: 2026-07-20 — Refined media scaling and metadata tasks for consistency with spec.md.
 
 ## Phase 1: Setup & Infrastructure
 
@@ -22,6 +22,11 @@
 - [x] T007.1 Implement video block support in `ArticleViewer` using `tkVideoPlayer`
 - [x] T008 Implement window behavior controls (Focus loss behavior, Stay on Top)
 - [x] T009 Implement navigation list toggle (show/hide)
+- [ ] T017 Implement media scaling and metadata support in `ArticleViewer`
+  - [ ] T017.1 Integrate `Pillow` for image resizing
+  - [ ] T017.2 Implement dynamic width calculation for images and videos
+  - [ ] T017.3 Implement metadata parsing for size, dimensions, and percentages
+  - [ ] T017.4 Implement responsive resizing on window `<Configure>` event
 
 ## Phase 4: Background Processing & Polish
 
