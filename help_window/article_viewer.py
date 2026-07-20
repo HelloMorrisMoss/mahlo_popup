@@ -3,6 +3,8 @@ import tkinter as tk
 from tkinter import ttk
 from typing import List, Dict, Callable
 
+from PIL import Image, ImageTk
+
 
 class ArticleViewer(ttk.Frame):
     """
@@ -53,8 +55,13 @@ class ArticleViewer(ttk.Frame):
         # Link hover cursor
         self.text_area.tag_bind("link", "<Enter>", lambda e: self.text_area.config(cursor="hand2"))
         self.text_area.tag_bind("link", "<Leave>", lambda e: self.text_area.config(cursor="arrow"))
-        self._images = []  # Keep references
+
+        self._media_elements = []  # List of dicts: {"type": "image"|"video", "widget": widget, "path": path, "metadata": metadata}
+        self._images = []  # Keep references to PhotoImage objects
         self._videos = []  # Keep references to video players
+
+        self.text_area.bind("<Configure>", self._on_text_area_configure)
+        self._resize_timer = None
 
     def load_article(self, title: str, article_data: List[Dict[str, str]]):
         """
@@ -79,9 +86,9 @@ class ArticleViewer(ttk.Frame):
                 # Phase 3 will handle complex linking.
                 self.text_area.insert("end", content + "\n", "paragraph")
             elif block_type == "image":
-                self._add_image(content)
+                self._add_image(content, block)
             elif block_type == "video":
-                self._add_video(content)
+                self._add_video(content, block)
             elif block_type == "link":
                 target = block.get("target", "")
                 self._add_link(content, target)
@@ -90,7 +97,134 @@ class ArticleViewer(ttk.Frame):
 
         self.text_area.configure(state="disabled")
 
-    def _add_image(self, image_path: str):
+    def _get_visible_width(self):
+        """Returns the width of the text area minus padding."""
+        self.update_idletasks()
+        width = self.text_area.winfo_width()
+        # Subtract padding
+        return max(10, width - 60)
+
+    def _calculate_dimensions(self, orig_w, orig_h, metadata):
+        """Calculates target dimensions based on metadata and viewer width."""
+        viewer_width = self._get_visible_width()
+
+        target_w = None
+        target_h = None
+
+        # 1. Check size presets
+        size_presets = {
+            "thumbnail": 0.25,
+            "small": 0.50,
+            "medium": 0.75,
+            "large": 0.90,
+            "fill": 1.0
+        }
+
+        size = metadata.get("size")
+        if size in size_presets:
+            target_w = viewer_width * size_presets[size]
+
+        # 2. Check width_pct
+        width_pct = metadata.get("width_pct")
+        if width_pct is not None:
+            try:
+                target_w = viewer_width * (float(width_pct) / 100.0)
+            except ValueError:
+                pass
+
+        # 3. Check static width/height
+        # Format "1441x1080"
+        static_size = metadata.get("width")
+        if isinstance(static_size, str) and "x" in static_size:
+            try:
+                w, h = map(int, static_size.split("x"))
+                target_w = w
+                target_h = h
+            except ValueError:
+                pass
+        elif metadata.get("width") and metadata.get("height"):
+            try:
+                target_w = int(metadata.get("width"))
+                target_h = int(metadata.get("height"))
+            except ValueError:
+                pass
+
+        # Default: use original size but capped at viewer width
+        if target_w is None:
+            target_w = orig_w
+
+        # HLP-015: Responsive Scaling - MUST fit within viewer width
+        if target_w > viewer_width:
+            target_w = viewer_width
+
+        # Maintain aspect ratio if height not explicitly set
+        if target_h is None:
+            ratio = target_w / orig_w
+            target_h = orig_h * ratio
+
+        return int(target_w), int(target_h)
+
+    def _on_text_area_configure(self, event):
+        """Debounced resize handler."""
+        if self._resize_timer:
+            self.after_cancel(self._resize_timer)
+        self._resize_timer = self.after(200, self._apply_responsive_scaling)
+
+    def _apply_responsive_scaling(self):
+        """Re-scales all media elements to fit the current window width."""
+        for element in self._media_elements:
+            if element["type"] == "image":
+                self._rescale_image(element)
+            elif element["type"] == "video":
+                self._rescale_video(element)
+
+    def _rescale_image(self, element):
+        try:
+            with Image.open(element["path"]) as img:
+                orig_w, orig_h = img.size
+                target_w, target_h = self._calculate_dimensions(orig_w, orig_h, element["metadata"])
+
+                # Resize
+                resized_img = img.resize((target_w, target_h), Image.Resampling.LANCZOS)
+                photo = ImageTk.PhotoImage(resized_img)
+
+                # Update widget
+                element["widget"].configure(image=photo)
+                # Keep reference
+                element["photo"] = photo
+        except Exception as e:
+            print(f"Error rescaling image: {e}")
+
+    def _rescale_video(self, element):
+        try:
+            player = element["player"]
+            container = element["widget"]
+            controls = element["controls"]
+            metadata = element["metadata"]
+
+            info = player.video_info()
+            orig_w, orig_h = info.get("dimensions", (640, 360))
+
+            target_w, target_h = self._calculate_dimensions(orig_w, orig_h, metadata)
+
+            # Update player internal size
+            player.set_size((target_w, target_h))
+
+            # Update container size to fit both player and controls
+            # Measure controls height (reqheight is better for non-rendered widgets)
+            controls_h = controls.winfo_reqheight()
+            if controls_h < 10:
+                controls_h = 40  # sensible default for buttons + slider
+
+            # The container should be large enough for the video and the controls
+            # We add some padding to account for padx/pady
+            container.configure(width=target_w + 10, height=target_h + controls_h + 20)
+            container.pack_propagate(False)
+
+        except Exception as e:
+            print(f"Error rescaling video: {e}")
+
+    def _add_image(self, image_path: str, metadata: dict):
         """Internal method to add an image."""
         if not image_path:
             self.text_area.insert("end", "\n[Error: Image path is empty]\n", "paragraph")
@@ -112,18 +246,38 @@ class ArticleViewer(ttk.Frame):
                 return
 
         try:
-            img = tk.PhotoImage(file=image_path)
-            self._images.append(img)
-            self.text_area.insert("end", "\n")
-            self.text_area.image_create("end", image=img)
-            self.text_area.insert("end", "\n\n")
+            with Image.open(image_path) as img:
+                orig_w, orig_h = img.size
+                target_w, target_h = self._calculate_dimensions(orig_w, orig_h, metadata)
 
-            line_index = self.text_area.index("end-2c").split('.')[0]
-            self.text_area.tag_add("center", f"{line_index}.0", f"{line_index}.end")
+                # Resize
+                resized_img = img.resize((target_w, target_h), Image.Resampling.LANCZOS)
+                photo = ImageTk.PhotoImage(resized_img)
+
+                # Use a Label to display the image
+                label = ttk.Label(self.text_area, image=photo)
+
+                # Keep references
+                self._images.append(photo)
+                element = {
+                    "type": "image",
+                    "widget": label,
+                    "path": image_path,
+                    "metadata": metadata,
+                    "photo": photo
+                }
+                self._media_elements.append(element)
+
+                self.text_area.insert("end", "\n")
+                self.text_area.window_create("end", window=label)
+                self.text_area.insert("end", "\n\n")
+
+                line_index = self.text_area.index("end-2c").split('.')[0]
+                self.text_area.tag_add("center", f"{line_index}.0", f"{line_index}.end")
         except Exception as e:
             self.text_area.insert("end", f"\n[Error loading image: {e}]\n", "paragraph")
 
-    def _add_video(self, video_path: str):
+    def _add_video(self, video_path: str, metadata: dict):
         """Internal method to add a video player."""
         if not video_path:
             self.text_area.insert("end", "\n[Error: Video path is empty]\n", "paragraph")
@@ -148,16 +302,19 @@ class ArticleViewer(ttk.Frame):
             # Container frame for video and controls
             container = ttk.Frame(self.text_area)
 
+            # Controls frame
+            controls = ttk.Frame(container)
+            controls.pack(fill="x", side="bottom", padx=5, pady=5)
+
             # Player
             # scaled=True ensures it fits the frame
             player = TkinterVideo(master=container, scaled=True)
             player.load(video_path)
-            player.set_size((400, 300))  # Default size for inline video
-            player.pack(expand=True, fill="both", padx=5, pady=5)
 
-            # Controls frame
-            controls = ttk.Frame(container)
-            controls.pack(fill="x", side="bottom")
+            # Initial size calculation
+            target_w, target_h = self._calculate_dimensions(640, 360, metadata)
+            player.set_size((target_w, target_h))
+            player.pack(expand=True, fill="both", side="top", padx=5, pady=5)
 
             def toggle_play():
                 if player.is_paused():
@@ -190,8 +347,19 @@ class ArticleViewer(ttk.Frame):
             slider.pack(side="left", fill="x", expand=True, padx=5)
 
             def update_duration(event):
-                duration = player.video_info()["duration"]
+                info = player.video_info()
+                duration = info["duration"]
                 slider.configure(to=duration)
+
+                # Re-calculate size based on actual video dimensions if available
+                orig_w, orig_h = info.get("dimensions", (640, 360))
+                self._rescale_video({
+                    "player": player,
+                    "widget": container,
+                    "controls": controls,
+                    "metadata": metadata,
+                    "type": "video"
+                })
 
             def update_scale(event):
                 player._updating_slider = True
@@ -209,6 +377,16 @@ class ArticleViewer(ttk.Frame):
 
             # Keep reference
             self._videos.append(player)
+            self._media_elements.append({
+                "type": "video",
+                "player": player,
+                "widget": container,
+                "controls": controls,
+                "metadata": metadata
+            })
+
+            # Force initial scaling
+            self._rescale_video(self._media_elements[-1])
 
             # Embed in text area
             self.text_area.insert("end", "\n")
@@ -245,3 +423,4 @@ class ArticleViewer(ttk.Frame):
         
         self._images = []
         self._videos = []
+        self._media_elements = []
