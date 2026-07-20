@@ -90,16 +90,24 @@ class ArticleViewer(ttk.Frame):
 
     def _add_image(self, image_path: str):
         """Internal method to add an image."""
-        if not os.path.exists(image_path):
-            # Try relative to project root?
+        if not image_path:
+            self.text_area.insert("end", "\n[Error: Image path is empty]\n", "paragraph")
+            return
+
+        # Check if the path exists and is a file
+        if not os.path.isfile(image_path):
+            # If not an absolute path, try relative to project root (CWD)
             if not os.path.isabs(image_path):
-                # Try relative to app root
                 abs_path = os.path.abspath(os.path.join(os.getcwd(), image_path))
-                if os.path.exists(abs_path):
+                if os.path.isfile(abs_path):
                     image_path = abs_path
                 else:
                     self.text_area.insert("end", f"\n[Image not found: {image_path}]\n", "paragraph")
                     return
+            else:
+                # Absolute path provided but not found/not a file
+                self.text_area.insert("end", f"\n[Image not found: {image_path}]\n", "paragraph")
+                return
 
         try:
             img = tk.PhotoImage(file=image_path)

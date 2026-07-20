@@ -35,16 +35,14 @@ template-based content system.
 To add a new article:
 
 1. Create a `.json` file in `help_content/` (or a subfolder for organization).
-2. Follow the template structure:
+2. Follow the template structure (a list of content blocks):
    ```json
-   {
-     "title": "My Article",
-     "content": [
-       {"type": "text", "value": "Some description here."},
-       {"type": "image", "value": "path/to/image.png"},
-       {"type": "link", "text": "Click for More", "target": "other_article.json"}
-     ]
-   }
+   [
+     {"type": "header", "content": "My Article"},
+     {"type": "paragraph", "content": "Some description here."},
+     {"type": "image", "content": "path/to/image.png"},
+     {"type": "link", "content": "Click for More", "target": "other_article.json"}
+   ]
    ```
 3. The system will automatically detect and include the new article on next launch (or via the background update
    notification).
