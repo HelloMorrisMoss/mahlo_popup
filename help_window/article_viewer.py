@@ -5,6 +5,10 @@ from typing import List, Dict, Callable
 
 from PIL import Image, ImageTk
 
+from .utils.path_utils import resolve_resource_path
+from .utils.scaling import calculate_dimensions
+from .widgets.video_player import HelpVideoPlayer
+
 
 class ArticleViewer(ttk.Frame):
     """
@@ -105,64 +109,9 @@ class ArticleViewer(ttk.Frame):
         return max(10, width - 60)
 
     def _calculate_dimensions(self, orig_w, orig_h, metadata):
-        """Calculates target dimensions based on metadata and viewer width."""
+        """Calculates target dimensions using utility function."""
         viewer_width = self._get_visible_width()
-
-        target_w = None
-        target_h = None
-
-        # 1. Check size presets
-        size_presets = {
-            "thumbnail": 0.25,
-            "small": 0.50,
-            "medium": 0.75,
-            "large": 0.90,
-            "fill": 1.0
-        }
-
-        size = metadata.get("size")
-        if size in size_presets:
-            target_w = viewer_width * size_presets[size]
-
-        # 2. Check width_pct
-        width_pct = metadata.get("width_pct")
-        if width_pct is not None:
-            try:
-                target_w = viewer_width * (float(width_pct) / 100.0)
-            except ValueError:
-                pass
-
-        # 3. Check static width/height
-        # Format "1441x1080"
-        static_size = metadata.get("width")
-        if isinstance(static_size, str) and "x" in static_size:
-            try:
-                w, h = map(int, static_size.split("x"))
-                target_w = w
-                target_h = h
-            except ValueError:
-                pass
-        elif metadata.get("width") and metadata.get("height"):
-            try:
-                target_w = int(metadata.get("width"))
-                target_h = int(metadata.get("height"))
-            except ValueError:
-                pass
-
-        # Default: use original size but capped at viewer width
-        if target_w is None:
-            target_w = orig_w
-
-        # HLP-015: Responsive Scaling - MUST fit within viewer width
-        if target_w > viewer_width:
-            target_w = viewer_width
-
-        # Maintain aspect ratio if height not explicitly set
-        if target_h is None:
-            ratio = target_w / orig_w
-            target_h = orig_h * ratio
-
-        return int(target_w), int(target_h)
+        return calculate_dimensions(viewer_width, orig_w, orig_h, metadata)
 
     def _on_text_area_configure(self, event):
         """Debounced resize handler."""
@@ -197,56 +146,26 @@ class ArticleViewer(ttk.Frame):
 
     def _rescale_video(self, element):
         try:
-            player = element["player"]
-            container = element["widget"]
-            controls = element["controls"]
+            video_player = element["widget"]
             metadata = element["metadata"]
 
-            info = player.video_info()
+            info = video_player.get_video_info()
             orig_w, orig_h = info.get("dimensions", (640, 360))
 
             target_w, target_h = self._calculate_dimensions(orig_w, orig_h, metadata)
-
-            # Update player internal size
-            player.set_size((target_w, target_h))
-
-            # Update container size to fit both player and controls
-            # Measure controls height (reqheight is better for non-rendered widgets)
-            controls_h = controls.winfo_reqheight()
-            if controls_h < 10:
-                controls_h = 40  # sensible default for buttons + slider
-
-            # The container should be large enough for the video and the controls
-            # We add some padding to account for padx/pady
-            container.configure(width=target_w + 10, height=target_h + controls_h + 20)
-            container.pack_propagate(False)
-
+            video_player.update_display_size(target_w, target_h)
         except Exception as e:
             print(f"Error rescaling video: {e}")
 
     def _add_image(self, image_path: str, metadata: dict):
         """Internal method to add an image."""
-        if not image_path:
-            self.text_area.insert("end", "\n[Error: Image path is empty]\n", "paragraph")
+        resolved_path = resolve_resource_path(image_path)
+        if not os.path.isfile(resolved_path):
+            self.text_area.insert("end", f"\n[Image not found: {image_path}]\n", "paragraph")
             return
 
-        # Check if the path exists and is a file
-        if not os.path.isfile(image_path):
-            # If not an absolute path, try relative to project root (CWD)
-            if not os.path.isabs(image_path):
-                abs_path = os.path.abspath(os.path.join(os.getcwd(), image_path))
-                if os.path.isfile(abs_path):
-                    image_path = abs_path
-                else:
-                    self.text_area.insert("end", f"\n[Image not found: {image_path}]\n", "paragraph")
-                    return
-            else:
-                # Absolute path provided but not found/not a file
-                self.text_area.insert("end", f"\n[Image not found: {image_path}]\n", "paragraph")
-                return
-
         try:
-            with Image.open(image_path) as img:
+            with Image.open(resolved_path) as img:
                 orig_w, orig_h = img.size
                 target_w, target_h = self._calculate_dimensions(orig_w, orig_h, metadata)
 
@@ -262,7 +181,7 @@ class ArticleViewer(ttk.Frame):
                 element = {
                     "type": "image",
                     "widget": label,
-                    "path": image_path,
+                    "path": resolved_path,
                     "metadata": metadata,
                     "photo": photo
                 }
@@ -279,126 +198,38 @@ class ArticleViewer(ttk.Frame):
 
     def _add_video(self, video_path: str, metadata: dict):
         """Internal method to add a video player."""
-        if not video_path:
-            self.text_area.insert("end", "\n[Error: Video path is empty]\n", "paragraph")
+        resolved_path = resolve_resource_path(video_path)
+        if not os.path.isfile(resolved_path):
+            self.text_area.insert("end", f"\n[Video not found: {video_path}]\n", "paragraph")
             return
 
-        # Check if the path exists and is a file
-        if not os.path.isfile(video_path):
-            if not os.path.isabs(video_path):
-                abs_path = os.path.abspath(os.path.join(os.getcwd(), video_path))
-                if os.path.isfile(abs_path):
-                    video_path = abs_path
-                else:
-                    self.text_area.insert("end", f"\n[Video not found: {video_path}]\n", "paragraph")
-                    return
-            else:
-                self.text_area.insert("end", f"\n[Video not found: {video_path}]\n", "paragraph")
-                return
-
         try:
-            from tkVideoPlayer import TkinterVideo
-
-            # Container frame for video and controls
-            container = ttk.Frame(self.text_area)
-
-            # Controls frame
-            controls = ttk.Frame(container)
-            controls.pack(fill="x", side="bottom", padx=5, pady=5)
-
-            # Player
-            # scaled=True ensures it fits the frame
-            player = TkinterVideo(master=container, scaled=True)
-            player.load(video_path)
-
+            video_player = HelpVideoPlayer(self.text_area, resolved_path)
+            
             # Initial size calculation
             target_w, target_h = self._calculate_dimensions(640, 360, metadata)
-            player.set_size((target_w, target_h))
-            player.pack(expand=True, fill="both", side="top", padx=5, pady=5)
-
-            def toggle_play():
-                if player.is_paused():
-                    player.play()
-                    play_btn.configure(text="Pause")
-                else:
-                    player.pause()
-                    play_btn.configure(text="Play")
-
-            play_btn = ttk.Button(controls, text="Play", command=toggle_play)
-            play_btn.pack(side="left", padx=5)
-
-            def stop_video():
-                player.stop()
-                play_btn.configure(text="Play")
-                progress_var.set(0)
-
-            stop_btn = ttk.Button(controls, text="Stop", command=stop_video)
-            stop_btn.pack(side="left", padx=5)
-
-            # Progress slider
-            progress_var = tk.DoubleVar()
-
-            def seek_video(value):
-                # Only seek if not triggered by the update loop
-                if not getattr(player, "_updating_slider", False):
-                    player.seek(int(float(value)))
-
-            slider = ttk.Scale(controls, from_=0, to=0, variable=progress_var, orient="horizontal", command=seek_video)
-            slider.pack(side="left", fill="x", expand=True, padx=5)
-
-            def update_duration(event):
-                info = player.video_info()
-                duration = info["duration"]
-                slider.configure(to=duration)
-
-                # Re-calculate size based on actual video dimensions if available
-                orig_w, orig_h = info.get("dimensions", (640, 360))
-                self._rescale_video({
-                    "player": player,
-                    "widget": container,
-                    "controls": controls,
-                    "metadata": metadata,
-                    "type": "video"
-                })
-
-            def update_scale(event):
-                player._updating_slider = True
-                curr_dur = player.current_duration()
-                progress_var.set(curr_dur)
-                player._updating_slider = False
-
-            def video_ended(event):
-                play_btn.configure(text="Play")
-                progress_var.set(0)
-
-            player.bind("<<Duration>>", update_duration)
-            player.bind("<<SecondChanged>>", update_scale)
-            player.bind("<<Ended>>", video_ended)
+            video_player.update_display_size(target_w, target_h)
 
             # Keep reference
-            self._videos.append(player)
+            self._videos.append(video_player)
             self._media_elements.append({
                 "type": "video",
-                "player": player,
-                "widget": container,
-                "controls": controls,
+                "widget": video_player,
                 "metadata": metadata
             })
 
-            # Force initial scaling
-            self._rescale_video(self._media_elements[-1])
+            # When duration is loaded, rescale again to get correct aspect ratio
+            video_player.bind("<<VideoDurationLoaded>>", lambda e: self._rescale_video(self._media_elements[-1]))
 
             # Embed in text area
             self.text_area.insert("end", "\n")
-            self.text_area.window_create("end", window=container)
+            self.text_area.window_create("end", window=video_player)
             self.text_area.insert("end", "\n\n")
 
             # Center it
             line_index = self.text_area.index("end-2c").split('.')[0]
             self.text_area.tag_add("center", f"{line_index}.0", f"{line_index}.end")
 
-        except ImportError:
-            self.text_area.insert("end", "\n[Error: tkVideoPlayer not installed]\n", "paragraph")
         except Exception as e:
             self.text_area.insert("end", f"\n[Error loading video: {e}]\n", "paragraph")
 

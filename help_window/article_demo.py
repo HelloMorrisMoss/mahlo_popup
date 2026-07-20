@@ -9,7 +9,7 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-from widgets.article_viewer import ArticleViewer
+from help_window.article_viewer import ArticleViewer
 from dev_common import style_component
 
 
@@ -67,7 +67,7 @@ def run_demo():
     def load_selected():
         with open(demo_file, 'r') as f:
             article_data = json.load(f)
-        viewer.load_article(article_data)
+        viewer.load_article("Demo Article", article_data)
 
     # Load button
     load_btn = ttk.Button(list_frame, text="Load Operator Guide", command=load_selected)
