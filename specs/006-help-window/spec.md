@@ -5,9 +5,8 @@
 **Created**: 2026-07-17
 
 **Status**: Refined
-
-**Refined**: 2026-07-20 — Refined media scaling requirements (HLP-015, HLP-016) and metadata definitions for better
-clarity and technical precision.
+**Refined**: 2026-07-20 — Added User Story 6 and 7, and requirements (HLP-017 to HLP-023) for the WYSIWYG article editor
+and content management tools.
 
 **Input**: User description for a dynamically configurable help window suitable for industrial HMI touchscreens.
 
@@ -96,6 +95,45 @@ video block and verify the video player appears.
 5. **Given** a media block with "size" metadata (e.g., "small"), **When** the article is loaded, **Then** the media is
    scaled according to the specified size relative to the viewer width.
 
+---
+
+### User Story 6 - Article Editor (Priority: P3)
+
+As a non-developer content creator, I want a WYSIWYG editor to create and modify help articles so that I don't have to
+manually edit JSON files.
+**Why this priority**: Ease of maintenance for non-developers.
+**Independent Test**: Open the editor, add/edit/reorder blocks, and verify the changes are reflected in the Help Window
+and correctly saved to disk.
+
+**Acceptance Scenarios**:
+
+1. **Given** the help window is in "Edit Mode", **When** the editor controls are used, **Then** blocks can be added,
+   removed, or reordered within the article.
+2. **Given** the editor is active, **When** a change is made (e.g., editing text or changing an image), **Then** the
+   changes are immediately propagated to the `ArticleViewer` for live preview.
+3. **Given** the file manager in the editor, **When** a folder or file is renamed, **Then** all internal links and
+   media references within other articles are updated to reflect the new paths.
+4. **Given** a new article is created, **When** saved, **Then** it appears correctly in the navigation list and is
+   persisted as a JSON file in the appropriate directory.
+
+---
+
+### User Story 7 - Help Content Management (Priority: P3)
+
+As a content maintainer, I want to be able to move articles between folders and consolidate media files so that I can
+keep the help system organized as it grows.
+**Why this priority**: Long-term maintainability.
+**Independent Test**: Move an article to a different folder and verify all links to it still work; use "Consolidate
+Media" to move an article's media into its category-specific media folder.
+
+**Acceptance Scenarios**:
+
+1. **Given** the editor's file manager, **When** a "Move to Folder" action is performed on an article, **Then** the file
+   is moved on disk and all internal links in other articles are automatically updated.
+2. **Given** an article with media stored in external or "wrong" folders, **When** the "Consolidate Media" action is
+   triggered, **Then** the referenced media files are copied to the article's category media folder and the article's
+   JSON is updated with the new paths.
+
 ## Requirements *(mandatory)*
 
 ### UI/UX Requirements
@@ -121,6 +159,19 @@ video block and verify the video player appears.
 - **HLP-016**: Media Metadata Support: The article JSON structure MUST support optional metadata for media blocks to
   define display sizes. Supported formats include named presets (`thumbnail`, `small`, `medium`, `large`, `fill`),
   absolute pixel dimensions (e.g., "1441x1080"), and percentages of the available viewer width.
+- **HLP-017**: WYSIWYG Editor Module: The editor MUST be implemented in a separate module/package to maintain separation
+  of concerns from the core viewer.
+- **HLP-018**: Block Management: The editor MUST support adding, removing, and reordering blocks (headers, paragraphs,
+  images, videos, links).
+- **HLP-019**: Content Persistence: The editor MUST correctly serialize and deserialize the help system's JSON format.
+- **HLP-020**: Path Integrity: The system MUST automatically update references (internal links, media paths) when files
+  or folders are renamed or moved within the help content directory.
+- **HLP-021**: Live Preview: The editor SHOULD provide a way to see changes in the `ArticleViewer` context before
+  finalizing/saving.
+- **HLP-022**: Article Relocation: The editor MUST support moving articles between folders with automatic reference
+  updates.
+- **HLP-023**: Media Consolidation: The editor MUST provide a mechanism to "pull" or consolidate media referenced in an
+  article into its designated category-specific media folder.
 
 ### Technical Requirements
 

@@ -1,8 +1,10 @@
+> ⚠️ **STALE**: spec.md was refined on 2026-07-20. Run `/speckit.refine.propagate` to update this plan.
+
 # Tasks: Dynamically Configurable Help Window
 
 **Input**: Design documents from `/specs/006-help-window/`
 
-**Propagated**: 2026-07-20 — Refined media scaling and metadata tasks for consistency with spec.md.
+**Propagated**: 2026-07-20 — Added WYSIWYG editor and content management tasks.
 
 ## Phase 1: Setup & Infrastructure
 
@@ -40,3 +42,12 @@
 - [x] T014 Perform manual verification on touchscreen (if available) or via mouse
 - [x] T015 Update `ARCHITECTURE.md` with the new component details
 - [x] T016 Create `help_window/README.md` and `run_help.py` entry point
+
+## Phase 6: WYSIWYG Editor & Content Management
+
+- [x] T018 Implement `ArticleEditor` with block management and live preview
+- [x] T019 Implement `EditorManager` for file/folder management
+- [x] T020 Implement `FileManager` with automatic reference updates for renames
+- [x] T021 Implement "Move to Folder" functionality in `EditorManager`
+- [x] T022 Implement "Consolidate Media" functionality in `ArticleEditor`
+- [x] T023 Verify all content management features with integration tests

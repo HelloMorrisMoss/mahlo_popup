@@ -40,6 +40,14 @@ class HelpFrame(ttk.Frame):
         )
         self.toggle_nav_btn.pack(side="left", padx=10)
 
+        # Content Editor Button
+        self.edit_btn = ttk.Button(
+            self.controls,
+            text="Edit Content",
+            command=self._open_editor
+        )
+        self.edit_btn.pack(side="left", padx=10)
+
         # Update Notification (Hidden by default)
         self.update_frame = ttk.Frame(self.controls)
         self.update_label = ttk.Label(
@@ -141,6 +149,11 @@ class HelpFrame(ttk.Frame):
         self.nav_frame.populate(articles)
         self.update_frame.pack_forget()
         self.content_manager.save_cache()
+
+    def _open_editor(self):
+        """Opens the help content editor."""
+        from help_window.editor.editor_manager import EditorManager
+        EditorManager(self, self.content_manager, live_viewer=self.viewer)
 
     def _on_article_selected(self, article_meta: Dict):
         """Callback when an article is selected in the NavFrame."""

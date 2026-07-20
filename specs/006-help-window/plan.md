@@ -1,9 +1,10 @@
+> ⚠️ **STALE**: spec.md was refined on 2026-07-20. Run `/speckit.refine.propagate` to update this plan.
+
 # Implementation Plan: Dynamically Configurable Help Window
 
 **Branch**: `feature/help-window` | **Date**: 2026-07-17 | **Spec**: [specs/006-help-window/spec.md]
 
-**Propagated**: 2026-07-20 — Updated media scaling requirements and metadata definitions for consistency with refined
-spec.md.
+**Propagated**: 2026-07-20 — Updated with WYSIWYG editor requirements, media relocation, and consolidation logic.
 
 ## Summary
 
@@ -90,3 +91,10 @@ help_window/             # New directory for the help window component
 6. **Window Management**:
     * Implements `<FocusOut>` event binding to either close or stay open.
     * "Stay on Top" toggle using `root.attributes("-topmost", True)`.
+7. **Article Editor & Management**:
+    * **EditorManager**: Provides a file system view for managing help content.
+        * Supports Renaming/Moving files and folders.
+        * Automatic reference updates in all articles when paths change.
+    * **ArticleEditor**: Block-based editor for article content.
+        * Live preview in the main help window.
+        * **Media Consolidation**: Logic to pull referenced media into the article's category-specific folder.
