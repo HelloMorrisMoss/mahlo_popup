@@ -19,7 +19,7 @@
 ## Phase 3: Dynamic Features & Interaction
 
 - [x] T007 Implement inter-article linking in `ArticleViewer`
-- [ ] T007.1 Implement video block support in `ArticleViewer` using `tkVideoPlayer`
+- [x] T007.1 Implement video block support in `ArticleViewer` using `tkVideoPlayer`
 - [x] T008 Implement window behavior controls (Focus loss behavior, Stay on Top)
 - [x] T009 Implement navigation list toggle (show/hide)
 
