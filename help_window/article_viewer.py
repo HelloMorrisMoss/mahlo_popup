@@ -3,10 +3,10 @@ import tkinter as tk
 from tkinter import ttk
 from typing import List, Dict, Callable
 
-from PIL import Image, ImageTk
-
+from .utils.article_processor import process_article_data
 from .utils.path_utils import resolve_resource_path
 from .utils.scaling import calculate_dimensions
+from .widgets.image_viewer import HelpImage
 from .widgets.video_player import HelpVideoPlayer
 
 
@@ -60,8 +60,7 @@ class ArticleViewer(ttk.Frame):
         self.text_area.tag_bind("link", "<Enter>", lambda e: self.text_area.config(cursor="hand2"))
         self.text_area.tag_bind("link", "<Leave>", lambda e: self.text_area.config(cursor="arrow"))
 
-        self._media_elements = []  # List of dicts: {"type": "image"|"video", "widget": widget, "path": path, "metadata": metadata}
-        self._images = []  # Keep references to PhotoImage objects
+        self._media_elements = []  # List of dicts: {"type": "image"|"video", "widget": widget}
         self._videos = []  # Keep references to video players
 
         self.text_area.bind("<Configure>", self._on_text_area_configure)
@@ -69,37 +68,9 @@ class ArticleViewer(ttk.Frame):
 
     def load_article(self, title: str, article_data: List[Dict[str, str]]):
         """
-        Loads an article.
+        Loads an article using the processor utility.
         """
-        self.title_var.set(title)
-        self.clear()
-        self.text_area.configure(state="normal")
-
-        for block in article_data:
-            block_type = block.get("type")
-            content = block.get("content", "")
-
-            if block_type == "header":
-                # We already have a main title label, but if there are headers in content:
-                self.text_area.insert("end", content + "\n", "header")
-            elif block_type == "subheader":
-                self.text_area.insert("end", content + "\n", "subheader")
-            elif block_type == "paragraph":
-                # Check for links in paragraph? 
-                # For now assume simple paragraph. 
-                # Phase 3 will handle complex linking.
-                self.text_area.insert("end", content + "\n", "paragraph")
-            elif block_type == "image":
-                self._add_image(content, block)
-            elif block_type == "video":
-                self._add_video(content, block)
-            elif block_type == "link":
-                target = block.get("target", "")
-                self._add_link(content, target)
-            elif block_type == "separator":
-                self.text_area.insert("end", "\n" + "-" * 40 + "\n\n", "center")
-
-        self.text_area.configure(state="disabled")
+        process_article_data(self, title, article_data)
 
     def _get_visible_width(self):
         """Returns the width of the text area minus padding."""
@@ -121,41 +92,9 @@ class ArticleViewer(ttk.Frame):
 
     def _apply_responsive_scaling(self):
         """Re-scales all media elements to fit the current window width."""
+        viewer_width = self._get_visible_width()
         for element in self._media_elements:
-            if element["type"] == "image":
-                self._rescale_image(element)
-            elif element["type"] == "video":
-                self._rescale_video(element)
-
-    def _rescale_image(self, element):
-        try:
-            with Image.open(element["path"]) as img:
-                orig_w, orig_h = img.size
-                target_w, target_h = self._calculate_dimensions(orig_w, orig_h, element["metadata"])
-
-                # Resize
-                resized_img = img.resize((target_w, target_h), Image.Resampling.LANCZOS)
-                photo = ImageTk.PhotoImage(resized_img)
-
-                # Update widget
-                element["widget"].configure(image=photo)
-                # Keep reference
-                element["photo"] = photo
-        except Exception as e:
-            print(f"Error rescaling image: {e}")
-
-    def _rescale_video(self, element):
-        try:
-            video_player = element["widget"]
-            metadata = element["metadata"]
-
-            info = video_player.get_video_info()
-            orig_w, orig_h = info.get("dimensions", (640, 360))
-
-            target_w, target_h = self._calculate_dimensions(orig_w, orig_h, metadata)
-            video_player.update_display_size(target_w, target_h)
-        except Exception as e:
-            print(f"Error rescaling video: {e}")
+            element["widget"].update_display_size(viewer_width)
 
     def _add_image(self, image_path: str, metadata: dict):
         """Internal method to add an image."""
@@ -165,34 +104,20 @@ class ArticleViewer(ttk.Frame):
             return
 
         try:
-            with Image.open(resolved_path) as img:
-                orig_w, orig_h = img.size
-                target_w, target_h = self._calculate_dimensions(orig_w, orig_h, metadata)
+            img_widget = HelpImage(self.text_area, resolved_path, metadata)
+            img_widget.update_display_size(self._get_visible_width())
 
-                # Resize
-                resized_img = img.resize((target_w, target_h), Image.Resampling.LANCZOS)
-                photo = ImageTk.PhotoImage(resized_img)
+            self._media_elements.append({
+                "type": "image",
+                "widget": img_widget
+            })
 
-                # Use a Label to display the image
-                label = ttk.Label(self.text_area, image=photo)
+            self.text_area.insert("end", "\n")
+            self.text_area.window_create("end", window=img_widget)
+            self.text_area.insert("end", "\n\n")
 
-                # Keep references
-                self._images.append(photo)
-                element = {
-                    "type": "image",
-                    "widget": label,
-                    "path": resolved_path,
-                    "metadata": metadata,
-                    "photo": photo
-                }
-                self._media_elements.append(element)
-
-                self.text_area.insert("end", "\n")
-                self.text_area.window_create("end", window=label)
-                self.text_area.insert("end", "\n\n")
-
-                line_index = self.text_area.index("end-2c").split('.')[0]
-                self.text_area.tag_add("center", f"{line_index}.0", f"{line_index}.end")
+            line_index = self.text_area.index("end-2c").split('.')[0]
+            self.text_area.tag_add("center", f"{line_index}.0", f"{line_index}.end")
         except Exception as e:
             self.text_area.insert("end", f"\n[Error loading image: {e}]\n", "paragraph")
 
@@ -204,22 +129,19 @@ class ArticleViewer(ttk.Frame):
             return
 
         try:
-            video_player = HelpVideoPlayer(self.text_area, resolved_path)
-            
-            # Initial size calculation
-            target_w, target_h = self._calculate_dimensions(640, 360, metadata)
-            video_player.update_display_size(target_w, target_h)
+            video_player = HelpVideoPlayer(self.text_area, resolved_path, metadata)
+            video_player.update_display_size(self._get_visible_width())
 
             # Keep reference
             self._videos.append(video_player)
             self._media_elements.append({
                 "type": "video",
-                "widget": video_player,
-                "metadata": metadata
+                "widget": video_player
             })
 
             # When duration is loaded, rescale again to get correct aspect ratio
-            video_player.bind("<<VideoDurationLoaded>>", lambda e: self._rescale_video(self._media_elements[-1]))
+            video_player.bind("<<VideoDurationLoaded>>",
+                              lambda e: video_player.update_display_size(self._get_visible_width()))
 
             # Embed in text area
             self.text_area.insert("end", "\n")
@@ -252,6 +174,5 @@ class ArticleViewer(ttk.Frame):
             except:
                 pass
         
-        self._images = []
         self._videos = []
         self._media_elements = []

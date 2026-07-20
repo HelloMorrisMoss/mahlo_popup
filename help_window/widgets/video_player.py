@@ -9,9 +9,10 @@ class HelpVideoPlayer(ttk.Frame):
     Encapsulates tkVideoPlayer and its controls.
     """
 
-    def __init__(self, parent, video_path: str, **kwargs):
+    def __init__(self, parent, video_path: str, metadata: dict = None, **kwargs):
         super().__init__(parent, **kwargs)
         self.video_path = video_path
+        self.metadata = metadata or {}
         self._updating_slider = False
 
         # Controls frame at the bottom
@@ -95,9 +96,16 @@ class HelpVideoPlayer(ttk.Frame):
         self.play_btn.configure(text="Play")
         self.progress_var.set(0)
 
-    def update_display_size(self, target_w: int, target_h: int):
-        """Updates the size of the player and its container."""
+    def update_display_size(self, viewer_width: int):
+        """Updates the size of the player based on viewer width and metadata."""
         if not self.player: return
+
+        from ..utils.scaling import calculate_dimensions
+        info = self.player.video_info()
+        orig_w, orig_h = info.get("dimensions", (640, 360))
+
+        target_w, target_h = calculate_dimensions(viewer_width, orig_w, orig_h, self.metadata)
+        
         self.player.set_size((target_w, target_h))
 
         # Measure controls height
