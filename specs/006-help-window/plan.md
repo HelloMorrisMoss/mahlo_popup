@@ -2,6 +2,8 @@
 
 **Branch**: `feature/help-window` | **Date**: 2026-07-17 | **Spec**: [specs/006-help-window/spec.md]
 
+**Propagated**: 2026-07-20 — Updated from spec.md refinement
+
 ## Summary
 
 The help window is a standalone Tkinter-based component designed for industrial touchscreens. it provides dynamically
@@ -71,8 +73,11 @@ help_window/             # New directory for the help window component
     * Uses a `ttk.Treeview` or a custom list of large buttons for touchscreen friendliness.
     * Groups articles by their containing folder (section headers).
 5. **Article Viewer Integration**:
-    * Adapts the existing `ArticleViewer` widget to support internal links.
+   * Adapts the existing `ArticleViewer` widget to support internal links and embedded videos.
     * Links will use a custom tag in `tk.Text` that triggers a navigation event.
+   * Videos will be embedded as a new block type using `tk.Text.window_create`.
+   * Initial implementation will use `tkVideoPlayer` for native integration, with a modular design to allow a VLC-based
+     backend if needed for performance.
 6. **Window Management**:
     * Implements `<FocusOut>` event binding to either close or stay open.
     * "Stay on Top" toggle using `root.attributes("-topmost", True)`.

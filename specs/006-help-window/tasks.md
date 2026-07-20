@@ -2,6 +2,8 @@
 
 **Input**: Design documents from `/specs/006-help-window/`
 
+**Propagated**: 2026-07-20 — Updated from spec.md refinement
+
 ## Phase 1: Setup & Infrastructure
 
 - [x] T001 Create `help_window/` directory structure and `help_app.py` skeleton
@@ -17,6 +19,7 @@
 ## Phase 3: Dynamic Features & Interaction
 
 - [x] T007 Implement inter-article linking in `ArticleViewer`
+- [ ] T007.1 Implement video block support in `ArticleViewer` using `tkVideoPlayer`
 - [x] T008 Implement window behavior controls (Focus loss behavior, Stay on Top)
 - [x] T009 Implement navigation list toggle (show/hide)
 

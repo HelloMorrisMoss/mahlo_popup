@@ -4,7 +4,10 @@
 
 **Created**: 2026-07-17
 
-**Status**: In Progress
+**Status**: Refined
+
+**Refined**: 2026-07-20 — Added User Story 5 and requirements HLP-007, HLP-013, HLP-014 for video player support and
+silent playback in loud industrial environments.
 
 **Input**: User description for a dynamically configurable help window suitable for industrial HMI touchscreens.
 
@@ -75,14 +78,19 @@ blank screen or error message.
 
 ### User Story 5 - Rich Content & Linking (Priority: P2)
 
-As an operator, I want to see images and click links within articles so that I can better understand complex procedures.
+As an operator, I want to see images, click links, and watch help videos within articles so that I can better understand
+complex procedures even in a loud production environment.
 **Why this priority**: Effective communication of help content.
-**Independent Test**: Click a link in an article and verify it navigates to the linked topic.
+**Independent Test**: Click a link in an article and verify it navigates to the linked topic; load an article with a
+video block and verify the video player appears.
 
 **Acceptance Scenarios**:
 
 1. **Given** an article with a link to another topic, **When** the link is clicked, **Then** the target topic is loaded
    and highlighted in the navigation list as if it were clicked directly.
+2. **Given** an article template containing a "video" block, **When** the article is loaded, **Then** an inline video
+   player is displayed within the content flow.
+3. **Given** a video player is displayed, **When** the play button is clicked, **Then** the video playback starts.
 
 ## Requirements *(mandatory)*
 
@@ -97,9 +105,12 @@ As an operator, I want to see images and click links within articles so that I c
 
 - **HLP-005**: Help list MUST be generated dynamically from template files (JSON).
 - **HLP-006**: Template folders MUST be displayed as section headers in the navigation list.
-- **HLP-007**: Content MUST support mixed text, images, and internal links.
+- **HLP-007**: Content MUST support mixed text, images, internal links, and embedded video players.
 - **HLP-008**: System MUST cache the article list and background-check for updates.
 - **HLP-009**: System MUST default to 'help for help' article on first load.
+- **HLP-013**: Video player MUST support basic playback controls (Play/Pause/Seek) and silent operation by default.
+- **HLP-014**: Video player implementation SHOULD be modular to allow switching between different backend
+  implementations.
 
 ### Technical Requirements
 
