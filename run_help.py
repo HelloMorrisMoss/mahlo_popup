@@ -7,6 +7,6 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 from help_window.help_app import HelpApp
 
 if __name__ == "__main__":
-    print("Launching Help Window for manual inspection...")
-    app = HelpApp()
+    print("Launching Help Window for article editing.")
+    app = HelpApp(enable_editor=True)
     app.mainloop()

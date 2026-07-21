@@ -1,10 +1,10 @@
-> ⚠️ **STALE**: spec.md was refined on 2026-07-20. Run `/speckit.refine.propagate` to update this plan.
+> ✅ **CURRENT**: spec.md was refined on 2026-07-21.
 
 # Tasks: Dynamically Configurable Help Window
 
 **Input**: Design documents from `/specs/006-help-window/`
 
-**Propagated**: 2026-07-20 — Added WYSIWYG editor and content management tasks.
+**Propagated**: 2026-07-21 — Added task for configurable editor access.
 
 ## Phase 1: Setup & Infrastructure
 
@@ -51,3 +51,4 @@
 - [x] T021 Implement "Move to Folder" functionality in `EditorManager`
 - [x] T022 Implement "Consolidate Media" functionality in `ArticleEditor`
 - [x] T023 Verify all content management features with integration tests
+- [x] T024 Implement configurable "Edit Content" button (HLP-024)

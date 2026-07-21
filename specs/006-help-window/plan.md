@@ -1,10 +1,10 @@
-> ⚠️ **STALE**: spec.md was refined on 2026-07-20. Run `/speckit.refine.propagate` to update this plan.
+> ✅ **CURRENT**: spec.md was refined on 2026-07-21.
 
 # Implementation Plan: Dynamically Configurable Help Window
 
 **Branch**: `feature/help-window` | **Date**: 2026-07-17 | **Spec**: [specs/006-help-window/spec.md]
 
-**Propagated**: 2026-07-20 — Updated with WYSIWYG editor requirements, media relocation, and consolidation logic.
+**Propagated**: 2026-07-21 — Added configurable editor access.
 
 ## Summary
 
@@ -98,3 +98,6 @@ help_window/             # New directory for the help window component
     * **ArticleEditor**: Block-based editor for article content.
         * Live preview in the main help window.
         * **Media Consolidation**: Logic to pull referenced media into the article's category-specific folder.
+8. **Configurable Editor Access**:
+    * Adds an `enable_editor` flag to `HelpFrame` and `HelpApp`.
+    * If `False` (default), the "Edit Content" button is hidden to prevent operator confusion.

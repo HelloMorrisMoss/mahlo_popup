@@ -15,8 +15,9 @@ class HelpApp(tk.Tk):
     Standalone application for the Help Window.
     """
 
-    def __init__(self):
+    def __init__(self, enable_editor: bool = False):
         super().__init__()
+        self.enable_editor = enable_editor
 
         self.title("Mahlo Help System")
         self.geometry("1024x768")
@@ -28,7 +29,7 @@ class HelpApp(tk.Tk):
         # Apply Azure theme
         style_component(self)
 
-        self.help_frame = HelpFrame(self, self.content_manager)
+        self.help_frame = HelpFrame(self, self.content_manager, enable_editor=self.enable_editor)
         self.help_frame.pack(expand=True, fill="both")
 
 

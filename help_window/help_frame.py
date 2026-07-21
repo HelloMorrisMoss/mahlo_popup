@@ -14,10 +14,11 @@ class HelpFrame(ttk.Frame):
     Contains NavFrame and ArticleViewer in a side-by-side layout.
     """
 
-    def __init__(self, parent, content_manager: ContentManager, **kwargs):
+    def __init__(self, parent, content_manager: ContentManager, enable_editor: bool = False, **kwargs):
         super().__init__(parent, **kwargs)
         self.content_manager = content_manager
         self.parent = parent  # Usually the HelpApp (tk.Tk)
+        self.enable_editor = enable_editor
 
         # Control Bar (Top)
         self.controls = ttk.Frame(self, padding=5)
@@ -46,7 +47,8 @@ class HelpFrame(ttk.Frame):
             text="Edit Content",
             command=self._open_editor
         )
-        self.edit_btn.pack(side="left", padx=10)
+        if self.enable_editor:
+            self.edit_btn.pack(side="left", padx=10)
 
         # Update Notification (Hidden by default)
         self.update_frame = ttk.Frame(self.controls)

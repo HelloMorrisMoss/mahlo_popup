@@ -5,8 +5,7 @@
 **Created**: 2026-07-17
 
 **Status**: Refined
-**Refined**: 2026-07-20 — Added User Story 6 and 7, and requirements (HLP-017 to HLP-023) for the WYSIWYG article editor
-and content management tools.
+**Refined**: 2026-07-21 — Added requirement HLP-024 for configurable editor access.
 
 **Input**: User description for a dynamically configurable help window suitable for industrial HMI touchscreens.
 
@@ -115,6 +114,8 @@ and correctly saved to disk.
    media references within other articles are updated to reflect the new paths.
 4. **Given** a new article is created, **When** saved, **Then** it appears correctly in the navigation list and is
    persisted as a JSON file in the appropriate directory.
+5. **Given** the help window is initialized without "Edit Mode" enabled, **When** the window is displayed, **Then**
+   the "Edit Content" button is not visible.
 
 ---
 
@@ -172,6 +173,8 @@ Media" to move an article's media into its category-specific media folder.
   updates.
 - **HLP-023**: Media Consolidation: The editor MUST provide a mechanism to "pull" or consolidate media referenced in an
   article into its designated category-specific media folder.
+- **HLP-024**: Configurable Editor Access: The "Edit Content" button MUST be optional and disabled by default to prevent
+  unauthorized or accidental modifications by operators on production HMIs.
 
 ### Technical Requirements
 
