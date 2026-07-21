@@ -28,25 +28,24 @@ The primary user interface for operators on the plant floor.
 - **Main Thread**: Runs the Tkinter event loop.
 - **Communication**: Polls `f2p_queue` (Flask-to-Popup) for real-time updates (e.g., new defect signals from SCADA).
 
-### 3. Help Window (`help_window/`)
+### 3. Help System (`help_window/`)
 
-A standalone, dynamically configurable help system designed for industrial touchscreens.
+A standalone, dynamically configurable help system that runs as a separate OS process for isolation and stability.
 
-- **Technology**: Tkinter, JSON-based templates.
+- **Technology**: Tkinter, Flask, JSON templates.
+- **Process Model**: Launched as a separate process via `run_help.py`.
 - **Components**:
-  - `HelpApp`: Standalone entry point.
-  - `ContentManager`: Handles recursive scanning of JSON templates, metadata extraction, and multi-level caching.
-  - `HelpFrame`: Orchestrates the layout, behavior controls (Stay on Top, Focus Loss), and background update loops.
-  - `NavFrame`: Scrollable, sectioned navigation sidebar.
-  - `ArticleViewer`: Renders mixed text/image content and handles inter-article linking.
-- **Functionality**:
-  - **Caching**: Metadata is cached for near-instant startup.
-  - **Background Synchronization**: Automatically checks for content updates on disk and notifies the user.
-  - **Independence**: Can be run independently of the `MainWindow` to minimize impact on core operations.
+  - `HelpApp`: Process entry point and Tkinter application.
+  - `flask_server_files/`: Minimal Flask server for inter-process signaling (Bring-to-Front).
+  - `editor/`: WYSIWYG article editor and file management utilities.
+  - `ContentManager`: handles recursive scanning of JSON templates and multi-level caching.
+  - `HelpFrame`: Main UI container with background synchronization loops.
+- **Independence**: Isolation ensures that help system operations (like media playback or editing) do not impact the
+  core defect tracking responsiveness or stability.
 
-### 4. Web Server (`flask_server_files/`)
+### 4. Main Web Server (`flask_server_files/`)
 
-A background service providing RESTful endpoints and web views.
+The primary background service for the defect removal system, providing RESTful endpoints and web views.
 
 - **Technology**: Flask, Waitress (WSGI), APScheduler.
 - **REST API**: Located in `flask_server_files/resources/`, handling defects, operators, and signals.
@@ -66,9 +65,14 @@ A background service providing RESTful endpoints and web views.
 
 ## Data Flow & Concurrency
 
-### Threading Model
+### Multi-Process Model
 
-The application uses two primary threads:
+The application leverages OS-level process isolation for the Help System to ensure that resource-intensive tasks (media,
+editing) do not interfere with the defect removal mission-critical path.
+
+### Threading Model (Main Process)
+
+The main application process uses two primary threads:
 
 1. **Main Thread**: Dedicated to the Tkinter UI to maintain responsiveness.
 2. **Flask Thread**: Runs the Waitress server and background schedulers.
