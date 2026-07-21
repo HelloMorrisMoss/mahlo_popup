@@ -6,6 +6,8 @@
 
 **Status**: Refined
 **Refined**: 2026-07-21 — Added requirement HLP-024 for configurable editor access.
+**Refined**: 2026-07-21 — Added requirements for Multi-process integration (Option 2), Flask API, and Main Window
+integration.
 
 **Input**: User description for a dynamically configurable help window suitable for industrial HMI touchscreens.
 
@@ -135,6 +137,25 @@ Media" to move an article's media into its category-specific media folder.
    triggered, **Then** the referenced media files are copied to the article's category media folder and the article's
    JSON is updated with the new paths.
 
+---
+
+### User Story 8 - Main Window Integration (Priority: P2)
+
+As an operator, I want to open the help window directly from the main popup control panel so that I can quickly access
+instructions without leaving the application context.
+**Why this priority**: Essential for making the help system accessible during production.
+**Independent Test**: Click the "Help" button in the MainWindow and verify the Help Window launches as a separate
+process.
+
+**Acceptance Scenarios**:
+
+1. **Given** the Main Popup is open, **When** the "Help" button on the control panel is clicked, **Then** the Help
+   Window starts in its own process.
+2. **Given** the Help Window is already open, **When** the "Help" button is clicked again, **Then** the existing
+   Help Window is brought to the front and focused, instead of opening a second instance.
+3. **Given** the Help Window has a fatal error or is closed, **When** the Main Popup remains open, **Then** the
+   Main Popup continues to function normally without interruption.
+
 ## Requirements *(mandatory)*
 
 ### UI/UX Requirements
@@ -175,6 +196,14 @@ Media" to move an article's media into its category-specific media folder.
   article into its designated category-specific media folder.
 - **HLP-024**: Configurable Editor Access: The "Edit Content" button MUST be optional and disabled by default to prevent
   unauthorized or accidental modifications by operators on production HMIs.
+- **HLP-025**: Multi-process Integration: The Help Window MUST be launched as a separate operating system process
+  from the Main Window to ensure process isolation and stability.
+- **HLP-026**: Single Instance with "Bring-to-Front": The Help System MUST enforce a single instance across the OS.
+  Subsequent launch attempts MUST signal the existing instance to `lift()` and `focus()` itself.
+- **HLP-027**: Minimal Web API (Flask): The Help Window MUST include a minimal Flask-based web server to support
+  cross-process signaling and future web-based help features.
+- **HLP-028**: Main Window UI Integration: A "Help" button MUST be added to the `MainWindow` control panel,
+  positioned after the operator grid button.
 
 ### Technical Requirements
 
@@ -188,6 +217,8 @@ Media" to move an article's media into its category-specific media folder.
 - **SC-002**: Navigation between articles is instantaneous for the operator.
 - **SC-003**: "Stay Open" mode correctly keeps the window topmost without focus theft.
 - **SC-004**: Background update mechanism does not impact UI responsiveness.
+- **SC-005**: Process Isolation: A crash or freeze in the Help Window process MUST NOT affect the Main Window process.
+- **SC-006**: Single Instance: Only one Help Window process exists at any given time.
 
 ## Assumptions
 

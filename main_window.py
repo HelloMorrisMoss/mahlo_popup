@@ -2,6 +2,9 @@
 
 import datetime
 import json
+import os
+import subprocess
+import sys
 import tkinter
 import tkinter as tk
 from functools import partial
@@ -508,7 +511,7 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
 
     def __init__(self, parent_container, text='This is the title', lam_num_controls=0, **kwargs):
         super().__init__(parent_container, text=text)
-        self.parent = parent_container
+        self.parent: MainWindow = parent_container
         self._next_column = 0
         self.lam_num = lam_num_controls
         self.current_operator: tk.StringVar = kwargs.pop('current_operator')
@@ -609,6 +612,32 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         self.clear_records_button = ttk.Button(self, text='Clear Old Records', command=clear_old_records)
         self.clear_records_button.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
                                        pady=self.pad['y'])
+
+        # help window button
+        def launch_help():
+            """Launch the help window as a separate process."""
+
+            try:
+                # Use the same python executable to run the help script
+                script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'run_help.py')
+                if os.path.exists(script_path):
+                    subprocess.Popen([sys.executable, script_path],
+                                     creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0)
+                else:
+                    # Fallback if run_help.py is moved or we're in a different context
+                    # Check current directory
+                    if os.path.exists('run_help.py'):
+                        subprocess.Popen([sys.executable, 'run_help.py'],
+                                         creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0)
+            except Exception as e:
+                lg.error('Error launching help window: %s', e)
+                # send an error message to the operator so they know it is trying but failing
+                self.parent.messages_from_flask.append({'action': 'set_additional_msg',
+                                                        'additional_message_text': 'Error launching help window, inform supervisor/engineering.'})
+
+        self.help_button = ttk.Button(self, text='Help', command=launch_help)
+        self.help_button.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
+                              pady=self.pad['y'])
 
         # in case an operator is not selected, a flashing warning label
         self.select_operator_label = ttk.Label(self, text='Please select an operator.', background='#ffcc00',

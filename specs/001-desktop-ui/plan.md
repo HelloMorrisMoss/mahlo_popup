@@ -1,6 +1,6 @@
 # Implementation Plan: Desktop UI (Tkinter)
 
-**Propagated**: 2026-07-16 — Updated from spec.md refinement (Refined "Always on Top" functionality).
+**Propagated**: 2026-07-21 — Updated from spec.md refinement (Help Window integration and system messaging).
 
 **Branch**: `production` | **Date**: 2026-07-10 | **Spec**: [specs/001-desktop-ui/spec.md]
 
@@ -48,7 +48,7 @@ specs/001-desktop-ui/
 ```text
 widgets/                # Custom Tkinter components
 main_window.py          # Main Tkinter UI
-help_window.py          # Help interface
+help_window/            # Standalone help system (process)
 msg_window/             # Messaging interface
 ```
 
@@ -69,3 +69,7 @@ msg_window/             # Messaging interface
    and email notifications.
 8. **Grid Selection**: `OperatorGridWindow` dynamically builds a grid of buttons from the operator list, including
    alphabetical disabled headers for navigation.
+9. **Help Window Integration**: "Help" button in `IndependentControlsPanel` launches `run_help.py` as a separate
+   subprocess. Communicates status via `set_additional_msg` in case of failure.
+10. **System Messaging**: `set_additional_msg` provides a two-level (short/long) notification system with color-coded
+    themes (info, note, warning, critical) displayed on the main window.

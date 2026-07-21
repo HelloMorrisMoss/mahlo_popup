@@ -4,7 +4,7 @@
 
 **Branch**: `feature/help-window` | **Date**: 2026-07-17 | **Spec**: [specs/006-help-window/spec.md]
 
-**Propagated**: 2026-07-21 — Added configurable editor access.
+**Propagated**: 2026-07-21 — Added multi-process integration and Flask signaling.
 
 ## Summary
 
@@ -101,3 +101,12 @@ help_window/             # New directory for the help window component
 8. **Configurable Editor Access**:
     * Adds an `enable_editor` flag to `HelpFrame` and `HelpApp`.
     * If `False` (default), the "Edit Content" button is hidden to prevent operator confusion.
+9. **Multi-process Integration & Signaling**:
+    * **MainWindow Launcher**: Adds a "Help" button to `MainWindow.py` (Control Panel). Uses `subprocess.Popen` to
+      launch `run_help.py`.
+    * **Single Instance Enforcement**: `HelpApp` uses a file-based lock (`help_window.lock`) or socket to detect
+      running instances.
+    * **Flask Signaling**: `HelpApp` starts a minimal Flask server on a dedicated port (e.g., 5005).
+      Subsequent launch attempts will send a GET request to `localhost:5005/bring_to_front` before exiting.
+    * **Focus Management**: Upon receiving the signal, the existing `HelpApp` calls `lift()` and `focus_force()`
+      to appear on top of the full-screen HMI.

@@ -1,6 +1,6 @@
 # Tasks: Desktop UI (Tkinter)
 
-**Propagated**: 2026-07-16 — Updated from spec.md refinement (Refined "Always on Top" functionality).
+**Propagated**: 2026-07-21 — Updated from spec.md refinement (Help Window integration).
 
 **Input**: Design documents from `/specs/001-desktop-ui/`
 
@@ -29,10 +29,15 @@
 - [ ] T012 Document internal queue message format schema
 
 ## Phase 6: Extended Controls (Update 2026-07-14)
-
 - [x] T013 [US6] Add "Clear Old Records" button with `marked_for_deletion` logic
 - [x] T014 [US7] Implement multi-click system restart button with email notification
 - [x] T015 [US7] Rename original restart button to "Restart Popup"
 - [x] T016 [US8] Create `OperatorGridWindow` with flex-fill grid and headers
 - [x] T017 [US8] Add grid selection trigger to `IndependentControlsPanel`
 - [x] T018 [US7] Refine system restart to use `SystemRestartError` and top-level context-rich notifications
+
+## Phase 7: Help Integration (Update 2026-07-21)
+
+- [x] T019 [US5] Add "Help" button to `IndependentControlsPanel`
+- [x] T020 [US5] Implement `launch_help` subprocess logic with error handling
+- [x] T021 [US5] Refine `set_additional_msg` display and theme logic

@@ -4,7 +4,7 @@
 
 **Input**: Design documents from `/specs/006-help-window/`
 
-**Propagated**: 2026-07-21 — Added task for configurable editor access.
+**Propagated**: 2026-07-21 — Added tasks for multi-process integration and signaling.
 
 ## Phase 1: Setup & Infrastructure
 
@@ -52,3 +52,11 @@
 - [x] T022 Implement "Consolidate Media" functionality in `ArticleEditor`
 - [x] T023 Verify all content management features with integration tests
 - [x] T024 Implement configurable "Edit Content" button (HLP-024)
+
+## Phase 7: Multi-process Integration & Main Window UI
+
+- [ ] T025 Add "Help" button to `MainWindow.py` control panel (after operator grid button)
+- [ ] T026 Implement subprocess launcher in `MainWindow.py` to call `run_help.py`
+- [ ] T027 Implement file-based instance lock in `HelpApp`
+- [ ] T028 Implement minimal Flask server with `/bring_to_front` endpoint in `HelpApp`
+- [ ] T029 Implement signaling logic in `HelpApp` (send request to Flask before exiting if instance exists)

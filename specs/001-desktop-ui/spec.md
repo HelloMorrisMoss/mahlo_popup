@@ -6,6 +6,8 @@
 
 **Status**: Completed (Migrated)
 
+**Refined**: 2026-07-21 — Added integration for the independent Help Window (HLP-028) in User Story 5 and Requirement
+UI-007.
 **Refined**: 2026-07-16 — Refined "Always on Top" functionality to prevent Windows taskbar from flashing/activating.
 **Implemented**: 2026-07-16 — Applied win32gui fix with `SWP_NOACTIVATE` and `wm_frame()`.
 
@@ -57,11 +59,20 @@ As an operator, I want to use the independent controls panel to manage specific 
 
 ---
 
-### User Story 5 - Help and Messaging (Priority: P3)
+### User Story 5 - Help and System Messages (Priority: P3)
 
-As an operator, I want to access help and system messages.
+As an operator, I want to access help and see important system messages so that I can understand procedures and stay
+informed about system status.
 **Why this priority**: Supportability and system diagnostics.
-**Independent Test**: Open the help window and system message window.
+**Independent Test**: Click the "Help" button to launch the independent help process; verify that system messages
+correctly display on the main window label via `set_additional_msg`.
+
+**Acceptance Scenarios**:
+
+1. **Given** the Main Window is open, **When** the "Help" button is clicked, **Then** the separate help process is
+   launched (as defined in `specs/006-help-window`).
+2. **Given** a system notification is triggered, **When** a `set_additional_msg` message is received, **Then** the
+   message is displayed on the main window's message label.
 
 ---
 
@@ -130,6 +141,8 @@ As an operator, I want an easier way to find and select my name from a large lis
 - **UI-005**: `IndependentControlsPanel` MUST include "Clear Old Records", "Restart Popup", and "Restart Mahlo HMI"
   buttons.
 - **UI-006**: Operator selection MUST provide both a dropdown and a grid-based selection window.
+- **UI-007**: MainWindow MUST include a "Help" button in the `IndependentControlsPanel` (positioned after the operator
+  grid button) to launch the separate help process.
 
 ### API Requirements (Flask)
 
