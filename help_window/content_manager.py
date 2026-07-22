@@ -59,9 +59,15 @@ class ContentManager:
 
             if isinstance(data, list) and len(data) > 0:
                 for block in data:
-                    if block.get("type") == "header":
+                    if block.get("type") == "title":
                         title = block.get("content", "Untitled")
                         break
+                else:
+                    # Fallback to first header if no title block found
+                    for block in data:
+                        if block.get("type") == "header":
+                            title = block.get("content", "Untitled")
+                            break
             else:
                 is_broken = True
                 title = os.path.basename(file_path)

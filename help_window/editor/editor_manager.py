@@ -93,10 +93,16 @@ class EditorManager(tk.Toplevel):
                 data = json.load(f)
 
             title = "Untitled"
+            # Prioritize title block for window title
             for block in data:
-                if block.get("type") == "header":
+                if block.get("type") == "title":
                     title = block.get("content", "Untitled")
                     break
+            else:
+                for block in data:
+                    if block.get("type") == "header":
+                        title = block.get("content", "Untitled")
+                        break
 
             editor = ArticleEditor(self, data, title, file_path,
                                    on_save=self._on_article_saved,
@@ -119,14 +125,15 @@ class EditorManager(tk.Toplevel):
         else:
             base_path = self.content_manager.content_dir
 
-        name = simpledialog.askstring("New Article", "Enter article name (without .json):")
+        name = simpledialog.askstring("New Article",
+                                      "Enter article name (without '.json' extension & must be a valid filename):")
         if name:
             file_path = os.path.join(base_path, f"{name}.json")
             if os.path.exists(file_path):
                 messagebox.showerror("Error", "File already exists.")
                 return
 
-            initial_data = [{"type": "header", "content": name}]
+            initial_data = [{"type": "title", "content": name}]
             with open(file_path, 'w', encoding='utf-8') as f:
                 json.dump(initial_data, f, indent=4)
 

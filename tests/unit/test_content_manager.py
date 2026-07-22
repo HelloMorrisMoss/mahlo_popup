@@ -45,6 +45,19 @@ class TestContentManager(unittest.TestCase):
         self.assertIn("", sections)
         self.assertIn("Section A", sections)
 
+    def test_title_block_priority(self):
+        """Verify that 'title' block takes priority over 'header' block for metadata."""
+        priority_path = os.path.join(self.test_dir, "priority.json")
+        with open(priority_path, "w") as f:
+            json.dump([
+                {"type": "title", "content": "The Real Title"},
+                {"type": "header", "content": "A Fake Title"}
+            ], f)
+
+        articles = self.cm.scan_content(force=True)
+        priority_article = next(a for a in articles if a["file_path"] == priority_path)
+        self.assertEqual(priority_article["title"], "The Real Title")
+
     def test_caching(self):
         self.cm.scan_content()
         self.cm.save_cache()

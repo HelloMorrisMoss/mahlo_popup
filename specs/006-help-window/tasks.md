@@ -1,10 +1,11 @@
-> ✅ **CURRENT**: spec.md was refined on 2026-07-21.
+> ✅ **CURRENT**: spec.md was refined on 2026-07-22.
 
 # Tasks: Dynamically Configurable Help Window
 
 **Input**: Design documents from `/specs/006-help-window/`
 
 **Propagated**: 2026-07-21 — Added tasks for multi-process integration and signaling.
+**Propagated**: 2026-07-22 — Added task T030 for title block cleanup and redundancy removal.
 
 ## Phase 1: Setup & Infrastructure
 
@@ -60,3 +61,8 @@
 - [ ] T027 Implement file-based instance lock in `HelpApp`
 - [ ] T028 Implement minimal Flask server with `/bring_to_front` endpoint in `HelpApp`
 - [ ] T029 Implement signaling logic in `HelpApp` (send request to Flask before exiting if instance exists)
+- [x] T030 Clean up article titles and implement mandatory title block (HLP-029)
+  - [x] T030.1 Implement `title` block type in `ContentManager` and `ArticleViewer`
+  - [x] T030.2 Update `ArticleEditor` to enforce mandatory title block rules
+  - [x] T030.3 Migrate all existing articles to use `title` block
+  - [x] T030.4 Update documentation in `help_window/README.md`

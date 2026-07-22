@@ -14,7 +14,11 @@ def process_article_data(viewer, title: str, article_data: List[Dict[str, Any]])
         block_type = block.get("type")
         content = block.get("content", "")
 
-        if block_type == "header":
+        if block_type == "title":
+            viewer.title_var.set(content)
+            # Do NOT insert title into text_area to avoid redundancy
+            continue
+        elif block_type == "header":
             viewer.text_area.insert("end", content + "\n", "header")
         elif block_type == "subheader":
             viewer.text_area.insert("end", content + "\n", "subheader")

@@ -25,6 +25,10 @@ class ArticleEditor(tk.Toplevel):
         self.blocks = list(initial_data)
         self.article_title = title
         self.file_path = file_path
+
+        # Ensure mandatory title block at the start
+        self._ensure_title_block()
+
         self.on_save = on_save
         self.live_viewer = live_viewer
 
@@ -32,6 +36,42 @@ class ArticleEditor(tk.Toplevel):
 
         self._setup_ui()
         self._refresh_block_list()
+
+    def _ensure_title_block(self):
+        """Enforces that the first block is a title block."""
+        if not self.blocks:
+            self.blocks.append({"type": "title", "content": self.article_title})
+            return
+
+        # Check if first block is title
+        if self.blocks[0].get("type") == "title":
+            return
+
+        # Check if title exists elsewhere and move it to front
+        title_idx = -1
+        for i, block in enumerate(self.blocks):
+            if block.get("type") == "title":
+                title_idx = i
+                break
+
+        if title_idx != -1:
+            title_block = self.blocks.pop(title_idx)
+            self.blocks.insert(0, title_block)
+        else:
+            # Try to convert first header to title
+            header_idx = -1
+            for i, block in enumerate(self.blocks):
+                if block.get("type") == "header":
+                    header_idx = i
+                    break
+
+            if header_idx != -1:
+                header_block = self.blocks.pop(header_idx)
+                header_block["type"] = "title"
+                self.blocks.insert(0, header_block)
+            else:
+                # Add a title block at the start
+                self.blocks.insert(0, {"type": "title", "content": self.article_title})
 
     def _setup_ui(self):
         # Top toolbar
@@ -74,7 +114,7 @@ class ArticleEditor(tk.Toplevel):
         add_frame = ttk.LabelFrame(self, text="Add Block", padding=5)
         add_frame.pack(fill="x")
 
-        types = ["header", "subheader", "paragraph", "image", "video", "link", "separator"]
+        types = ["title", "header", "subheader", "paragraph", "image", "video", "link", "separator"]
         for t in types:
             btn = ttk.Button(add_frame, text=t.capitalize(), command=lambda bt=t: self._add_block(bt))
             btn.pack(side="left", padx=2)
@@ -108,7 +148,7 @@ class ArticleEditor(tk.Toplevel):
 
         ttk.Label(self.prop_frame, text=f"Type: {b_type}").pack(anchor="w")
 
-        if b_type in ["header", "subheader", "paragraph", "image", "video", "link"]:
+        if b_type in ["title", "header", "subheader", "paragraph", "image", "video", "link"]:
             ttk.Label(self.prop_frame, text="Content:").pack(anchor="w")
 
             if b_type == "paragraph":
@@ -174,18 +214,31 @@ class ArticleEditor(tk.Toplevel):
             self.live_viewer.load_article(self.article_title, self.blocks)
 
     def _add_block(self, b_type):
-        new_block = {"type": b_type, "content": f"New {b_type}"}
-        if b_type == "link":
-            new_block["target"] = ""
-        self.blocks.append(new_block)
+        if b_type == "title":
+            if any(b.get("type") == "title" for b in self.blocks):
+                messagebox.showwarning("Warning", "Article already has a title block.")
+                return
+            new_block = {"type": "title", "content": "New Title"}
+            self.blocks.insert(0, new_block)
+            idx = 0
+        else:
+            new_block = {"type": b_type, "content": f"New {b_type}"}
+            if b_type == "link":
+                new_block["target"] = ""
+            self.blocks.append(new_block)
+            idx = len(self.blocks) - 1
+
         self._refresh_block_list()
         self.block_listbox.selection_clear(0, tk.END)
-        self.block_listbox.selection_set(tk.END)
-        self.block_listbox.see(tk.END)
+        self.block_listbox.selection_set(idx)
+        self.block_listbox.see(idx)
         self._on_block_select(None)
 
     def _remove_block(self):
         if self.selected_index != -1:
+            if self.blocks[self.selected_index].get("type") == "title":
+                messagebox.showwarning("Warning", "The title block cannot be removed.")
+                return
             del self.blocks[self.selected_index]
             self.selected_index = -1
             self._refresh_block_list()
@@ -195,6 +248,10 @@ class ArticleEditor(tk.Toplevel):
     def _move_up(self):
         idx = self.selected_index
         if idx > 0:
+            # Prevent moving something above the title block, or moving title block down
+            if idx == 1 and self.blocks[0].get("type") == "title":
+                return
+            
             self.blocks[idx], self.blocks[idx - 1] = self.blocks[idx - 1], self.blocks[idx]
             self._refresh_block_list()
             self.block_listbox.selection_set(idx - 1)
@@ -203,6 +260,10 @@ class ArticleEditor(tk.Toplevel):
     def _move_down(self):
         idx = self.selected_index
         if idx != -1 and idx < len(self.blocks) - 1:
+            # Prevent moving title block down
+            if idx == 0 and self.blocks[0].get("type") == "title":
+                return
+
             self.blocks[idx], self.blocks[idx + 1] = self.blocks[idx + 1], self.blocks[idx]
             self._refresh_block_list()
             self.block_listbox.selection_set(idx + 1)
@@ -248,11 +309,19 @@ class ArticleEditor(tk.Toplevel):
                 return
 
         try:
-            # Update title from the first header block if it exists
+            # Update title from the first title block or header block if it exists
+            found_title = False
             for block in self.blocks:
-                if block.get("type") == "header":
+                if block.get("type") == "title":
                     self.article_title = block.get("content", "Untitled")
+                    found_title = True
                     break
+
+            if not found_title:
+                for block in self.blocks:
+                    if block.get("type") == "header":
+                        self.article_title = block.get("content", "Untitled")
+                        break
 
             with open(self.file_path, 'w', encoding='utf-8') as f:
                 json.dump(self.blocks, f, indent=4)

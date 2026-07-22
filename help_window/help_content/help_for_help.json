@@ -1,18 +1,18 @@
 [
-  {
-    "type": "header",
-    "content": "Help for the Help Window"
-  },
-  {
-    "type": "paragraph",
-    "content": "This window provides help content for the Mahlo Popup system."
-  },
-  {
-    "type": "subheader",
-    "content": "Navigation"
-  },
-  {
-    "type": "paragraph",
-    "content": "Use the list on the left to select articles.\nThe editor will require a keyboard for most functionality."
-  }
+    {
+        "type": "title",
+        "content": "Help for the Help Window"
+    },
+    {
+        "type": "paragraph",
+        "content": "This window provides help content for the Mahlo Popup system."
+    },
+    {
+        "type": "subheader",
+        "content": "Navigation"
+    },
+    {
+        "type": "paragraph",
+        "content": "Use the list on the left to select articles.\nThe editor will require a keyboard for most functionality."
+    }
 ]

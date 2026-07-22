@@ -8,6 +8,7 @@
 **Refined**: 2026-07-21 — Added requirement HLP-024 for configurable editor access.
 **Refined**: 2026-07-21 — Added requirements for Multi-process integration (Option 2), Flask API, and Main Window
 integration.
+**Refined**: 2026-07-22 — Added requirement HLP-029 for mandatory title block and updated HLP-007, HLP-018.
 
 **Input**: User description for a dynamically configurable help window suitable for industrial HMI touchscreens.
 
@@ -169,7 +170,8 @@ process.
 
 - **HLP-005**: Help list MUST be generated dynamically from template files (JSON).
 - **HLP-006**: Template folders MUST be displayed as section headers in the navigation list.
-- **HLP-007**: Content MUST support mixed text, images, internal links, and embedded video players.
+- **HLP-007**: Content MUST support mixed text (titles, headers, subheaders, paragraphs), images, internal links, and
+  embedded video players.
 - **HLP-008**: System MUST cache the article list and background-check for updates.
 - **HLP-009**: System MUST default to 'help for help' article on first load.
 - **HLP-013**: Video player MUST support basic playback controls (Play/Pause/Seek) and silent operation by default.
@@ -183,7 +185,8 @@ process.
   absolute pixel dimensions (e.g., "1441x1080"), and percentages of the available viewer width.
 - **HLP-017**: WYSIWYG Editor Module: The editor MUST be implemented in a separate module/package to maintain separation
   of concerns from the core viewer.
-- **HLP-018**: Block Management: The editor MUST support adding, removing, and reordering blocks (headers, paragraphs,
+- **HLP-018**: Block Management: The editor MUST support adding, removing, and reordering blocks (titles, headers,
+  subheaders, paragraphs,
   images, videos, links).
 - **HLP-019**: Content Persistence: The editor MUST correctly serialize and deserialize the help system's JSON format.
 - **HLP-020**: Path Integrity: The system MUST automatically update references (internal links, media paths) when files
@@ -204,6 +207,11 @@ process.
   cross-process signaling and future web-based help features.
 - **HLP-028**: Main Window UI Integration: A "Help" button MUST be added to the `MainWindow` control panel,
   positioned after the operator grid button.
+- **HLP-029**: Mandatory Title Block: Every help article MUST have exactly one "title" type block, which MUST be the
+  first
+  block in the template. This block is used for navigation and window titles and is not rendered in the main article
+  flow
+  to avoid redundancy.
 
 ### Technical Requirements
 

@@ -1,10 +1,11 @@
-> ✅ **CURRENT**: spec.md was refined on 2026-07-21.
+> ✅ **CURRENT**: spec.md was refined on 2026-07-22.
 
 # Implementation Plan: Dynamically Configurable Help Window
 
 **Branch**: `feature/help-window` | **Date**: 2026-07-17 | **Spec**: [specs/006-help-window/spec.md]
 
 **Propagated**: 2026-07-21 — Added multi-process integration and Flask signaling.
+**Propagated**: 2026-07-22 — Implemented mandatory title block and updated editor to enforce it.
 
 ## Summary
 

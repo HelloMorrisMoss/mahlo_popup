@@ -38,13 +38,25 @@ To add a new article:
 2. Follow the template structure (a list of content blocks):
    ```json
    [
-     {"type": "header", "content": "My Article"},
+     {"type": "title", "content": "My Article"},
      {"type": "paragraph", "content": "Some description here."},
+     {"type": "header", "content": "Section 1"},
      {"type": "image", "content": "path/to/image.png", "size": "medium"},
      {"type": "video", "content": "path/to/video.mp4", "width_pct": 80},
      {"type": "link", "content": "Click for More", "target": "other_article.json"}
    ]
    ```
+
+### Block Types
+
+- `title`: **Required.** Exactly one per article, must be the first block. Used for navigation and window title.
+- `header`: Large bold text.
+- `subheader`: Medium bold text.
+- `paragraph`: Standard text content.
+- `image`: Displays an image.
+- `video`: Embeds a video player.
+- `link`: Clickable link to another help article.
+- `separator`: Horizontal line.
 
 ### Media Metadata
 
