@@ -3,8 +3,6 @@ import sys
 import threading
 import tkinter as tk
 
-import requests
-
 from help_window.flask_server_files.flask_app import start_flask_server
 from untracked_config.configuration_data import help_api_port
 
@@ -50,6 +48,7 @@ class HelpApp(tk.Tk):
 
 def is_already_running():
     """Checks if another instance of the help system is already running via Flask signaling."""
+    import requests
     try:
         response = requests.get(f"http://localhost:{help_api_port}/bring_to_front", timeout=1)
         return response.status_code == 200

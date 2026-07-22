@@ -15,11 +15,16 @@ class ContentManager:
         self.content_dir = content_dir
         self.cache_file = cache_file
         self.articles = []  # List of article metadata
+        self.load_cache()
 
-    def scan_content(self) -> List[Dict]:
+    def scan_content(self, force: bool = False) -> List[Dict]:
         """
         Scans the content directory for JSON templates and builds the article list.
+        Uses cache if available and not forced.
         """
+        if self.articles and not force and not self.check_for_updates():
+            return self.articles
+
         articles = []
         if not os.path.exists(self.content_dir):
             lg.error(f"Content directory not found: {self.content_dir}")
@@ -118,30 +123,23 @@ class ContentManager:
     def check_for_updates(self) -> bool:
         """
         Checks if any files in content_dir have changed since last scan.
-        If changes are detected, it updates the cache file but keeps current articles
-        in memory until scan_content is called.
+        Only compares file paths and modification times.
         """
-        # Perform a fresh scan to see what's actually on disk
-        new_articles = []
+        on_disk_files = {}
         for root, dirs, files in os.walk(self.content_dir):
             rel_path = os.path.relpath(root, self.content_dir)
             section = "" if rel_path == "." else rel_path
             for file in files:
                 if file.endswith(".json"):
                     file_path = os.path.join(root, file)
-                    article_meta = self._parse_template_metadata(file_path, section)
-                    new_articles.append(article_meta)
+                    on_disk_files[file_path] = os.path.getmtime(file_path)
 
-        new_articles.sort(key=lambda x: (x['section'], x['title']))
-
-        # Compare with current articles
-        if len(new_articles) != len(self.articles):
-            self._save_to_cache(new_articles)
+        if len(on_disk_files) != len(self.articles):
             return True
 
-        for old, new in zip(self.articles, new_articles):
-            if old["file_path"] != new["file_path"] or old["mtime"] < new["mtime"]:
-                self._save_to_cache(new_articles)
+        for article in self.articles:
+            file_path = article.get("file_path")
+            if file_path not in on_disk_files or article.get("mtime") < on_disk_files[file_path]:
                 return True
 
         return False
