@@ -1,18 +1,35 @@
 [
     {
-        "type": "title",
-        "content": "Help for the Help Window"
+        "content": "Help for the Help Window",
+        "type": "title"
     },
     {
-        "type": "paragraph",
-        "content": "This window provides help content for the Mahlo Popup system."
+        "content": "This window provides help content for the Mahlo Popup system.",
+        "type": "paragraph"
+    },
+    {
+        "content": "Navigation",
+        "type": "subheader"
+    },
+    {
+        "content": "Use the list on the left to select articles.",
+        "type": "paragraph"
     },
     {
         "type": "subheader",
-        "content": "Navigation"
+        "content": "Creating and editing articles"
     },
     {
         "type": "paragraph",
-        "content": "Use the list on the left to select articles.\nThe editor will require a keyboard for most functionality."
+        "content": "The editor will require a keyboard for most functionality, so it is recommended not to try editing articles on the Mahlo HMI.\nThere is also a web editor interface that can be accessed from other computers."
+    },
+    {
+        "type": "paragraph",
+        "content": "For more information on how to use the editors, see the following article:"
+    },
+    {
+        "type": "link",
+        "content": "Editing Articles",
+        "target": "General/editing articles.json"
     }
 ]

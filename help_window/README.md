@@ -21,6 +21,30 @@ template-based content system.
     - **Auto-Close**: When "Stay Open" is disabled, the window automatically closes when it loses focus.
     - **Resizable Layout**: Uses a paned window for flexible side-by-side viewing.
 
+## Content Management & Editing
+
+The help system includes two primary ways to manage and edit articles:
+
+### 1. Desktop Article Editor (Tkinter)
+
+The desktop editor is built directly into the help application. It provides a full-featured interface for creating,
+modifying, and reordering content blocks.
+
+- **To Launch**: Run `python run_help.py` from the project root.
+- **Best For**: High-intensity editing on a computer with a physical keyboard.
+- **Key Features**: Direct filesystem access, block properties management, and integrated media selection.
+
+### 2. Web Article Editor (Flask SPA)
+
+A modern, single-page web interface that allows remote content management without requiring the user to be at the Mahlo
+HMI.
+
+- **To Access**: Ensure the help system is running, then navigate to `http://<machine-ip>:5005/editor` in any modern web
+  browser.
+- **Best For**: Remote documentation updates, quick fixes, and collaborative editing.
+- **Key Features**: Three-pane layout (Navigation, Editor, Preview), drag-and-drop block management, and folder/media
+  management.
+
 ## Directory Structure
 
 - `help_app.py`: Standalone entry point for the Help application.

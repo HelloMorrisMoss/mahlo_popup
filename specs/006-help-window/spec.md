@@ -9,6 +9,7 @@
 **Refined**: 2026-07-21 — Added requirements for Multi-process integration (Option 2), Flask API, and Main Window
 integration.
 **Refined**: 2026-07-22 — Added requirement HLP-029 for mandatory title block and updated HLP-007, HLP-018.
+**Refined**: 2026-07-24 — Added requirements and user story for web-based article editor.
 
 **Input**: User description for a dynamically configurable help window suitable for industrial HMI touchscreens.
 
@@ -157,6 +158,31 @@ process.
 3. **Given** the Help Window has a fatal error or is closed, **When** the Main Popup remains open, **Then** the
    Main Popup continues to function normally without interruption.
 
+---
+
+### User Story 9 - Web-based Article Editor (Priority: P4)
+
+As a remote content maintainer, I want a web-based editor so that I can manage help articles from any computer with a
+browser without needing the Tkinter application installed.
+**Why this priority**: Extended accessibility for content management.
+**Independent Test**: Access the web editor via browser, create/edit an article in the three-pane interface, and verify
+changes are persisted and viewable in the Tk Help Window.
+
+**Acceptance Scenarios**:
+
+1. **Given** the help system is running, **When** the web editor URL is accessed, **Then** a single-page application
+   with
+   three panes (Navigation, Editor, Preview) is displayed.
+2. **Given** the web editor, **When** an article is selected in the Navigation pane, **Then** its blocks are loaded into
+   the Editor pane and rendered in the Preview pane.
+3. **Given** the Editor pane, **When** a block is modified or added, **Then** the Preview pane updates to reflect the
+   change (best-effort WYSIWYG).
+4. **Given** the Navigation pane, **When** "Import Media" is clicked, **Then** the browser's native file selection
+   dialog appears, and the uploaded file is placed in the appropriate media folder.
+5. **Given** changes made in the web editor, **When** "Save" is clicked, **Then** the JSON file on the server is
+   updated,
+   reusing the same logic as the Tk editor.
+
 ## Requirements *(mandatory)*
 
 ### UI/UX Requirements
@@ -212,6 +238,37 @@ process.
   block in the template. This block is used for navigation and window titles and is not rendered in the main article
   flow
   to avoid redundancy.
+
+### Web-based Editor Requirements
+
+- **HLP-030**: Web-based Article Editor: The system MUST provide a Flask-based web interface for managing and editing
+  help articles.
+- **HLP-031**: Single Window Interface: The web editor MUST operate within a single browser window/tab using a
+  three-pane layout (Navigation, Editor, Preview).
+- **HLP-032**: Content Navigation Pane: One pane MUST mirror the Tk 'Help Content Editor' functionality.
+    - **HLP-032.1**: MUST show folders and articles in a hierarchical view.
+    - **HLP-032.2**: MUST allow creating new folders.
+    - **HLP-032.3**: MUST allow moving articles between folders via drag-and-drop or specific controls.
+    - **HLP-032.4**: MUST show a 'media' folder if it exists, with a parenthetical item count (e.g., "media (6)").
+- **HLP-033**: Article Editing Pane: One pane MUST mirror the Tk 'Editing Article' window.
+    - **HLP-033.1**: MUST allow block-level editing (adding, removing, reordering blocks).
+    - **HLP-033.2**: MUST include 'Save', 'Cancel', and 'Consolidate Media' buttons in the toolbar.
+    - **HLP-033.3**: MUST replace the single '+ Add Block' button with a horizontal row of block-specific buttons (
+      Title, Header, Subheader, Paragraph, Image, Video, Link, Separator).
+    - **HLP-033.4**: 'Link' blocks MUST have a button to select articles from a list, mirroring the Tk 'Browse Articles'
+      functionality.
+- **HLP-034**: WYSIWYG Preview Pane: One pane MUST provide a best-effort imitation of the rendered article blocks.
+- **HLP-035**: Shared Backend Logic: The web editor implementation MUST leverage existing `ContentManager` and file
+  system utilities used by the Tk editor to maintain consistency and DRY principles.
+- **HLP-036**: Modal Floating Windows: Selecting non-article items in the Navigation pane MUST open a modal floating
+  window.
+    - **HLP-036.1**: Selecting the 'media' folder MUST show a floating window listing files; selecting a file MUST show
+      a preview.
+    - **HLP-036.2**: Selecting a non-media folder MUST show a floating window with options to rename, move, or delete
+      the folder.
+    - **HLP-036.3**: When a floating window is open, the main editor panes MUST be dimmed and disabled (modal behavior).
+    - **HLP-036.4**: Closing a floating window MUST revert the selection to the previously active article or the
+      default 'help_for_help' article.
 
 ### Technical Requirements
 

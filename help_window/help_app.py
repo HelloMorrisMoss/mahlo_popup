@@ -3,6 +3,7 @@ import sys
 import threading
 import tkinter as tk
 
+from flask_server_files.helpers import single_instance
 from help_window.flask_server_files.flask_app import start_flask_server
 from untracked_config.configuration_data import help_api_port
 
@@ -58,17 +59,24 @@ def is_already_running():
 
 def run_standalone(enable_editor=False):
     """Standard entry point for running the help system as a standalone process."""
-    if is_already_running():
-        print("Help system is already running. Signaled existing instance to bring to front.")
+    lock_file = os.path.join(os.path.dirname(__file__), "help_window.lock")
+
+    try:
+        with single_instance(lock_file, timeout=0.5):
+            app = HelpApp(enable_editor=enable_editor)
+
+            # Start Flask server in a daemon thread
+            flask_thread = threading.Thread(target=start_flask_server, args=(app,), daemon=True)
+            flask_thread.start()
+
+            app.mainloop()
+    except OSError:
+        # If lock fails, try to signal existing instance
+        if is_already_running():
+            print("Help system is already running. Signaled existing instance to bring to front.")
+        else:
+            print("Help system seems to be locked but not responding to signals.")
         sys.exit(0)
-
-    app = HelpApp(enable_editor=enable_editor)
-
-    # Start Flask server in a daemon thread
-    flask_thread = threading.Thread(target=start_flask_server, args=(app,), daemon=True)
-    flask_thread.start()
-
-    app.mainloop()
 
 
 if __name__ == "__main__":

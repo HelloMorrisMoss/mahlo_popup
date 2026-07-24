@@ -1,11 +1,10 @@
-> ✅ **CURRENT**: spec.md was refined on 2026-07-22.
-
 # Tasks: Dynamically Configurable Help Window
 
 **Input**: Design documents from `/specs/006-help-window/`
 
 **Propagated**: 2026-07-21 — Added tasks for multi-process integration and signaling.
 **Propagated**: 2026-07-22 — Added task T030 for title block cleanup and redundancy removal.
+**Propagated**: 2026-07-24 — Added tasks for web-based article editor.
 
 ## Phase 1: Setup & Infrastructure
 
@@ -56,13 +55,40 @@
 
 ## Phase 7: Multi-process Integration & Main Window UI
 
-- [ ] T025 Add "Help" button to `MainWindow.py` control panel (after operator grid button)
-- [ ] T026 Implement subprocess launcher in `MainWindow.py` to call `run_help.py`
-- [ ] T027 Implement file-based instance lock in `HelpApp`
-- [ ] T028 Implement minimal Flask server with `/bring_to_front` endpoint in `HelpApp`
-- [ ] T029 Implement signaling logic in `HelpApp` (send request to Flask before exiting if instance exists)
+- [x] T025 Add "Help" button to `MainWindow.py` control panel (after operator grid button)
+- [x] T026 Implement subprocess launcher in `MainWindow.py` to call `run_help.py`
+- [x] T027 Implement file-based instance lock in `HelpApp`
+- [x] T028 Implement minimal Flask server with `/bring_to_front` endpoint in `HelpApp`
+- [x] T029 Implement signaling logic in `HelpApp` (send request to Flask before exiting if instance exists)
 - [x] T030 Clean up article titles and implement mandatory title block (HLP-029)
   - [x] T030.1 Implement `title` block type in `ContentManager` and `ArticleViewer`
   - [x] T030.2 Update `ArticleEditor` to enforce mandatory title block rules
   - [x] T030.3 Migrate all existing articles to use `title` block
   - [x] T030.4 Update documentation in `help_window/README.md`
+
+## Phase 8: Web-based Article Editor
+
+- [x] T031 Design and implement Flask routes for the web editor (HLP-030)
+- [x] T032 Create three-pane layout templates (Navigation, Editor, Preview) (HLP-031)
+- [x] T033 Implement Navigation pane logic (Article/Folder management, Media import) (HLP-032)
+- [x] T034 Implement Editor pane logic (Block management mirroring Tk editor) (HLP-033)
+- [x] T035 Implement Preview pane with best-effort WYSIWYG rendering (HLP-034)
+- [x] T036 Integrate existing `ContentManager` and file system utilities (HLP-035)
+- [x] T037 Verify web editor functionality with integration tests
+
+## Phase 9: Web-based Article Editor Enhancements (HLP-032 to HLP-036)
+
+- [ ] T038 Enhance Navigation Pane:
+  - [ ] T038.1 Implement hierarchical folder/article view (HLP-032.1)
+  - [ ] T038.2 Implement folder creation and item moving (HLP-032.2, HLP-032.3)
+  - [ ] T038.3 Implement 'media' folder with item count (HLP-032.4)
+- [ ] T039 Enhance Editor Pane UI:
+  - [ ] T039.1 Add 'Save', 'Cancel', and 'Consolidate Media' buttons (HLP-033.2)
+  - [ ] T039.2 Replace '+ Add Block' with horizontal button row (HLP-033.3)
+  - [ ] T039.3 Implement 'Link' block article selector (HLP-033.4)
+- [ ] T040 Implement Modal Floating Windows:
+  - [ ] T040.1 Implement modal overlay system (dim/disable panes) (HLP-036.3)
+  - [ ] T040.2 Implement Media Browser modal (HLP-036.1)
+  - [ ] T040.3 Implement Folder Management modal (HLP-036.2)
+  - [ ] T040.4 Implement selection reversion logic (HLP-036.4)
+- [ ] T041 Verify enhancements with updated tests

@@ -1,11 +1,10 @@
-> ✅ **CURRENT**: spec.md was refined on 2026-07-22.
-
 # Implementation Plan: Dynamically Configurable Help Window
 
 **Branch**: `feature/help-window` | **Date**: 2026-07-17 | **Spec**: [specs/006-help-window/spec.md]
 
 **Propagated**: 2026-07-21 — Added multi-process integration and Flask signaling.
 **Propagated**: 2026-07-22 — Implemented mandatory title block and updated editor to enforce it.
+**Propagated**: 2026-07-24 — Added web-based article editor implementation details.
 
 ## Summary
 
@@ -111,3 +110,21 @@ help_window/             # New directory for the help window component
       Subsequent launch attempts will send a GET request to `localhost:5005/bring_to_front` before exiting.
     * **Focus Management**: Upon receiving the signal, the existing `HelpApp` calls `lift()` and `focus_force()`
       to appear on top of the full-screen HMI.
+10. **Web-based Article Editor**:
+    * **Single-Page Application (SPA)**: Implemented using Flask, Jinja2 templates, and vanilla JavaScript (or a
+      lightweight framework if needed).
+    * **Three-Pane Layout**:
+        * **Navigation Pane**: Mirrors the Tk `EditorManager`. Shows a hierarchical view of folders and articles.
+          Supports folder creation, moving articles, and media management. Media folders display item counts.
+        * **Editor Pane**: Mirrors the Tk `ArticleEditor`.
+            * Toolbar includes 'Save', 'Cancel', and 'Consolidate Media' buttons.
+            * Block creation via horizontal row of specific buttons (Title, Header, etc.).
+            * 'Link' blocks include an article selector dialog.
+        * **Preview Pane**: Best-effort WYSIWYG rendering of the article blocks using CSS styles that match the Tk
+          `ArticleViewer` appearance.
+    * **Modal Dialogs**: Implemented for folder and media management.
+        * Selecting a folder or the media directory triggers a modal overlay that dims and disables the main panes.
+        * Selection state is managed to revert to the active article upon closing the modal.
+    * **Shared Backend**: Reuses `ContentManager` and `FileManager` logic via Flask routes to ensure consistency between
+      the Tk and web interfaces.
+    * **Media Upload**: Uses standard HTML file inputs to handle media imports into the designated folders.

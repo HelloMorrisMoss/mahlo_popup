@@ -36,7 +36,7 @@ A standalone, dynamically configurable help system that runs as a separate OS pr
 - **Process Model**: Launched as a separate process via `run_help.py`.
 - **Components**:
   - `HelpApp`: Process entry point and Tkinter application.
-  - `flask_server_files/`: Minimal Flask server for inter-process signaling (Bring-to-Front).
+  - `flask_server_files/`: Flask server for inter-process signaling (Bring-to-Front) and a web-based article editor.
   - `editor/`: WYSIWYG article editor and file management utilities.
   - `ContentManager`: handles recursive scanning of JSON templates and multi-level caching.
   - `HelpFrame`: Main UI container with background synchronization loops.
