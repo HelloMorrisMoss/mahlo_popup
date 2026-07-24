@@ -33,12 +33,13 @@ class MainWindow(tk.Tk):
         :type debugging: bool, whether to execute extra debugging code
         args: positional arguments for the tkinter.Tk main window.
         kwargs: key word arguments for the tkinter.Tk main window.
+            :type termination_queue: collections.deque, to pass info to the shutdown sequence when terminating.
         """
-        termd = kwargs.pop('termination_dict')
+        term_coms: deque = kwargs.pop('termination_queue')  # this needs to out before super init
         super().__init__(*args, **kwargs)
         self.debugging = debugging
         # self.attributes('-toolwindow', True)  # don't show the min/max buttons on the title bar
-        self.termd = termd
+        self.term_coms = term_coms
         self.set_window_icon('untracked_config/window_icon.ico')  # window icon
 
         self.lam_num = LAM_NUM  # the laminator number
@@ -482,7 +483,7 @@ class MainWindow(tk.Tk):
 
         merr.additional_information = {'operator': self.controls_panel.current_operator.get()}
         self.quit()
-        self.termd.append(merr)
+        self.term_coms.append(merr)
 
     def ensure_on_top_check(self, repeat=False, lift=False):
         """Check if the window is visible, if not, bring it to the front.

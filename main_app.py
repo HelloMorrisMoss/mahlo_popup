@@ -63,13 +63,13 @@ try:
             flask_thread.start()
 
             # start the popup (tkinter requires the main thread)
-            MainWindow(inbound_queue=f2p_queue, outbound_queue=p2f_queue, termination_dict=termination_queue)
+            MainWindow(inbound_queue=f2p_queue, outbound_queue=p2f_queue, termination_queue=termination_queue)
         elif run_server:
             lg.info('Starting the flask webserver without a popup.')
             start_flask_app(p2f_queue, f2p_queue)
         elif run_popup:
             lg.info('Starting popup without a flask server.')
-            MainWindow(inbound_queue=f2p_queue, outbound_queue=p2f_queue)
+            MainWindow(inbound_queue=f2p_queue, outbound_queue=p2f_queue, termination_queue=termination_queue)
 
         if termination_queue:
             lg.info('termination source returned!')
