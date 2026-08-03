@@ -1,9 +1,8 @@
 import json
-import logging
 import os
 from typing import List, Dict
 
-lg = logging.getLogger(__name__)
+from help_window import lg
 
 
 class ContentManager:

@@ -1,10 +1,9 @@
 import json
-import logging
 import os
 import shutil
 from typing import List, Dict
 
-lg = logging.getLogger(__name__)
+from help_window import lg
 
 
 def update_all_references(content_dir: str, old_path: str, new_path: str):
