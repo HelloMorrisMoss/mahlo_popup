@@ -5,6 +5,7 @@
 **Propagated**: 2026-07-21 — Added multi-process integration and Flask signaling.
 **Propagated**: 2026-07-22 — Implemented mandatory title block and updated editor to enforce it.
 **Propagated**: 2026-07-24 — Added web-based article editor implementation details.
+**Propagated**: 2026-08-03 — Added content synchronization, versioning, and headless mode implementation details.
 
 ## Summary
 
@@ -15,9 +16,9 @@ loaded, searchable, and cached help content from JSON templates, supporting mixe
 
 **Language/Version**: Python 3.11
 
-**Primary Dependencies**: Tkinter, Azure ttk theme, JSON (for templates)
+**Primary Dependencies**: Tkinter, Azure ttk theme, JSON (for templates), SQLAlchemy (for versioning)
 
-**Storage**: Local JSON cache for help article metadata and content paths.
+**Storage**: Local JSON cache for help article metadata and content paths; SQLite/PostgreSQL for versioning database.
 
 **Testing**: unittest (unit tests for article loading and caching logic), Manual verification for UI behavior.
 
@@ -55,7 +56,12 @@ help_window/             # New directory for the help window component
 ├── help_frame.py        # Main UI container
 ├── nav_frame.py         # Navigation list component
 ├── content_manager.py   # logic for loading, caching, and background updates
-└── help_content/        # Directory for JSON article templates
+├── help_content/        # Directory for JSON article templates
+└── flask_server_files/  # Web editor and synchronization API
+    ├── flask_app.py
+    ├── models/          # Database models (Versioning)
+    ├── static/
+    └── templates/
 ```
 
 ## Implementation Details
@@ -128,3 +134,17 @@ help_window/             # New directory for the help window component
     * **Shared Backend**: Reuses `ContentManager` and `FileManager` logic via Flask routes to ensure consistency between
       the Tk and web interfaces.
     * **Media Upload**: Uses standard HTML file inputs to handle media imports into the designated folders.
+11. **Content Synchronization & Versioning**:
+    * **Role Designation**: Server vs. Subscriber role defined in `untracked_config/settings.json`.
+    * **Headless Mode Support**: `run_help.py` supports a GUI-less mode for server instances to host the distribution
+      API
+      and web editor.
+    * **Versioning System**: SQLAlchemy-backed management of content versions, including manifests, SHA-256 hashes, and
+      publication status.
+    * **CAS Distribution**: Content-Addressable Storage for blobs, enabling deduplication and integrity verification.
+    * **Atomic Update Lifecycle**: Background download to staging -> Full integrity check -> Atomic switch to production
+      content.
+    * **Exponential Backoff**: Subscribers implement backoff for retries when the server is unreachable, failing
+      silently
+      to the operator.
+    * **Management UI**: Separate web page with Basic Auth for creating, inspecting (diffs), and publishing versions.

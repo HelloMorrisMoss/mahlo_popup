@@ -5,6 +5,7 @@
 **Propagated**: 2026-07-21 — Added tasks for multi-process integration and signaling.
 **Propagated**: 2026-07-22 — Added task T030 for title block cleanup and redundancy removal.
 **Propagated**: 2026-07-24 — Added tasks for web-based article editor.
+**Propagated**: 2026-08-03 — Added tasks for content synchronization, versioning, and headless mode.
 
 ## Phase 1: Setup & Infrastructure
 
@@ -78,17 +79,40 @@
 
 ## Phase 9: Web-based Article Editor Enhancements (HLP-032 to HLP-036)
 
-- [ ] T038 Enhance Navigation Pane:
-  - [ ] T038.1 Implement hierarchical folder/article view (HLP-032.1)
-  - [ ] T038.2 Implement folder creation and item moving (HLP-032.2, HLP-032.3)
-  - [ ] T038.3 Implement 'media' folder with item count (HLP-032.4)
-- [ ] T039 Enhance Editor Pane UI:
-  - [ ] T039.1 Add 'Save', 'Cancel', and 'Consolidate Media' buttons (HLP-033.2)
-  - [ ] T039.2 Replace '+ Add Block' with horizontal button row (HLP-033.3)
-  - [ ] T039.3 Implement 'Link' block article selector (HLP-033.4)
-- [ ] T040 Implement Modal Floating Windows:
-  - [ ] T040.1 Implement modal overlay system (dim/disable panes) (HLP-036.3)
-  - [ ] T040.2 Implement Media Browser modal (HLP-036.1)
-  - [ ] T040.3 Implement Folder Management modal (HLP-036.2)
-  - [ ] T040.4 Implement selection reversion logic (HLP-036.4)
-- [ ] T041 Verify enhancements with updated tests
+- [ ] T038 [US9] Enhance Navigation Pane:
+  - [ ] T038.1 [US9] Implement hierarchical folder/article view (HLP-032.1)
+  - [ ] T038.2 [US9] Implement folder creation and item moving (HLP-032.2, HLP-032.3)
+  - [ ] T038.3 [US9] Implement 'media' folder with item count (HLP-032.4)
+- [ ] T039 [US9] Enhance Editor Pane UI:
+  - [ ] T039.1 [US9] Add 'Save', 'Cancel', and 'Consolidate Media' buttons (HLP-033.2)
+  - [ ] T039.2 [US9] Replace '+ Add Block' with horizontal button row (HLP-033.3)
+  - [ ] T039.3 [US9] Implement 'Link' block article selector (HLP-033.4)
+- [ ] T040 [US9] Implement Modal Floating Windows in help_window/flask_server_files/static/web_editor.js:
+  - [ ] T040.1 [US9] Implement modal overlay system (dim/disable panes) (HLP-036.3)
+  - [ ] T040.2 [US9] Implement Media Browser modal (HLP-036.1)
+  - [ ] T040.3 [US9] Implement Folder Management modal (HLP-036.2)
+  - [ ] T040.4 [US9] Implement selection reversion logic (HLP-036.4)
+- [ ] T041 [US9] Verify enhancements with updated tests
+
+## Phase 10: Content Synchronization & Versioning
+
+- [ ] T042 [US10] Implement Headless Mode in run_help.py (HLP-050)
+- [ ] T043 [US10] Implement Server/Subscriber role detection from untracked_config/settings.json (HLP-037)
+- [ ] T044 [US10] Define SQLAlchemy Database Schema for Versioning in
+  help_window/flask_server_files/models/versioning.py (HLP-049)
+- [ ] T045 [US10] Implement CAS (Content-Addressable Storage) for help content blobs in help_window/content_manager.py (
+  HLP-048)
+- [ ] T046 [US10] Implement Versioning Management Web UI in help_window/flask_server_files/templates/versioning.html (
+  HLP-043 to HLP-047)
+  - [ ] T046.1 [US10] Implement version creation and history view
+  - [ ] T046.2 [US10] Implement change inspection (text diffs and media previews)
+  - [ ] T046.3 [US10] Implement manual publication logic
+- [ ] T047 [US10] Implement Subscriber Sync Logic with Exponential Backoff in help_window/content_manager.py (HLP-038,
+  HLP-039)
+- [ ] T048 [US10] Implement Subscriber-side Content Verification (Full Integrity Check) in
+  help_window/content_manager.py (HLP-040)
+- [ ] T049 [US10] Implement Atomic Content Switch on Subscriber in help_window/editor/file_manager.py (HLP-040, HLP-041)
+- [ ] T050 [US10] Implement Basic Auth for Versioning Management interface in
+  help_window/flask_server_files/flask_app.py (HLP-043)
+- [ ] T051 [US10] Verify Synchronization and Rollback with Integration Tests in tests/integration/test_sync.py (SC-007,
+  SC-008)

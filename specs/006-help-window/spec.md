@@ -10,8 +10,27 @@
 integration.
 **Refined**: 2026-07-22 — Added requirement HLP-029 for mandatory title block and updated HLP-007, HLP-018.
 **Refined**: 2026-07-24 — Added requirements and user story for web-based article editor.
+**Refined**: 2026-08-03 — Added User Story 10 and requirements HLP-037 to HLP-049 for centralized content
+synchronization and versioning.
+**Refined**: 2026-08-03 — Added requirement HLP-050 for headless mode support on server instances.
 
 **Input**: User description for a dynamically configurable help window suitable for industrial HMI touchscreens.
+
+## Clarifications
+
+### Session 2026-08-03
+
+- Q: If a subscriber instance cannot reach the central content server, what should be the behavior and UI feedback? → A:
+  Fail silently, log failure with backoff level, and use exponential backoff for retries (Option D). The operators don't
+  need to worry about the server, and updates will be infrequent – so immediate updates aren't a priority.
+- Q: How should "valid content" be defined and verified by the subscriber before performing an atomic switch? → A: Full
+  Integrity Check (Option D) including checksums, JSON parsing, and structural validation.
+- Q: How should the 'blob files' for content distribution be structured and identified? → A: Content-Addressable
+  Storage (CAS) (Option A) with files named by SHA-256 hash.
+- Q: How should an instance be designated as the 'Server'? → A: Config File (Option B) in
+  `untracked_config/settings.json`.
+- Q: What level of access control is required for the versioning page? → A: Basic Authentication (Option B) providing
+  minimal security for internal segmented networks.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -183,6 +202,36 @@ changes are persisted and viewable in the Tk Help Window.
    updated,
    reusing the same logic as the Tk editor.
 
+---
+
+### User Story 10 - Content Synchronization & Versioning (Priority: P2)
+
+As a system administrator, I want to manage versions of the help content on a central server and have subscriber
+instances
+automatically sync to the latest published version, so that I can ensure all instances are up to date and can easily
+roll back if needed.
+
+**Why this priority**: Essential for maintaining consistency across multiple production instances.
+**Independent Test**: Publish a new version on the server and verify that subscribers download and switch to it
+automatically without user intervention.
+
+**Acceptance Scenarios**:
+
+1. **Given** a server instance with a published version of help content, **When** a subscriber instance starts or
+   checks for updates, **Then** it compares its local version with the server's published version.
+2. **Given** the server's published version is different from the local version, **When** the subscriber requests an
+   update, **Then** it downloads the new version, verifies its validity, and switches to it atomically.
+3. **Given** a subscriber is downloading or verifying a new version, **When** the help window is used, **Then** it
+   continues to use the existing local version until the new one is successfully verified and switched.
+4. **Given** the server instance, **When** the versioning system is accessed, **Then** it is displayed as a separate
+   page from the web editor.
+5. **Given** the versioning system, **When** a user creates a new version, **Then** they can add a comment, and the
+   system records the timestamp and the list of changed files.
+6. **Given** a list of versions, **When** a version is selected, **Then** the user can see the timestamp, comment, and
+   changed files, with the ability to view diffs (text) or before/after (media).
+7. **Given** a selected version, **When** the user clicks "Publish", **Then** that version becomes the 'current' version
+   for all subscribers, regardless of whether it is newer or older than previous published versions.
+
 ## Requirements *(mandatory)*
 
 ### UI/UX Requirements
@@ -276,6 +325,42 @@ changes are persisted and viewable in the Tk Help Window.
 - **HLP-011**: Error handling for malformed templates: show title/filename with broken indicator.
 - **HLP-012**: Use `ArticleViewer` component (refined from reference) for content display.
 
+### Content Synchronization & Versioning Requirements
+
+- **HLP-037**: Centralized Content Server: One instance of the application MUST be designated as the server via a
+  configuration setting in `untracked_config/settings.json` to host help content versions and the web editor.
+- **HLP-038**: Subscriber Synchronization: Subscriber instances MUST query the server for published version data. If the
+  server is unreachable, the system MUST fail silently (no operator notification), log the failure with backoff details,
+  and implement exponential backoff for retries.
+- **HLP-039**: Version Comparison: Subscribers MUST compare the server's published version with their local version to
+  determine if an update is needed.
+- **HLP-040**: Atomic Content Switch: Subscribers MUST verify the downloaded content is valid using a full integrity
+  check (SHA-256 checksums from manifest, JSON parsing, and structural validation of mandatory fields) before performing
+  an atomic switch to the new version to prevent using partially updated or corrupted content.
+- **HLP-041**: Continuous Availability: The existing help content MUST remain available and functional during the
+  download and verification of a new version.
+- **HLP-042**: Version-Agnostic Updates: The synchronization system MUST support updating to any published version,
+  even if the version identifier/timestamp is earlier than the current local version (rollback support).
+- **HLP-043**: Versioning Management Interface: The system MUST provide a separate web page for managing content
+  versions, accessible from the web editor. Access MUST be protected by Basic Authentication (minimal security for
+  internal segmented networks).
+- **HLP-044**: Version Creation: Users MUST be able to save the current state of help content as a new version with an
+  optional comment.
+- **HLP-045**: Version History View: The versioning page MUST display a history of versions including timestamp,
+  comment, and a list of changed files.
+- **HLP-046**: Change Inspection (Diff): The versioning page MUST allow users to view changes in a version:
+    - Text files: Show a line-by-line diff.
+    - Media files (images/videos): Show "before" and "after" previews.
+- **HLP-047**: Manual Publication: A version MUST NOT be published automatically upon creation. It MUST require an
+  explicit "Publish" action to become the current version for subscribers.
+- **HLP-048**: Distribution Mechanism: Content distribution MUST use manifest files and Content-Addressable Storage (
+  CAS) for blob files. Each file MUST be identified and named by its SHA-256 hash to facilitate deduplication and verify
+  integrity during transfer.
+- **HLP-049**: Database Backend: The versioning system MUST use a generic database abstraction (SQLAlchemy). SQLite will
+  be used for development, with PostgreSQL as the production target.
+- **HLP-050**: Headless Mode: The application MUST support a headless execution mode for server instances, allowing all
+  backend services (Flask API, versioning, content distribution) to run without initializing a Tkinter GUI.
+
 ## Success Criteria *(mandatory)*
 
 - **SC-001**: Help window loads and displays the navigation list in < 500ms (using cache).
@@ -284,6 +369,8 @@ changes are persisted and viewable in the Tk Help Window.
 - **SC-004**: Background update mechanism does not impact UI responsiveness.
 - **SC-005**: Process Isolation: A crash or freeze in the Help Window process MUST NOT affect the Main Window process.
 - **SC-006**: Single Instance: Only one Help Window process exists at any given time.
+- **SC-007**: Content synchronization completes without interrupting the operator's use of the current help system.
+- **SC-008**: Rollback to a previous version is completed within < 5 seconds of the subscriber detecting the change.
 
 ## Assumptions
 
