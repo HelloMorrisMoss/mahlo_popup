@@ -681,4 +681,19 @@ async function createNewArticle() {
 }
 
 // Initial load
-refreshArticleList();
+async function init() {
+    await refreshArticleList();
+
+    // Check if we should show the publishing button
+    try {
+        const response = await fetch('/api/config');
+        const config = await response.json();
+        if (config.is_server) {
+            document.getElementById('publishing-btn').style.display = 'inline-block';
+        }
+    } catch (e) {
+        console.error("Error fetching config:", e);
+    }
+}
+
+init();

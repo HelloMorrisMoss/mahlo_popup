@@ -76,6 +76,12 @@ class TestWebEditor(unittest.TestCase):
         # Cleanup
         os.remove(temp_path)
 
+    def test_get_config(self):
+        response = requests.get(f"http://localhost:{help_api_port}/api/config")
+        self.assertEqual(response.status_code, 200)
+        config = response.json()
+        self.assertIn("is_server", config)
+        self.assertIn("admin_username", config)
 
 if __name__ == "__main__":
     unittest.main()

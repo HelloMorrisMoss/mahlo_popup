@@ -64,6 +64,13 @@ def start_flask_server(app_instance, port=None):
         except ValueError:
             return path.replace("\\", "/")
 
+    @flask_app.route('/api/config')
+    def get_config():
+        return jsonify({
+            "is_server": is_server(),
+            "admin_username": get_settings().get('admin_username')
+        })
+
     @flask_app.route('/bring_to_front', methods=['GET'])
     def signal_bring_to_front():
         # Use after() to ensure thread-safe interaction with Tkinter
