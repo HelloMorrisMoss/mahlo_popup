@@ -10,7 +10,7 @@ from help_window.editor.file_manager import upload_media, delete_resource, renam
 from help_window.flask_server_files.models.version import db, ContentVersion
 from help_window.utils.cas_manager import CASManager
 from help_window.utils.config import get_settings, is_server
-from untracked_config.configuration_data import help_api_port
+from untracked_config.configuration_data import help_api_port, ON_DEV_NODE
 
 
 def require_auth(f):
@@ -371,4 +371,8 @@ def start_flask_server(app_instance, port=None):
         return jsonify({"error": "Version not found"}), 404
 
     # Run on a dedicated port for the help system
-    flask_app.run(host='0.0.0.0', port=target_port, debug=False, use_reloader=False)
+    if ON_DEV_NODE:  # hot reload for dev
+        flask_app.run(host='127.0.0.1', port=target_port, debug=False, use_reloader=False)
+    else:  # use waitress for a production server
+        from waitress import serve
+        serve(flask_app, host='0.0.0.0', port=target_port)
