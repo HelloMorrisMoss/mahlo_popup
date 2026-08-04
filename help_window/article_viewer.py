@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 from typing import List, Dict, Callable
 
+from help_window import lg
 from .utils.article_processor import process_article_data
 from .utils.path_utils import resolve_resource_path
 from .utils.scaling import calculate_dimensions
@@ -105,6 +106,7 @@ class ArticleViewer(ttk.Frame):
             resolved_path = resolve_resource_path(image_path)
 
         if not os.path.isfile(resolved_path):
+            lg.warn(f"Image not found: {image_path} at {resolved_path=}")
             self.text_area.insert("end", f"\n[Image not found: {image_path}]\n", "paragraph")
             return
 

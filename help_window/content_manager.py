@@ -30,16 +30,47 @@ class ContentManager:
 
     def resolve_resource_path(self, rel_path: str) -> str:
         """Resolves a relative path to either a blob (if manifest exists) or a local file."""
-        rel_path = rel_path.replace("\\", "/")
+        if not rel_path:
+            return ""
+
+        # Normalize slashes
+        path = rel_path.replace("\\", "/")
+
+        # We need to find the path relative to content_dir to look it up in the manifest.
+        # rel_path might be absolute, project-relative, or content-relative.
+
+        # 1. Try using absolute paths to identify the prefix (works if CWD is correct)
+        abs_rel_path = os.path.abspath(os.path.join(os.getcwd(), path)).replace("\\", "/")
+        abs_content_dir = os.path.abspath(self.content_dir).replace("\\", "/")
+
+        search_path = None
+        if abs_rel_path.startswith(abs_content_dir + "/"):
+            search_path = abs_rel_path[len(abs_content_dir) + 1:]
+        elif abs_rel_path == abs_content_dir:
+            search_path = ""
+
+        # 2. If no match, try stripping the standard project-relative prefix (fallback for wrong CWD)
+        if search_path is None:
+            for prefix in ["help_window/help_content/", "./help_window/help_content/"]:
+                if path.startswith(prefix):
+                    search_path = path[len(prefix):]
+                    break
+
+            # 3. If still no match, assume it was already content-relative
+            if search_path is None:
+                search_path = path
+
         if self.manifest and "files" in self.manifest:
-            blob_hash = self.manifest["files"].get(rel_path)
+            blob_hash = self.manifest["files"].get(search_path)
             if blob_hash:
                 blob_path = os.path.join(self.blobs_dir, blob_hash)
                 if os.path.exists(blob_path):
                     return blob_path
+                else:
+                    lg.debug(f"Manifest match for {search_path} -> {blob_hash}, but blob missing at {blob_path}")
 
         # Fallback to direct path in content_dir
-        return os.path.join(self.content_dir, rel_path)
+        return os.path.join(self.content_dir, search_path)
 
     def scan_content(self, force: bool = False) -> List[Dict]:
         """
