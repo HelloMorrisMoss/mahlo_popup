@@ -1,3 +1,4 @@
+import difflib
 import json
 import os
 from functools import wraps
@@ -370,12 +371,101 @@ def start_flask_server(app_instance, port=None):
         # Unpublish others
         ContentVersion.query.update({ContentVersion.is_published: False})
 
-        version = ContentVersion.query.get(version_id)
+        version = db.session.get(ContentVersion, version_id)
         if version:
             version.is_published = True
             db.session.commit()
             return jsonify(version.to_dict())
         return jsonify({"error": "Version not found"}), 404
+
+    @flask_app.route('/api/versions/diff/<int:version_id>')
+    @require_auth
+    def get_version_diff(version_id):
+        version = db.session.get(ContentVersion, version_id)
+        if not version:
+            return jsonify({"error": "Version not found"}), 404
+
+        # Get previous version
+        prev_version = ContentVersion.query.filter(ContentVersion.timestamp < version.timestamp).order_by(
+            ContentVersion.timestamp.desc()).first()
+
+        current_manifest_path = cas_manager.get_blob_path(version.manifest_hash)
+        try:
+            with open(current_manifest_path, 'r', encoding='utf-8') as f:
+                current_manifest = json.load(f)
+        except Exception:
+            return jsonify({"error": "Manifest not found or invalid"}), 500
+
+        if prev_version:
+            prev_manifest_path = cas_manager.get_blob_path(prev_version.manifest_hash)
+            try:
+                with open(prev_manifest_path, 'r', encoding='utf-8') as f:
+                    prev_manifest = json.load(f)
+            except Exception:
+                prev_manifest = {"files": {}}
+        else:
+            prev_manifest = {"files": {}}
+
+        diff = {
+            "added": [],
+            "modified": [],
+            "removed": []
+        }
+
+        curr_files = current_manifest.get("files", {})
+        prev_files = prev_manifest.get("files", {})
+
+        for path, file_hash in curr_files.items():
+            if path not in prev_files:
+                diff["added"].append({"path": path, "hash": file_hash})
+            elif prev_files[path] != file_hash:
+                diff["modified"].append({
+                    "path": path,
+                    "old_hash": prev_files[path],
+                    "new_hash": file_hash
+                })
+
+        for path, file_hash in prev_files.items():
+            if path not in curr_files:
+                diff["removed"].append({"path": path, "hash": file_hash})
+
+        return jsonify(diff)
+
+    @flask_app.route('/api/versions/file_diff')
+    @require_auth
+    def get_file_diff():
+        old_hash = request.args.get('old_hash')
+        new_hash = request.args.get('new_hash')
+        path = request.args.get('path', '')
+
+        def get_content(h):
+            if not h:
+                return ""
+            blob_path = cas_manager.get_blob_path(h)
+            if os.path.exists(blob_path):
+                try:
+                    with open(blob_path, 'r', encoding='utf-8') as f:
+                        if path.endswith('.json'):
+                            # Pretty print JSON for better diff
+                            data = json.load(f)
+                            return json.dumps(data, indent=2)
+                        return f.read()
+                except Exception:
+                    return "[Binary Content or Encoding Error]"
+            return ""
+
+        old_content = get_content(old_hash)
+        new_content = get_content(new_hash)
+
+        diff = difflib.unified_diff(
+            old_content.splitlines(),
+            new_content.splitlines(),
+            fromfile='previous',
+            tofile='current',
+            lineterm=''
+        )
+
+        return jsonify({"diff": "\n".join(diff)})
 
     # Run on a dedicated port for the help system
     if ON_DEV_NODE:  # hot reload for dev

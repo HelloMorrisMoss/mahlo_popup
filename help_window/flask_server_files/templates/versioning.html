@@ -108,6 +108,52 @@
             height: 100px;
             margin: 10px 0;
         }
+
+        /* Diff specific styles */
+        .diff-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background: #f8f8f8;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 0.9em;
+        }
+
+        .diff-added {
+            color: green;
+        }
+
+        .diff-removed {
+            color: red;
+        }
+
+        .diff-header {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        #diff-modal .modal-content {
+            max-width: 800px;
+        }
+
+        .change-item {
+            cursor: pointer;
+            padding: 4px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .change-item:hover {
+            background: #f0f0f0;
+        }
+
+        .change-type {
+            display: inline-block;
+            width: 80px;
+            font-size: 0.8em;
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
@@ -142,6 +188,27 @@
         <div style="display: flex; gap: 10px; justify-content: flex-end;">
             <button class="secondary" onclick="hideModal()">Cancel</button>
             <button id="modal-submit" onclick="createVersion()">Create</button>
+        </div>
+    </div>
+</div>
+
+<div id="diff-modal" class="modal"
+     style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000;">
+    <div class="modal-content"
+         style="background: white; padding: 20px; border-radius: 8px; max-width: 900px; width: 90%; max-height: 90vh; overflow-y: auto;">
+        <h2>Version Inspection</h2>
+        <div id="diff-changes-list" style="margin-bottom: 20px;">
+            <!-- List of changed files -->
+        </div>
+        <div id="file-diff-view" style="display: none;">
+            <h3 id="current-diff-file"></h3>
+            <div id="diff-content" class="diff-container"></div>
+            <div style="margin-top: 10px; display: flex; gap: 10px;">
+                <button class="secondary" onclick="hideFileDiff()">Back to List</button>
+            </div>
+        </div>
+        <div id="diff-modal-actions" style="margin-top: 20px; display: flex; justify-content: flex-end;">
+            <button class="secondary" onclick="hideDiffModal()">Close</button>
         </div>
     </div>
 </div>
@@ -206,8 +273,72 @@
         }
     }
 
-    function viewDiff(id) {
-        alert('Diff view not yet implemented in this preview.');
+    async function viewDiff(id) {
+        const response = await fetch(`/api/versions/diff/${id}`);
+        const diff = await response.json();
+
+        const list = document.getElementById('diff-changes-list');
+        list.innerHTML = '<h3>Changes in this version:</h3>';
+
+        if (diff.added.length === 0 && diff.modified.length === 0 && diff.removed.length === 0) {
+            list.innerHTML += '<p>No changes detected.</p>';
+        }
+
+        const addItems = (items, type) => {
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'change-item';
+                div.innerHTML = `<span class="change-type" style="color: ${type === 'added' ? 'green' : type === 'removed' ? 'red' : 'orange'}">${type}</span> ${item.path}`;
+                div.onclick = () => showFileDiff(item.path, type === 'added' ? '' : (item.old_hash || item.hash), type === 'removed' ? '' : (item.new_hash || item.hash));
+                list.appendChild(div);
+            });
+        };
+
+        addItems(diff.added, 'added');
+        addItems(diff.modified, 'modified');
+        addItems(diff.removed, 'removed');
+
+        document.getElementById('diff-modal').style.display = 'flex';
+        document.getElementById('diff-changes-list').style.display = 'block';
+        document.getElementById('file-diff-view').style.display = 'none';
+    }
+
+    function hideDiffModal() {
+        document.getElementById('diff-modal').style.display = 'none';
+    }
+
+    async function showFileDiff(path, oldHash, newHash) {
+        document.getElementById('current-diff-file').innerText = path;
+        const response = await fetch(`/api/versions/file_diff?path=${encodeURIComponent(path)}&old_hash=${oldHash}&new_hash=${newHash}`);
+        const data = await response.json();
+
+        const diffContent = document.getElementById('diff-content');
+        diffContent.innerHTML = '';
+
+        if (data.diff) {
+            data.diff.split('\n').forEach(line => {
+                const span = document.createElement('div');
+                if (line.startsWith('+')) span.className = 'diff-added';
+                else if (line.startsWith('-')) span.className = 'diff-removed';
+                span.innerText = line;
+                diffContent.appendChild(span);
+            });
+        } else if (path.match(/\.(png|jpg|jpeg|gif|svg)$/i)) {
+            const img = document.createElement('img');
+            img.src = `/api/blob/${newHash || oldHash}`;
+            img.style.maxWidth = '100%';
+            diffContent.appendChild(img);
+        } else {
+            diffContent.innerText = 'No diff available or binary file.';
+        }
+
+        document.getElementById('diff-changes-list').style.display = 'none';
+        document.getElementById('file-diff-view').style.display = 'block';
+    }
+
+    function hideFileDiff() {
+        document.getElementById('diff-changes-list').style.display = 'block';
+        document.getElementById('file-diff-view').style.display = 'none';
     }
 
     loadVersions();
