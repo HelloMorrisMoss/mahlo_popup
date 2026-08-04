@@ -153,3 +153,20 @@ help_window/             # New directory for the help window component
     * **CLI Overrides**: Support command-line arguments to override the Flask port, content server URL, and instance
       role (server/subscriber), allowing multiple concurrent instances to run on the same development system for testing
       synchronization logic (HLP-052).
+
+## Testing & Regression
+
+1. **Unit Tests**:
+    - `tests/unit/test_sync_hash_bug.py`: Ensures that manifest SHA-256 hashes are calculated and stored as raw bytes to
+      prevent infinite synchronization loops caused by JSON re-serialization differences.
+    - `tests/unit/test_help_frame_refresh.py`: Verifies that the `HelpFrame` correctly identifies and reloads the active
+      article during a content refresh, preserving operator context.
+    - `tests/unit/test_content_manager_bug.py`: Ensures that system-critical files like `manifest.json` are excluded
+      from the scanned article list.
+2. **Integration Tests**:
+    - `tests/integration/test_sync.py`: Validates the full versioning and synchronization lifecycle (create, publish,
+      poll, download, verify, apply).
+    - `tests/integration/test_web_editor.py`: Confirms that the Flask-based editor interacts correctly with the
+      `ContentManager` and file system.
+3. **Automated Discovery**: All tests follow the `test_*.py` naming convention and are integrated into the
+   `unittest discover` suite for automated regression tracking.

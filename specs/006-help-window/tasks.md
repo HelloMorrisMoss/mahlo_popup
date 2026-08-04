@@ -128,3 +128,6 @@
 
 - [x] T052 [US10] Implement CLI overrides for Port, Server URL, and Role in run_help.py and help_app.py to support
   multi-instance testing (HLP-052)
+- [x] T053 [US10] Implement regression test `tests/unit/test_sync_hash_bug.py` for manifest hash stability
+- [x] T054 [US10] Implement regression test `tests/unit/test_help_frame_refresh.py` for UI reload persistence
+- [x] T055 [US10] Implement regression test `tests/unit/test_content_manager_bug.py` for file exclusion logic

@@ -1,5 +1,7 @@
+import hashlib
 import json
 import os
+import shutil
 import threading
 import time
 from typing import Dict, Optional, Callable
@@ -79,7 +81,7 @@ class SyncManager:
             new_hash = version_info.get("manifest_hash")
 
             if new_hash != self.current_version_hash:
-                lg.info(f"New version available: {new_hash}")
+                lg.info(f"New version available: {new_hash} - old version: {self.current_version_hash}")
                 if self._sync_version(new_hash):
                     if self.on_update_available:
                         self.on_update_available(new_hash)
@@ -97,7 +99,8 @@ class SyncManager:
             if m_resp.status_code != 200:
                 return False
 
-            manifest = m_resp.json()
+            manifest_content = m_resp.content
+            manifest = json.loads(manifest_content)
 
             # 2. Download missing blobs
             for rel_path, blob_hash in manifest.get("files", {}).items():
@@ -117,8 +120,8 @@ class SyncManager:
             if self.verify_manifest(manifest):
                 # Save the new manifest to staging
                 staging_manifest = os.path.join(self.staging_dir, "manifest.json")
-                with open(staging_manifest, "w") as f:
-                    json.dump(manifest, f)
+                with open(staging_manifest, "wb") as f:
+                    f.write(manifest_content)
                 return True
 
             return False
@@ -144,7 +147,6 @@ class SyncManager:
         Since we use CAS-based loading, 'applying' mostly means updating the manifest.json
         and ensuring all article JSON files are present in content_dir for scanning.
         """
-        import shutil
         staging_manifest_path = os.path.join(self.staging_dir, "manifest.json")
         if not os.path.exists(staging_manifest_path):
             return False
@@ -181,6 +183,3 @@ def get_file_hash(file_path: str) -> str:
         for byte_block in iter(lambda: f.read(4096), b""):
             sha256_hash.update(byte_block)
     return sha256_hash.hexdigest()
-
-
-import hashlib

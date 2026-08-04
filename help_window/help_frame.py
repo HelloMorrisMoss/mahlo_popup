@@ -21,6 +21,7 @@ class HelpFrame(ttk.Frame):
         self.parent = parent  # Usually the HelpApp (tk.Tk)
         self.enable_editor = enable_editor
         self.server_url = server_url
+        self.current_article = None
 
         # Control Bar (Top)
         self.controls = ttk.Frame(self, padding=5)
@@ -171,6 +172,14 @@ class HelpFrame(ttk.Frame):
         self.update_frame.pack_forget()
         self.content_manager.save_cache()
 
+        # Reload current article if it was changed
+        if self.current_article:
+            path = self.current_article.get("file_path")
+            updated_meta = next((a for a in articles if a.get("file_path") == path), None)
+            if updated_meta:
+                self.nav_frame.select_article(path)
+                self._on_article_selected(updated_meta)
+
     def _open_editor(self):
         """Opens the help content editor."""
         from help_window.editor.editor_manager import EditorManager
@@ -178,6 +187,7 @@ class HelpFrame(ttk.Frame):
 
     def _on_article_selected(self, article_meta: Dict):
         """Callback when an article is selected in the NavFrame."""
+        self.current_article = article_meta
         file_path = article_meta.get("file_path")
         title = article_meta.get("title", "Untitled")
         content = self.content_manager.load_article_content(file_path)
