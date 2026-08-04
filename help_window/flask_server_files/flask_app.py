@@ -1,21 +1,53 @@
 import json
 import os
+from functools import wraps
 
-from flask import Flask, jsonify, render_template, request, send_from_directory
+from flask import Flask, jsonify, render_template, request, send_from_directory, abort
 from werkzeug.utils import secure_filename
 
 from help_window.editor.file_manager import upload_media, delete_resource, rename_resource, move_resource, \
     consolidate_article_media
+from help_window.flask_server_files.models.version import db, ContentVersion
+from help_window.utils.cas_manager import CASManager
+from help_window.utils.config import get_settings, is_server
 from untracked_config.configuration_data import help_api_port
 
 
-def start_flask_server(app_instance):
+def require_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        # Only require auth if it's a server and we are accessing management pages
+        auth = request.authorization
+        settings = get_settings()
+        if not auth or not (auth.username == settings.get('admin_username') and
+                            auth.password == settings.get('admin_password')):
+            return jsonify({"message": "Authentication required"}), 401, {
+                'WWW-Authenticate': 'Basic realm="Login Required"'}
+        return f(*args, **kwargs)
+
+    return decorated
+
+
+def start_flask_server(app_instance, port=None):
     """Starts a minimal Flask server to handle cross-process signaling and web editor."""
     template_dir = os.path.join(os.path.dirname(__file__), "templates")
     static_dir = os.path.join(os.path.dirname(__file__), "static")
     flask_app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 
+    target_port = port or help_api_port
+
+    # Database configuration
+    db_path = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")), "help_versions.db")
+    flask_app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+    flask_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    db.init_app(flask_app)
+    with flask_app.app_context():
+        db.create_all()
+
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    content_dir = app_instance.content_manager.content_dir
+    cas_manager = CASManager(content_dir)
 
     def to_abs(path):
         if not path:
@@ -269,8 +301,74 @@ def start_flask_server(app_instance):
     @flask_app.route('/media/<path:filename>')
     def serve_media(filename):
         # Media can be in various places, but usually under help_content
-        content_dir = app_instance.content_manager.content_dir
         return send_from_directory(content_dir, filename)
 
+    # --- Versioning & Sync Endpoints ---
+
+    @flask_app.route('/versioning')
+    @require_auth
+    def versioning_page():
+        if not is_server():
+            abort(403, description="Only server instances can access versioning management.")
+        return render_template('versioning.html')
+
+    @flask_app.route('/api/published_version')
+    def get_published_version():
+        version = ContentVersion.query.filter_by(is_published=True).order_by(ContentVersion.timestamp.desc()).first()
+        if version:
+            return jsonify(version.to_dict())
+        return jsonify({"error": "No published version found"}), 404
+
+    @flask_app.route('/api/manifest/<hash>')
+    def get_manifest(hash):
+        manifest_path = cas_manager.get_blob_path(hash)
+        if os.path.exists(manifest_path):
+            return send_from_directory(cas_manager.blobs_dir, hash, mimetype='application/json')
+        return jsonify({"error": "Manifest not found"}), 404
+
+    @flask_app.route('/api/blob/<hash>')
+    def get_blob(hash):
+        blob_path = cas_manager.get_blob_path(hash)
+        if os.path.exists(blob_path):
+            return send_from_directory(cas_manager.blobs_dir, hash)
+        return jsonify({"error": "Blob not found"}), 404
+
+    @flask_app.route('/api/versions/history')
+    @require_auth
+    def get_version_history():
+        versions = ContentVersion.query.order_by(ContentVersion.timestamp.desc()).all()
+        return jsonify([v.to_dict() for v in versions])
+
+    @flask_app.route('/api/versions/create', methods=['POST'])
+    @require_auth
+    def create_version():
+        data = request.json
+        comment = data.get('comment', '')
+
+        # Create manifest and add all files to CAS
+        manifest_hash, manifest = cas_manager.create_manifest()
+
+        new_version = ContentVersion(comment=comment, manifest_hash=manifest_hash)
+        db.session.add(new_version)
+        db.session.commit()
+
+        return jsonify(new_version.to_dict())
+
+    @flask_app.route('/api/versions/publish', methods=['POST'])
+    @require_auth
+    def publish_version():
+        data = request.json
+        version_id = data.get('id')
+
+        # Unpublish others
+        ContentVersion.query.update({ContentVersion.is_published: False})
+
+        version = ContentVersion.query.get(version_id)
+        if version:
+            version.is_published = True
+            db.session.commit()
+            return jsonify(version.to_dict())
+        return jsonify({"error": "Version not found"}), 404
+
     # Run on a dedicated port for the help system
-    flask_app.run(host='0.0.0.0', port=help_api_port, debug=False, use_reloader=False)
+    flask_app.run(host='0.0.0.0', port=target_port, debug=False, use_reloader=False)

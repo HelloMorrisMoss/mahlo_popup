@@ -16,8 +16,9 @@ class ArticleViewer(ttk.Frame):
     Refined for the Help Window with support for internal links.
     """
 
-    def __init__(self, parent, on_link_click: Callable[[str], None] = None, **kwargs):
+    def __init__(self, parent, content_manager=None, on_link_click: Callable[[str], None] = None, **kwargs):
         super().__init__(parent, **kwargs)
+        self.content_manager = content_manager
         self.on_link_click = on_link_click
 
         # Title label above the content
@@ -98,7 +99,11 @@ class ArticleViewer(ttk.Frame):
 
     def _add_image(self, image_path: str, metadata: dict):
         """Internal method to add an image."""
-        resolved_path = resolve_resource_path(image_path)
+        if self.content_manager:
+            resolved_path = self.content_manager.resolve_resource_path(image_path)
+        else:
+            resolved_path = resolve_resource_path(image_path)
+
         if not os.path.isfile(resolved_path):
             self.text_area.insert("end", f"\n[Image not found: {image_path}]\n", "paragraph")
             return
@@ -123,7 +128,11 @@ class ArticleViewer(ttk.Frame):
 
     def _add_video(self, video_path: str, metadata: dict):
         """Internal method to add a video player."""
-        resolved_path = resolve_resource_path(video_path)
+        if self.content_manager:
+            resolved_path = self.content_manager.resolve_resource_path(video_path)
+        else:
+            resolved_path = resolve_resource_path(video_path)
+
         if not os.path.isfile(resolved_path):
             self.text_area.insert("end", f"\n[Video not found: {video_path}]\n", "paragraph")
             return

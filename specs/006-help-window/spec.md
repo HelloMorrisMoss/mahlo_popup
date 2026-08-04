@@ -13,6 +13,8 @@ integration.
 **Refined**: 2026-08-03 — Added User Story 10 and requirements HLP-037 to HLP-049 for centralized content
 synchronization and versioning.
 **Refined**: 2026-08-03 — Added requirement HLP-050 for headless mode support on server instances.
+**Refined**: 2026-08-03 — Added requirement HLP-051 for non-disruptive refresh during content updates.
+**Refined**: 2026-08-03 — Added requirement HLP-052 for port configurability to support multi-instance testing.
 
 **Input**: User description for a dynamically configurable help window suitable for industrial HMI touchscreens.
 
@@ -360,6 +362,13 @@ automatically without user intervention.
   be used for development, with PostgreSQL as the production target.
 - **HLP-050**: Headless Mode: The application MUST support a headless execution mode for server instances, allowing all
   backend services (Flask API, versioning, content distribution) to run without initializing a Tkinter GUI.
+- **HLP-051**: Non-Disruptive Refresh: If an operator is viewing an article when a new version is activated, the system
+  MUST NOT force a refresh that causes file lock errors or disrupts the operator. Instead, it SHOULD display a
+  non-obtrusive notification (e.g., a "New version available - Refresh" button) allowing the operator to switch to the
+  new content when they are ready.
+- **HLP-052**: CLI Overrides: The help system MUST allow overriding the default API port, target server URL, and
+  instance role (server/subscriber) via command-line arguments to support multiple concurrent instances on a single
+  machine for development and testing.
 
 ## Success Criteria *(mandatory)*
 

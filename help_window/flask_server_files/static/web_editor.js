@@ -1,6 +1,7 @@
 let currentArticlePath = null;
 let currentArticleData = [];
 let previousArticlePath = null;
+let expandedFolders = new Set(["Root"]); // Root expanded by default
 
 async function refreshArticleList() {
     const response = await fetch('/api/structure');
@@ -22,6 +23,7 @@ async function refreshArticleList() {
 function renderTreeNode(node) {
     const div = document.createElement('div');
     if (node.type === 'folder') {
+        const isExpanded = expandedFolders.has(node.path) || node.name === "Root";
         const header = document.createElement('div');
         header.className = 'folder-item' + (node.is_media ? ' media-folder' : '');
         header.dataset.path = node.path;
@@ -31,9 +33,18 @@ function renderTreeNode(node) {
             label += ` (${node.item_count || 0})`;
         }
 
-        header.innerHTML = `<span class="article-icon">${node.is_media ? '📁' : '📁'}</span> ${label}`;
+        const toggleIcon = isExpanded ? '▼' : '▶';
+        const folderIcon = node.is_media ? '📁' : (isExpanded ? '📂' : '📁');
+
+        header.innerHTML = `<span class="article-icon" style="cursor:pointer; width: 10px; display: inline-block;">${node.is_media ? '' : toggleIcon}</span> <span class="article-icon">${folderIcon}</span> ${label}`;
+        
         header.onclick = (e) => {
             e.stopPropagation();
+            if (e.target.innerText === '▶' || e.target.innerText === '▼' || (!node.is_media && e.detail > 1)) {
+                toggleFolder(node.path);
+                return;
+            }
+
             if (node.is_media) {
                 showMediaBrowser(node.path);
             } else {
@@ -44,6 +55,7 @@ function renderTreeNode(node) {
 
         const content = document.createElement('div');
         content.className = 'folder-content';
+        content.style.display = isExpanded ? 'block' : 'none';
 
         const children = node.children || [];
         children.sort((a, b) => {
@@ -68,6 +80,17 @@ function renderTreeNode(node) {
         div.appendChild(item);
     }
     return div;
+}
+
+function toggleFolder(path) {
+    if (expandedFolders.has(path)) {
+        expandedFolders.delete(path);
+    } else {
+        expandedFolders.add(path);
+    }
+    // We don't need to fetch from server just to toggle UI, but refreshArticleList does that.
+    // For now, let's just re-render from local state if we had it, but refresh is safer.
+    refreshArticleList();
 }
 
 async function loadArticle(path, title) {
@@ -331,8 +354,22 @@ function showModal(title, bodyHtml, footerHtml) {
 
 function hideModal() {
     document.getElementById('modal-overlay').style.display = 'none';
-    if (!currentArticlePath && previousArticlePath) {
-        // This handles cases where we might have unset selection
+
+    // HLP-036.4: Selection reversion logic
+    if (!currentArticlePath) {
+        // Find help_for_help or first available
+        findAndLoadDefaultArticle();
+    }
+}
+
+async function findAndLoadDefaultArticle() {
+    const response = await fetch('/api/articles');
+    const articles = await response.json();
+    let target = articles.find(a => a.file_path.includes('help_for_help.json'));
+    if (!target && articles.length > 0) target = articles[0];
+
+    if (target) {
+        loadArticle(target.file_path, target.title);
     }
 }
 

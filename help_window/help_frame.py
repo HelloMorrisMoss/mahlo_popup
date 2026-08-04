@@ -14,11 +14,13 @@ class HelpFrame(ttk.Frame):
     Contains NavFrame and ArticleViewer in a side-by-side layout.
     """
 
-    def __init__(self, parent, content_manager: ContentManager, enable_editor: bool = False, **kwargs):
+    def __init__(self, parent, content_manager: ContentManager, enable_editor: bool = False, server_url: str = None,
+                 **kwargs):
         super().__init__(parent, **kwargs)
         self.content_manager = content_manager
         self.parent = parent  # Usually the HelpApp (tk.Tk)
         self.enable_editor = enable_editor
+        self.server_url = server_url
 
         # Control Bar (Top)
         self.controls = ttk.Frame(self, padding=5)
@@ -76,7 +78,8 @@ class HelpFrame(ttk.Frame):
         self.paned.add(self.nav_frame, weight=1)
 
         # Right side: Content
-        self.viewer = ArticleViewer(self.paned, on_link_click=self._on_link_clicked)
+        self.viewer = ArticleViewer(self.paned, content_manager=self.content_manager,
+                                    on_link_click=self._on_link_clicked)
         self.paned.add(self.viewer, weight=4)
 
         # Load initial content
@@ -87,7 +90,19 @@ class HelpFrame(ttk.Frame):
         self._update_window_behavior()
 
         # Start background update check
-        self.after(5000, self._check_for_content_updates)
+        from help_window.utils.config import get_role
+        if get_role() == "subscriber":
+            from help_window.sync_manager import SyncManager
+            self.sync_manager = SyncManager(self.content_manager.content_dir,
+                                            on_update_available=self._on_sync_update,
+                                            server_url=self.server_url)
+            self.sync_manager.start()
+        else:
+            self.after(5000, self._check_for_content_updates)
+
+    def _on_sync_update(self, new_hash):
+        """Callback when SyncManager finds a verified update in staging."""
+        self.after(0, lambda: self.update_frame.pack(side="left", padx=20))
 
     def _check_for_content_updates(self):
         """Periodically checks for content updates on disk."""
@@ -147,7 +162,11 @@ class HelpFrame(ttk.Frame):
 
     def refresh_list(self):
         """Refreshes the article list from the content manager."""
-        articles = self.content_manager.scan_content()
+        if hasattr(self, 'sync_manager'):
+            self.sync_manager.apply_update()
+            self.content_manager.manifest = self.content_manager._load_manifest()
+
+        articles = self.content_manager.scan_content(force=True)
         self.nav_frame.populate(articles)
         self.update_frame.pack_forget()
         self.content_manager.save_cache()

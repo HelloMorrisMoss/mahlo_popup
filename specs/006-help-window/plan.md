@@ -144,7 +144,12 @@ help_window/             # New directory for the help window component
     * **CAS Distribution**: Content-Addressable Storage for blobs, enabling deduplication and integrity verification.
     * **Atomic Update Lifecycle**: Background download to staging -> Full integrity check -> Atomic switch to production
       content.
-    * **Exponential Backoff**: Subscribers implement backoff for retries when the server is unreachable, failing
-      silently
-      to the operator.
+    * **Non-Disruptive Refresh**: If the currently viewed article or media (videos/images) is updated in a new version,
+      the UI displays a notification instead of forcing a refresh, avoiding file lock issues on Windows and operator
+      disruption (HLP-051).
+    * **Exponential Backoff**: Subscribers poll the server for version updates (rather than just checking local
+      mtime), implementing backoff for retries when the server is unreachable, failing silently to the operator.
     * **Management UI**: Separate web page with Basic Auth for creating, inspecting (diffs), and publishing versions.
+    * **CLI Overrides**: Support command-line arguments to override the Flask port, content server URL, and instance
+      role (server/subscriber), allowing multiple concurrent instances to run on the same development system for testing
+      synchronization logic (HLP-052).

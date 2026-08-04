@@ -12,9 +12,34 @@ class ContentManager:
 
     def __init__(self, content_dir: str, cache_file: str = "help_cache.json"):
         self.content_dir = content_dir
+        self.blobs_dir = os.path.join(content_dir, "blobs")
         self.cache_file = cache_file
         self.articles = []  # List of article metadata
+        self.manifest = self._load_manifest()
         self.load_cache()
+
+    def _load_manifest(self) -> Dict:
+        manifest_path = os.path.join(self.content_dir, "manifest.json")
+        if os.path.exists(manifest_path):
+            try:
+                with open(manifest_path, "r") as f:
+                    return json.load(f)
+            except Exception:
+                return {}
+        return {}
+
+    def resolve_resource_path(self, rel_path: str) -> str:
+        """Resolves a relative path to either a blob (if manifest exists) or a local file."""
+        rel_path = rel_path.replace("\\", "/")
+        if self.manifest and "files" in self.manifest:
+            blob_hash = self.manifest["files"].get(rel_path)
+            if blob_hash:
+                blob_path = os.path.join(self.blobs_dir, blob_hash)
+                if os.path.exists(blob_path):
+                    return blob_path
+
+        # Fallback to direct path in content_dir
+        return os.path.join(self.content_dir, rel_path)
 
     def scan_content(self, force: bool = False) -> List[Dict]:
         """
@@ -35,7 +60,8 @@ class ContentManager:
             section = "" if rel_path == "." else rel_path
 
             for file in files:
-                if file.endswith(".json"):
+                # Ignore manifest.json and the cache file if it happens to be in this directory
+                if file.endswith(".json") and file != "manifest.json" and file != os.path.basename(self.cache_file):
                     file_path = os.path.join(root, file)
                     article_meta = self._parse_template_metadata(file_path, section)
                     articles.append(article_meta)
@@ -135,7 +161,8 @@ class ContentManager:
             rel_path = os.path.relpath(root, self.content_dir)
             section = "" if rel_path == "." else rel_path
             for file in files:
-                if file.endswith(".json"):
+                # Ignore manifest.json and the cache file
+                if file.endswith(".json") and file != "manifest.json" and file != os.path.basename(self.cache_file):
                     file_path = os.path.join(root, file)
                     on_disk_files[file_path] = os.path.getmtime(file_path)
 
