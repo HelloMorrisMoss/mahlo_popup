@@ -29,13 +29,11 @@ def require_auth(f):
     return decorated
 
 
-def start_flask_server(app_instance, port=None):
-    """Starts a minimal Flask server to handle cross-process signaling and web editor."""
+def create_app(app_instance):
+    """Creates and configures the Flask app instance."""
     template_dir = os.path.join(os.path.dirname(__file__), "templates")
     static_dir = os.path.join(os.path.dirname(__file__), "static")
     flask_app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
-
-    target_port = port or help_api_port
 
     # Database configuration
     db_path = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")), "help_versions.db")
@@ -471,7 +469,13 @@ def start_flask_server(app_instance, port=None):
 
         return jsonify({"diff": "\n".join(diff)})
 
-    # Run on a dedicated port for the help system
+    return flask_app
+
+
+def start_flask_server(app_instance, port=None):
+    """Starts a minimal Flask server to handle cross-process signaling and web editor."""
+    flask_app = create_app(app_instance)
+    target_port = port or help_api_port
     if ON_DEV_NODE:  # hot reload for dev
         flask_app.run(host='127.0.0.1', port=target_port, debug=False, use_reloader=False)
     else:  # use waitress for a production server
