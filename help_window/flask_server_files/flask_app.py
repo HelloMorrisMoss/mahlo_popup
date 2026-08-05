@@ -438,6 +438,10 @@ def start_flask_server(app_instance, port=None):
         new_hash = request.args.get('new_hash')
         path = request.args.get('path', '')
 
+        # Only articles and text files get a text diff
+        if not path.lower().endswith(('.json', '.txt')):
+            return jsonify({"diff": None})
+
         def get_content(h):
             if not h:
                 return ""

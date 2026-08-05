@@ -154,6 +154,46 @@
             font-size: 0.8em;
             text-transform: uppercase;
         }
+
+        /* Image Diff Styles */
+        .image-diff-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            padding: 10px;
+        }
+
+        .image-diff-item {
+            text-align: center;
+            flex: 1;
+            min-width: 250px;
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ddd;
+        }
+
+        .image-diff-item img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #eee;
+            margin-top: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .image-diff-label {
+            font-weight: bold;
+            font-size: 0.9em;
+            color: #555;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -314,6 +354,9 @@
 
         const diffContent = document.getElementById('diff-content');
         diffContent.innerHTML = '';
+        diffContent.style.fontFamily = 'monospace';
+        diffContent.style.whiteSpace = 'pre-wrap';
+        diffContent.style.background = '#f8f8f8';
 
         if (data.diff) {
             data.diff.split('\n').forEach(line => {
@@ -324,10 +367,40 @@
                 diffContent.appendChild(span);
             });
         } else if (path.match(/\.(png|jpg|jpeg|gif|svg)$/i)) {
-            const img = document.createElement('img');
-            img.src = `/api/blob/${newHash || oldHash}`;
-            img.style.maxWidth = '100%';
-            diffContent.appendChild(img);
+            diffContent.style.fontFamily = 'inherit';
+            diffContent.style.whiteSpace = 'normal';
+            diffContent.style.background = 'transparent';
+
+            if (oldHash && newHash && oldHash !== newHash) {
+                const container = document.createElement('div');
+                container.className = 'image-diff-container';
+
+                const oldItem = document.createElement('div');
+                oldItem.className = 'image-diff-item';
+                oldItem.innerHTML = '<span class="image-diff-label">Previous</span>';
+                const oldImg = document.createElement('img');
+                oldImg.src = `/api/blob/${oldHash}`;
+                oldItem.appendChild(oldImg);
+
+                const newItem = document.createElement('div');
+                newItem.className = 'image-diff-item';
+                newItem.innerHTML = '<span class="image-diff-label">Current</span>';
+                const newImg = document.createElement('img');
+                newImg.src = `/api/blob/${newHash}`;
+                newItem.appendChild(newImg);
+
+                container.appendChild(oldItem);
+                container.appendChild(newItem);
+                diffContent.appendChild(container);
+            } else {
+                const img = document.createElement('img');
+                img.src = `/api/blob/${newHash || oldHash}`;
+                img.style.maxWidth = '100%';
+                img.style.display = 'block';
+                img.style.margin = '0 auto';
+                img.style.border = '1px solid #ddd';
+                diffContent.appendChild(img);
+            }
         } else {
             diffContent.innerText = 'No diff available or binary file.';
         }
