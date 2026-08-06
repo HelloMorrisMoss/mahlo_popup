@@ -36,8 +36,11 @@ A standalone, dynamically configurable help system that runs as a separate OS pr
 - **Process Model**: Launched as a separate process via `run_help.py`.
 - **Components**:
   - `HelpApp`: Process entry point and Tkinter application.
-  - `flask_server_files/`: Flask server for inter-process signaling (Bring-to-Front) and a web-based article editor.
-  - `editor/`: WYSIWYG article editor and file management utilities.
+  - `flask_server_files/`: Flask server for inter-process signaling (Bring-to-Front).
+    - *Note*: The web-based article editor previously located here is **DEPRECATED** and has been migrated to the
+      `mahlo_defect_lookup_table` Management Hub.
+  - `editor/`: **DEPRECATED**. WYSIWYG article editor and file management utilities. Content management is now handled
+    via the Management Hub.
   - `ContentManager`: handles recursive scanning of JSON templates and multi-level caching.
   - `HelpFrame`: Main UI container with background synchronization loops.
 - **Independence**: Isolation ensures that help system operations (like media playback or editing) do not impact the

@@ -6,6 +6,10 @@
 **Propagated**: 2026-07-22 — Implemented mandatory title block and updated editor to enforce it.
 **Propagated**: 2026-07-24 — Added web-based article editor implementation details.
 **Propagated**: 2026-08-03 — Added content synchronization, versioning, and headless mode implementation details.
+**Propagated**: 2026-08-06 — **DEPRECATION**: The web editor, editor manager, and versioning logic are DEPRECATED in
+this
+project and migrated to the `mahlo_defect_lookup_table` Management Hub. The "Edit Content" button in the Tk interface
+is disabled.
 
 ## Summary
 
@@ -116,7 +120,7 @@ help_window/             # New directory for the help window component
       Subsequent launch attempts will send a GET request to `localhost:5005/bring_to_front` before exiting.
     * **Focus Management**: Upon receiving the signal, the existing `HelpApp` calls `lift()` and `focus_force()`
       to appear on top of the full-screen HMI.
-10. **Web-based Article Editor**:
+10. **Web-based Article Editor (DEPRECATED)**:
     * **Single-Page Application (SPA)**: Implemented using Flask, Jinja2 templates, and vanilla JavaScript (or a
       lightweight framework if needed).
     * **Three-Pane Layout**:
@@ -134,7 +138,7 @@ help_window/             # New directory for the help window component
     * **Shared Backend**: Reuses `ContentManager` and `FileManager` logic via Flask routes to ensure consistency between
       the Tk and web interfaces.
     * **Media Upload**: Uses standard HTML file inputs to handle media imports into the designated folders.
-11. **Content Synchronization & Versioning**:
+11. **Content Synchronization & Versioning (DEPRECATED Management)**:
     * **Role Designation**: Server vs. Subscriber role defined in `untracked_config/settings.json`.
     * **Headless Mode Support**: `run_help.py` supports a GUI-less mode for server instances to host the distribution
       API

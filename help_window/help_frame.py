@@ -44,14 +44,14 @@ class HelpFrame(ttk.Frame):
         )
         self.toggle_nav_btn.pack(side="left", padx=10)
 
-        # Content Editor Button
-        self.edit_btn = ttk.Button(
-            self.controls,
-            text="Edit Content",
-            command=self._open_editor
-        )
-        if self.enable_editor:
-            self.edit_btn.pack(side="left", padx=10)
+        # Content Editor Button (DEPRECATED - Moved to Management Hub)
+        # self.edit_btn = ttk.Button(
+        #     self.controls,
+        #     text="Edit Content",
+        #     command=self._open_editor
+        # )
+        # if self.enable_editor:
+        #     self.edit_btn.pack(side="left", padx=10)
 
         # Update Notification (Hidden by default)
         self.update_frame = ttk.Frame(self.controls)

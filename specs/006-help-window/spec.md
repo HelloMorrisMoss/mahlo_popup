@@ -15,6 +15,9 @@ synchronization and versioning.
 **Refined**: 2026-08-03 — Added requirement HLP-050 for headless mode support on server instances.
 **Refined**: 2026-08-03 — Added requirement HLP-051 for non-disruptive refresh during content updates.
 **Refined**: 2026-08-03 — Added requirement HLP-052 for port configurability to support multi-instance testing.
+**Refined**: 2026-08-06 — **DEPRECATION NOTICE**: The web-based article editor (User Story 9) and all content management
+functionality (versioning, publishing) have been migrated to the `mahlo_defect_lookup_table` Management Hub. The local
+editor implementation in this project is no longer maintained and will be removed in a future release.
 
 **Input**: User description for a dynamically configurable help window suitable for industrial HMI touchscreens.
 
@@ -181,7 +184,7 @@ process.
 
 ---
 
-### User Story 9 - Web-based Article Editor (Priority: P4)
+### User Story 9 - Web-based Article Editor (DEPRECATED)
 
 As a remote content maintainer, I want a web-based editor so that I can manage help articles from any computer with a
 browser without needing the Tkinter application installed.
@@ -292,7 +295,8 @@ automatically without user intervention.
 
 ### Web-based Editor Requirements
 
-- **HLP-030**: Web-based Article Editor: The system MUST provide a Flask-based web interface for managing and editing
+- **HLP-030**: [DEPRECATED] Web-based Article Editor: The system MUST provide a Flask-based web interface for managing
+  and editing
   help articles.
 - **HLP-031**: Single Window Interface: The web editor MUST operate within a single browser window/tab using a
   three-pane layout (Navigation, Editor, Preview).
