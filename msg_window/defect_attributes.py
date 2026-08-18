@@ -153,49 +153,55 @@ class LengthSetFrames(ttk.Frame):
         if self._internal_update_running:
             self._internal_update_running = False
             return
-        else:
-            self._internal_update_running = True
 
-        # if there are no previous length changes, save this one and do nothing else
-        if not self._last_set_lengths:
+        self._internal_update_running = True
+        try:
+            # if there are no previous length changes, save this one and do nothing else
+            if not self._last_set_lengths:
+                lg.debug('no previous lengths, saving this one')
+                self._last_set_lengths.append(this_length)
+                return
+
+            # if this is not the same length changed as last time, add it to the list
+            if this_length != self._last_set_lengths[-1]:
+                lg.debug('new length %s, adding to list', this_length)
+                self._last_set_lengths.append(this_length)
+                lg.debug('current _last_set_lengths %s', self._last_set_lengths)
+
+            # if there are more than 2, remove the oldest
+            lg.debug('current _last_set_lengths %s', self._last_set_lengths)
+            if len(self._last_set_lengths) > 2:
+                oldest = self._last_set_lengths[0]
+                self._last_set_lengths = self._last_set_lengths[-2:]  # get rid of extras
+                lg.debug('removing oldest length changed: %s', oldest)
+
+                # case 1: start and end lengths -> subtract end from start, set total to that
+                # case 2: start and total - > add start and total, set end to that
+                # case 3: end and total -> subtract end from total, set start to that
+                # if they changed report in the middle of this then anything with the end could be weird
+
+                # need the field_name from tuples that isn't in last set lengths
+            if self.toggle_auto_fill_lengths.get():
+                def which_is_missing():
+                    for field_name, _ in self._length_set_tuples:
+                        if field_name not in self._last_set_lengths:
+                            return field_name
+
+                from operator import add, sub
+
+                missing_value_string = which_is_missing()
+
+                if missing_value_string == 'length_of_defect_meters':
+                    field_names = 'mahlo_end_length', 'mahlo_start_length'
+                    self.reconcile_values(*field_names, sub, missing_value_string)
+                elif missing_value_string == 'mahlo_end_length':
+                    field_names = 'mahlo_start_length', 'length_of_defect_meters'
+                    self.reconcile_values(*field_names, add, missing_value_string)
+                elif missing_value_string == 'mahlo_start_length':
+                    field_names = 'mahlo_end_length', 'length_of_defect_meters'
+                    self.reconcile_values(*field_names, sub, missing_value_string)
+        finally:
             self._internal_update_running = False
-            self._last_set_lengths.append(this_length)
-            return
-
-        # if this is not the same length changed as last time, add it to the list
-        if this_length != self._last_set_lengths[-1]:
-            self._last_set_lengths.append(this_length)
-
-        # if there are more than 2, remove the oldest
-        lg.debug('current _last_set_lengths %s', self._last_set_lengths)
-        if len(self._last_set_lengths) > 2:
-            self._last_set_lengths = self._last_set_lengths[-2:]  # get rid of extras
-
-            # case 1: start and end lengths -> subtract end from start, set total to that
-            # case 2: start and total - > add start and total, set end to that
-            # case 3: end and total -> subtract end from total, set start to that
-            # if they changed report in the middle of this then anything with the end could be weird
-
-            # need the field_name from tuples that isn't in last set lengths
-        if self.toggle_auto_fill_lengths.get():
-            def which_is_missing():
-                for field_name, _ in self._length_set_tuples:
-                    if field_name not in self._last_set_lengths:
-                        return field_name
-
-            from operator import add, sub
-
-            missing_value_string = which_is_missing()
-
-            if missing_value_string == 'length_of_defect_meters':
-                field_names = 'mahlo_end_length', 'mahlo_start_length'
-                self.reconcile_values(*field_names, sub, missing_value_string)
-            elif missing_value_string == 'mahlo_end_length':
-                field_names = 'mahlo_start_length', 'length_of_defect_meters'
-                self.reconcile_values(*field_names, add, missing_value_string)
-            elif missing_value_string == 'mahlo_start_length':
-                field_names = 'mahlo_end_length', 'length_of_defect_meters'
-                self.reconcile_values(*field_names, sub, missing_value_string)
 
     def reconcile_values(self, field_name1, field_name2, operation, missing_field_name):
         lg.debug('reconciling values for %s, %s, %s, %s', field_name1, field_name2, operation, missing_field_name)
@@ -203,8 +209,13 @@ class LengthSetFrames(ttk.Frame):
         # these_values_dict = {f: self._length_set_frames[f]['StringVar'] for f, _ in self._length_set_tuples}
         first_var = self._length_set_frames[field_name1]['StringVar']
         second_var = self._length_set_frames[field_name2]['StringVar']
-        first_value = float(first_var.get())
-        second_value = float(second_var.get())
+        first_value = first_var.get()
+        second_value = second_var.get()
+
+        if first_value is None or second_value is None:
+            lg.debug('skipping reconciliation: one or more values are None: %s, %s', first_value, second_value)
+            return
+
         new_val_float = round(operation(first_value, second_value), 2)
         if new_val_float > 0:
             new_value = str(new_val_float)
