@@ -90,8 +90,10 @@ class UpDownButtonFrame(tk.ttk.LabelFrame):
         :param args: tuple, unused tkinter arguments.
         """
         new_val = self.length_var.get()
+        if new_val is None:
+            return
         try:
-            new_value = float(new_val)
+            new_value = new_val
             if new_value < 0.0:
                 lg.warning('This value can not be negative!')
                 new_value = 0.0
