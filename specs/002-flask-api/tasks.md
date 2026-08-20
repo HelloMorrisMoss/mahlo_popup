@@ -1,3 +1,5 @@
+**Propagated**: 2026-08-20 — Added tasks for defect attribution and insertion reporting.
+
 # Tasks: Flask REST API
 
 **Propagated**: 2026-07-15 — Updated from spec.md refinement (Host System Watchdog and PDF Report Monitoring Service)
@@ -35,6 +37,12 @@
 
 - [x] T017 [US5] Implement PDF discovery logic for `pdf_root_directory` and date subfolders
 - [x] T018 [US5] Implement `HostMonitor` resource for `/host_monitor` endpoint
+
+## Phase 8: User Stories 6 & 7 - Usage Tracking
+- [ ] T019 [P] [US6] Update `DefectList.get` to accept `source` parameter
+- [ ] T020 [US6] Implement logging logic for `DefectQueryLogModel` in `DefectList.get`
+- [ ] T021 [P] [US7] Implement `DefectInsertion` resource for `POST /defect/insertion` (must support list of defect IDs)
+- [ ] T022 [US7] Register `DefectInsertion` resource in `flask_app.py`
 
 ## Phase N: Polish & Gaps
 - [ ] T012 Implement robust API authentication/security

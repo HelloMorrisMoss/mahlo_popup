@@ -9,6 +9,7 @@
 endpoint.
 **Refined**: 2026-07-15 — Updated PrintSVR.exe watchdog requirements to ensure independent process detachment and
 correct working directory.
+**Refined**: 2026-08-20 — Added requirements for defect query source tracking and a new endpoint for reporting defect insertions into reports.
 
 **Input**: User description: "The backend service for the Mahlo Popup application, implemented using Flask and Flask-Restful."
 
@@ -16,7 +17,7 @@ correct working directory.
 
 ### User Story 1 - Defect Management (Priority: P1)
 
-As a system, I want to manage defect records through a REST API so that data can be persisted and retrieved reliably.
+As a system administrator, I want to manage defect records through a REST API so that data can be persisted and retrieved reliably.
 **Why this priority**: Core data management function.
 **Independent Test**: Use `curl` or `requests` to POST a defect to `/defect` and verify it is saved in the database.
 
@@ -75,6 +76,22 @@ detected.
 2. **Given** no new PDF file exists, **When** `GET /host_monitor` is called, **Then** it returns
    `new_report_found: false`.
 
+---
+
+### User Story 6 - Defect Query Attribution (Priority: P3)
+
+As a system administrator, I want defect queries to include a source identifier so that I can track which client (popup, parser, or lookup table) is requesting data.
+**Why this priority**: Auditing and debugging of data flow.
+**Independent Test**: Send a GET request to `/defects` with a `source` parameter and verify the query is logged.
+
+---
+
+### User Story 7 - Defect Insertion Reporting (Priority: P3)
+
+As a system administrator, I want external report generators (like `mahlo_pdf_parser`), to notify the system when one or more defects have been successfully inserted into a report so that usage can be tracked.
+**Why this priority**: Verification of end-to-end defect processing.
+**Independent Test**: POST a list of defect IDs and a report name to `/defect/insertion` and verify they are accepted and logged.
+
 ### Edge Cases
 
 - Port conflict when starting multiple instances.
@@ -88,10 +105,12 @@ detected.
 
 ### API Requirements (Flask)
 
-- **API-001**: Implement REST endpoints using Flask-Restful: `/defect`, `/popup`, `/operator`, `/database`.
+- **API-001**: Implement REST endpoints using Flask-Restful: `/defect`, `/defects`, `/popup`, `/operator`, `/database`.
 - **API-002**: Use Waitress as the WSGI server.
 - **API-003**: Implement `check_that_port_is_mine` logic for instance locking.
 - **API-004**: Implement `/host_monitor` endpoint with PDF creation check logic.
+- **API-005**: The `GET /defects` endpoint MUST accept a `source` query parameter.
+- **API-006**: Implement `POST /defect/insertion` endpoint to record one or more defect usage records in reports.
 
 ### Database Migrations (SQLAlchemy)
 
@@ -119,6 +138,8 @@ detected.
 - **SC-003**: Multi-instance conflicts are detected and resolved.
 - **SC-004**: `PrintSVR.exe` is automatically restarted if it stops, or a failure is reported.
 - **SC-005**: `/host_monitor` correctly reports the presence of new PDF files within the configured window.
+- **SC-006**: `/defects` endpoint correctly processes and logs the `source` parameter.
+- **SC-007**: `/defect/insertion` successfully persists insertion records to the database.
 
 ## Assumptions
 

@@ -1,3 +1,5 @@
+**Propagated**: 2026-08-20 — Updated from spec.md refinement (Defect Query Attribution and Insertion Reporting)
+
 # Implementation Plan: Flask REST API
 
 **Propagated**: 2026-07-15 — Updated from spec.md refinement (Host System Watchdog and PDF Report Monitoring Service)
@@ -69,3 +71,5 @@ flask_server_files/
    popup closes.
 7. **PDF Report Monitoring Service**: Provides a mechanism to scan the local filesystem for recently generated PDF
    reports based on date-named directory patterns and creation time windows.
+8. **Defect Query Attribution**: The `GET /defects` endpoint will be updated to accept an optional `source` query parameter. If provided, the system will record an entry in `DefectQueryLogModel` for every defect record returned in the result set.
+9. **Defect Insertion Reporting**: A new `POST /defect/insertion` endpoint will be implemented to receive notifications from external report generators. This endpoint will accept a payload containing a list of `defect_id`s and a `report_name`, and will persist these in the `DefectInsertionLogModel`.

@@ -1,3 +1,5 @@
+**Propagated**: 2026-08-20 — Added tasks for usage-tracking log models.
+
 # Tasks: Database Models & ORM
 
 **Input**: Design documents from `/specs/005-database-models/`
@@ -18,6 +20,11 @@
 ## Phase 4: User Story 2 - Operator Management
 - [x] T008 [P] [US2] Define `OperatorModel` for staff management
 - [x] T009 [US2] Implement CRUD helpers for operators
+
+## Phase 5: User Stories 3 & 4 - Usage Tracking
+- [ ] T014 [P] [US3] Define `DefectQueryLogModel` with defect_id, timestamp, and source fields
+- [ ] T015 [P] [US4] Define `DefectInsertionLogModel` with defect_id, timestamp, and report_name fields
+- [ ] T016 [US3/4] Establish foreign key relationships in `DefectModel`
 
 ## Phase N: Polish & Gaps
 - [x] T010 Create integration tests for `DefectModel`

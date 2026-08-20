@@ -1,10 +1,12 @@
+**Propagated**: 2026-08-20 — Updated plan to include DefectQueryLogModel and DefectInsertionLogModel for tracking usage.
+
 # Implementation Plan: Database Models & ORM
 
 **Branch**: `production` | **Date**: 2026-07-10 | **Spec**: [specs/005-database-models/spec.md]
 
 ## Summary
 
-This feature defines the SQLAlchemy ORM models for the application, specifically `DefectModel` and `OperatorModel`, and provides a wrapper for common database operations.
+This feature defines the SQLAlchemy ORM models for the application, specifically `DefectModel`, `OperatorModel`, and tracking models `DefectQueryLogModel` and `DefectInsertionLogModel`.
 
 ## Technical Context
 
@@ -60,3 +62,5 @@ flask_server_files/models/
 3. **Query Helpers**: Class methods like `find_by_id`, `find_new`, and `find_all` abstract the SQLAlchemy session queries.
 4. **Timestamping**: Utilize `func.current_timestamp()` and `onupdate` parameters for automatic timestamp management.
 5. **Session Scoping**: Implement `teardown_appcontext` in Flask to ensure sessions are removed after each request.
+6. **Query Tracking**: `DefectQueryLogModel` will include `defect_id` (FK to `DefectModel.id`), `timestamp`, and `source`. A relationship will be added to `DefectModel` for easy access to its query history.
+7. **Insertion Tracking**: `DefectInsertionLogModel` will include `defect_id` (FK to `DefectModel.id`), `timestamp`, and `report_name`.
