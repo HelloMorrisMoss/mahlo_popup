@@ -11,7 +11,7 @@ from flask_restful import Api
 from flask_server_files.queuesholder import queues
 from flask_server_files.resources.btn_msg import ButtonMessage
 from flask_server_files.resources.database import Database
-from flask_server_files.resources.defect import Defect, DefectList
+from flask_server_files.resources.defect import Defect, DefectList, DefectInsertion
 from flask_server_files.resources.host_monitor import HostMonitor
 from flask_server_files.resources.lam_operator import Operator, Operators
 from flask_server_files.resources.signal_popup import Popup
@@ -35,6 +35,7 @@ api = Api(app)
 api.add_resource(Defect, '/defect')
 api.add_resource(Popup, '/popup')
 api.add_resource(DefectList, '/defects')
+api.add_resource(DefectInsertion, '/defect/insertion')
 api.add_resource(Database, '/database')
 api.add_resource(Operator, '/operator')
 api.add_resource(Operators, '/operators')

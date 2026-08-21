@@ -2,6 +2,7 @@ import datetime
 
 import sqlalchemy
 from sqlalchemy import func
+from sqlalchemy.orm import relationship
 
 from dev_common import exception_one_line
 from flask_server_files.helpers import jsonize_sqla_model
@@ -52,6 +53,9 @@ class DefectModel(Base):
     operator_initials = sqlalchemy.Column(sqlalchemy.String)
     operator_list_id = sqlalchemy.Column(sqlalchemy.Integer)
     shift_number = sqlalchemy.Column(sqlalchemy.Integer)
+
+    query_logs = relationship("DefectQueryLogModel", back_populates="defect")
+    insertion_logs = relationship("DefectInsertionLogModel", back_populates="defect")
 
     def __init__(self, **kwargs):
         # for the kwargs provided, assign them to the corresponding columns
@@ -165,6 +169,56 @@ class DefectModel(Base):
 
     def jsonizable(self):
         return jsonize_sqla_model(self)
+
+
+class DefectQueryLogModel(Base):
+    """A model to log when defect records are returned in a query."""
+    __tablename__ = 'defect_query_logs'
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    defect_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('laminator_foam_defect_removal_records.id'),
+                                  nullable=False)
+    timestamp = sqlalchemy.Column(sqlalchemy.DateTime(timezone=True), server_default=func.current_timestamp())
+    source = sqlalchemy.Column(sqlalchemy.String)
+
+    defect = relationship("DefectModel", back_populates="query_logs")
+
+    def __init__(self, **kwargs):
+        for kw, val in kwargs.items():
+            setattr(self, kw, val)
+
+    def save_to_database(self):
+        self.session.add(self)
+        try:
+            self.session.commit()
+        except Exception as exc:
+            lg.error(exception_one_line(exception_obj=exc))
+            self.session.rollback()
+
+
+class DefectInsertionLogModel(Base):
+    """A model to log when defect records are inserted into a report."""
+    __tablename__ = 'defect_insertion_logs'
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    defect_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('laminator_foam_defect_removal_records.id'),
+                                  nullable=False)
+    timestamp = sqlalchemy.Column(sqlalchemy.DateTime(timezone=True), server_default=func.current_timestamp())
+    report_name = sqlalchemy.Column(sqlalchemy.String)
+
+    defect = relationship("DefectModel", back_populates="insertion_logs")
+
+    def __init__(self, **kwargs):
+        for kw, val in kwargs.items():
+            setattr(self, kw, val)
+
+    def save_to_database(self):
+        self.session.add(self)
+        try:
+            self.session.commit()
+        except Exception as exc:
+            lg.error(exception_one_line(exception_obj=exc))
+            self.session.rollback()
 
 
 if __name__ == '__main':

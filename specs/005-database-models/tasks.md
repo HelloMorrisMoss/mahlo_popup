@@ -22,12 +22,17 @@
 - [x] T009 [US2] Implement CRUD helpers for operators
 
 ## Phase 5: User Stories 3 & 4 - Usage Tracking
-- [ ] T014 [P] [US3] Define `DefectQueryLogModel` with defect_id, timestamp, and source fields
-- [ ] T015 [P] [US4] Define `DefectInsertionLogModel` with defect_id, timestamp, and report_name fields
-- [ ] T016 [US3/4] Establish foreign key relationships in `DefectModel`
+- [x] T014 [P] [US3] Define `DefectQueryLogModel` with defect_id, timestamp, and source fields
+- [x] T015 [P] [US4] Define `DefectInsertionLogModel` with defect_id, timestamp, and report_name fields
+- [x] T016 [US3/4] Establish foreign key relationships in `DefectModel`
+
+## Phase 6: Database Migration
+- [x] T017 Create standalone migration script `migrate_defect_logs.py`
+- [x] T018 Execute migration on development database and verify data integrity
+- [x] T019 Document production migration procedure
 
 ## Phase N: Polish & Gaps
 - [x] T010 Create integration tests for `DefectModel`
-- [ ] T011 Implement database migrations using Alembic
+- [ ] T011 Implement database migrations using Alembic (Long-term)
 - [ ] T012 Refactor `ModelWrapper` for SQLAlchemy 2.0
 - [ ] T013 Add unit tests for `OperatorModel`

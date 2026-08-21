@@ -64,3 +64,25 @@ flask_server_files/models/
 5. **Session Scoping**: Implement `teardown_appcontext` in Flask to ensure sessions are removed after each request.
 6. **Query Tracking**: `DefectQueryLogModel` will include `defect_id` (FK to `DefectModel.id`), `timestamp`, and `source`. A relationship will be added to `DefectModel` for easy access to its query history.
 7. **Insertion Tracking**: `DefectInsertionLogModel` will include `defect_id` (FK to `DefectModel.id`), `timestamp`, and `report_name`.
+
+## Migration Strategy
+
+To ensure zero data loss in the existing `laminator_foam_defect_removal_records` table:
+
+1. **Standalone Script**: Use a migration script that leverages SQLAlchemy's `create_all()` method.
+2. **Safety Mechanism**: `create_all()` uses `checkfirst=True` by default, which creates tables only if they do not exist.
+3. **ORM Relationships**: Relationships defined in Python code do not affect the physical database schema of existing tables; they only define how SQLAlchemy navigates the data.
+4. **Foreign Keys**: These are defined in the new tables, pointing to the existing table's ID, which is a non-destructive operation.
+5. **Verification**: The migration script will query the existing table before and after the operation to confirm data integrity.
+
+## Production Migration Procedure
+
+To apply these changes to the production server:
+
+1. **Backup**: Perform a full backup of the production database.
+2. **Environment**: Ensure the production environment has updated dependencies (`flask-sqlalchemy`, `psycopg2-binary`).
+3. **Execution**: Run the `scripts/db_migration_defect_logs.py` script.
+   - This script is designed to be idempotent and safe; it only creates the two new tracking tables.
+   - It will NOT alter or delete any data in `laminator_foam_defect_removal_records`.
+4. **Verification**: Confirm the script reports "SUCCESS" for both table creation and data integrity verification.
+5. **Deployment**: Deploy the updated `mahlo_popup` code to the production server.
