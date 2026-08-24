@@ -135,10 +135,10 @@
 
 ## Phase 12: Touch Screen Scrolling Support
 
-- [ ] T056 [US11] Implement touch scrolling in `NavFrame` using `scan_mark`/`scan_dragto` (HLP-053)
-- [ ] T057 [US11] Implement touch scrolling in `ArticleViewer` using `scan_mark`/`scan_dragto` and `bindtags` (HLP-053,
+- [x] T056 [US11] Implement touch scrolling in `NavFrame` with vertical axis locking (HLP-053, HLP-055)
+- [x] T057 [US11] Implement touch scrolling in `ArticleViewer` with axis stability and `bindtags` (HLP-053, HLP-054,
+  HLP-055)
+- [x] T058 [US11] Implement tap vs. swipe threshold logic to distinguish between scrolling and selection/link clicks (
   HLP-054)
-- [ ] T058 [US11] Implement tap vs. swipe threshold logic to distinguish between scrolling and selection/link clicks (
-  HLP-054)
-- [ ] T059 [US11] Verify touch scrolling interoperability with video controls (HLP-054)
-- [ ] T060 [US11] Perform manual verification on touch-enabled device or using touch emulation (SC-009)
+- [x] T059 [US11] Verify touch scrolling interoperability with video controls (HLP-054)
+- [x] T060 [US11] Perform manual verification on touch-enabled device or using touch emulation (SC-009)

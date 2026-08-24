@@ -18,7 +18,7 @@ synchronization and versioning.
 **Refined**: 2026-08-06 — **DEPRECATION NOTICE**: The web-based article editor (User Story 9) and all content management
 functionality (versioning, publishing) have been migrated to the `mahlo_defect_lookup_table` Management Hub. The local
 editor implementation in this project is no longer maintained and will be removed in a future release.
-**Refined**: 2026-08-24 — Added requirements for touch screen scrolling in navigation and articles.
+**Refined**: 2026-08-24 — Added requirements for axis-locked touch screen scrolling and interoperability.
 
 **Input**: User description for a dynamically configurable help window suitable for industrial HMI touchscreens.
 
@@ -258,6 +258,8 @@ controls accidentally.
    link/video) and moved up/down, **Then** the article scrolls without triggering the link or video controls.
 4. **Given** a video player, **When** a finger is tapped on the controls, **Then** the video action is triggered instead
    of scrolling.
+5. **Given** a narrow UI pane (e.g., Navigation), **When** a finger is moved vertically but with some horizontal jitter,
+   **Then** the pane scrolls vertically only, staying stable without horizontal "wiggling".
 
 ## Requirements *(mandatory)*
 
@@ -400,6 +402,8 @@ controls accidentally.
 - **HLP-054**: Scrolling Interoperability: Touch scrolling MUST NOT interfere with tap-based interactions (links,
   navigation selection, media controls). The system SHOULD distinguish between a "swipe" (scrolling) and a "tap" (
   action).
+- **HLP-055**: Axis-Locked Scrolling: To ensure stability on touch screens, scrolling SHOULD be locked to the primary
+  movement axis (vertical) for narrow UI components like the navigation tree, preventing unintended horizontal drifting.
 
 ## Success Criteria *(mandatory)*
 
@@ -411,7 +415,7 @@ controls accidentally.
 - **SC-006**: Single Instance: Only one Help Window process exists at any given time.
 - **SC-007**: Content synchronization completes without interrupting the operator's use of the current help system.
 - **SC-008**: Rollback to a previous version is completed within < 5 seconds of the subscriber detecting the change.
-- **SC-009**: Touch scrolling is smooth and follows the finger movement with minimal latency.
+- **SC-009**: Touch scrolling is smooth, axis-stable, and follows the finger movement with minimal latency.
 
 ## Assumptions
 
