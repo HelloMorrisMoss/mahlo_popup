@@ -1,6 +1,30 @@
+"""
+Adds touch-style scrolling functionality to widgets that support scan_mark/scan_dragto.
+
+This module defines the `TouchScroller` class, which enables touch-style scrolling for widgets
+like Canvas or Text. The functionality includes axis locking and drag thresholds, making it
+suitable for handling intuitive touch gestures on nested widgets or containers.
+"""
+
+
 class TouchScroller:
     """
-    Adds touch-style scrolling to a widget (Canvas or Text) that supports scan_mark/scan_dragto.
+    Handles touch-based scrolling for widgets with optional drag thresholds and axis locking.
+
+    This class provides functionality to enable touch scrolling for a given widget. It allows
+    customization of drag thresholds, optional locking to a specific axis, and recursive application
+    to all child widgets. The class is designed for integration with graphical user interfaces where
+    smooth and intuitive touch scrolling behavior is needed.
+
+    :ivar widget: The widget to which the touch scroller is attached.
+    :type widget: Any
+    :ivar drag_threshold: Minimum distance in pixels required to recognize a drag operation.
+    :type drag_threshold: int
+    :ivar lock_axis: Axis locking mode; can be 'x', 'y', or None.
+    :type lock_axis: str or None
+    :ivar tag: Unique identifier for the touch scroller instance to avoid conflicts with other
+        bindings.
+    :type tag: str
     """
 
     def __init__(self, scrollable_widget, drag_threshold=10, lock_axis=None):
@@ -49,7 +73,20 @@ class TouchScroller:
         elif self.lock_axis == 'x':
             curr_y = self.mark_y
 
-        self.widget.scan_dragto(curr_x, curr_y, gain=1)
+        # tk.Text and tk.Listbox do not support the 'gain' argument in the Python 
+        # tkinter wrapper, defaulting to 10x speed. We use tk.call to force gain=1.
+        try:
+            self.widget.scan_dragto(curr_x, curr_y, gain=1)
+        except TypeError:
+            try:
+                self.widget.tk.call(self.widget._w, 'scan', 'dragto', curr_x, curr_y, 1)
+            except Exception:
+                # Fallback to standard if direct call fails
+                self.widget.scan_dragto(curr_x, curr_y)
+
+        # Return "break" to prevent default widget behavior (like text selection)
+        # while the user is attempting to scroll.
+        return "break"
 
     def _on_release(self, event):
         if self.dragged:
