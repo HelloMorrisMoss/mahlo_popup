@@ -7,6 +7,7 @@ from help_window import lg
 from .utils.article_processor import process_article_data
 from .utils.path_utils import resolve_resource_path
 from .utils.scaling import calculate_dimensions
+from .utils.touch_scroller import TouchScroller
 from .widgets.image_viewer import HelpImage
 from .widgets.video_player import HelpVideoPlayer
 
@@ -42,7 +43,13 @@ class ArticleViewer(ttk.Frame):
             cursor="arrow",
             state="disabled",
             borderwidth=0,
-            highlightthickness=0
+            highlightthickness=0,
+            exportselection=False
+        )
+        # Hide selection highlighting
+        self.text_area.configure(
+            selectbackground=self.text_area.cget("background"),
+            inactiveselectbackground=self.text_area.cget("background")
         )
         self.scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.text_area.yview)
         self.text_area.configure(yscrollcommand=self.scrollbar.set)
@@ -64,6 +71,9 @@ class ArticleViewer(ttk.Frame):
 
         self._media_elements = []  # List of dicts: {"type": "image"|"video", "widget": widget}
         self._videos = []  # Keep references to video players
+
+        self.touch_scroller = TouchScroller(self.text_area, lock_axis='y')
+        self.touch_scroller.apply_to(self.text_area)
 
         self.text_area.bind("<Configure>", self._on_text_area_configure)
         self._resize_timer = None
@@ -112,6 +122,8 @@ class ArticleViewer(ttk.Frame):
 
         try:
             img_widget = HelpImage(self.text_area, resolved_path, metadata)
+            self.touch_scroller.apply_to(img_widget)
+            
             img_widget.update_display_size(self._get_visible_width())
 
             self._media_elements.append({
@@ -141,6 +153,8 @@ class ArticleViewer(ttk.Frame):
 
         try:
             video_player = HelpVideoPlayer(self.text_area, resolved_path, metadata)
+            self.touch_scroller.apply_to(video_player, exclude_types=[ttk.Scale])
+            
             video_player.update_display_size(self._get_visible_width())
 
             # Keep reference
@@ -163,6 +177,9 @@ class ArticleViewer(ttk.Frame):
             line_index = self.text_area.index("end-2c").split('.')[0]
             self.text_area.tag_add("center", f"{line_index}.0", f"{line_index}.end")
 
+            # Apply touch scrolling to player (excluding slider)
+            # (Moved up to ensure it's applied even if subsequent scaling fails)
+
         except Exception as e:
             self.text_area.insert("end", f"\n[Error loading video: {e}]\n", "paragraph")
 
@@ -171,7 +188,12 @@ class ArticleViewer(ttk.Frame):
         tag_name = f"link_{target.replace('.', '_').replace('/', '_')}"
         self.text_area.insert("end", text + "\n", ("link", tag_name))
         if self.on_link_click:
-            self.text_area.tag_bind(tag_name, "<Button-1>", lambda e, t=target: self.on_link_click(t))
+            # Trigger on Release and only if not dragged
+            def on_click(e, t=target):
+                if not self.touch_scroller.dragged:
+                    self.on_link_click(t)
+
+            self.text_area.tag_bind(tag_name, "<ButtonRelease-1>", on_click)
 
     def clear(self):
         self.text_area.configure(state="normal")
