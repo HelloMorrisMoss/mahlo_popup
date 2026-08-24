@@ -11,6 +11,8 @@ this
 project and migrated to the `mahlo_defect_lookup_table` Management Hub. The "Edit Content" button in the Tk interface
 is disabled.
 **Propagated**: 2026-08-24 — Added touch screen scrolling implementation with axis-locking and hysteresis.
+**Propagated**: 2026-08-24 — Refined touch scrolling (gain adjustment, event suppression) and implemented "no selection"
+policy in Article Viewer.
 
 ## Summary
 
@@ -94,12 +96,17 @@ help_window/             # New directory for the help window component
    * Videos will be embedded as a new block type using `tk.Text.window_create`.
    * Initial implementation will use `tkVideoPlayer` for native integration, with a modular design to allow a VLC-based
      backend if needed for performance.
-   * **Touch Scrolling**: Implements `scan_mark` and `scan_dragto` on the `tk.Text` widget.
+   * **Touch Scrolling**: Implements `scan_mark` and `scan_dragto` on the `tk.Text` widget. For `tk.Text`, a direct Tcl
+     call with `gain=1` is used to ensure 1:1 finger tracking.
    * **Event Interception**: Uses `bindtags` to propagate touch events from embedded widgets (images, video players) to
      the parent `tk.Text` area. Video seeking (via `ttk.Scale`) is explicitly excluded to preserve functionality.
+   * **Event Suppression**: The touch drag event handler returns `"break"` to suppress default Tkinter behaviors (like
+     text selection) during scroll gestures.
    * **Tap vs. Swipe**: Implements a hysteresis threshold (e.g., 10 pixels). Button clicks and link navigations
      are triggered on `ButtonRelease` and only if the total drag distance was below the threshold.
    * **Axis Stability**: Supports vertical axis locking to ensure stable scrolling on narrow displays.
+   * **Selection Policy**: Text selection is explicitly disabled in the `ArticleViewer` by setting `exportselection=0`
+     and matching `selectbackground` to the widget background color.
    * **Media Scaling**:
        * **Responsive Scaling**: Implement logic to ensure all media fits within the `ArticleViewer` width, overriding
          explicit metadata if necessary to prevent overflow.

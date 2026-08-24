@@ -7,6 +7,7 @@
 **Propagated**: 2026-07-24 — Added tasks for web-based article editor.
 **Propagated**: 2026-08-03 — Added tasks for content synchronization, versioning, and headless mode.
 **Propagated**: 2026-08-24 — Added tasks for touch screen scrolling implementation.
+**Propagated**: 2026-08-24 — Added tasks for refining touch scrolling behavior and disabling text selection.
 
 ## Phase 1: Setup & Infrastructure
 
@@ -142,3 +143,5 @@
   HLP-054)
 - [x] T059 [US11] Verify touch scrolling interoperability with video controls (HLP-054)
 - [x] T060 [US11] Perform manual verification on touch-enabled device or using touch emulation (SC-009)
+- [x] T061 [US11] Disable text selection and highlighting in `ArticleViewer` to improve touch UX (HLP-056)
+- [x] T062 [US11] Optimize scrolling gain for `tk.Text` widgets and implement event suppression (HLP-053, SC-009)
