@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 from typing import List, Dict, Callable
 
+from help_window.utils.touch_scroller import TouchScroller
+
 
 class NavFrame(ttk.Frame):
     """
@@ -17,6 +19,7 @@ class NavFrame(ttk.Frame):
 
         # Scrollable area for the list
         self.canvas = tk.Canvas(self, highlightthickness=0)
+        self.touch_scroller = TouchScroller(self.canvas, lock_axis='y')
         self.scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
         self.scrollable_frame = ttk.Frame(self.canvas)
 
@@ -32,6 +35,9 @@ class NavFrame(ttk.Frame):
 
         self.canvas.pack(side="left", fill="both", expand=True)
         self.scrollbar.pack(side="right", fill="y")
+
+        # Apply touch scrolling to canvas and its inner frame
+        self.touch_scroller.apply_to(self.canvas)
 
         # Handle mouse wheel scrolling
         self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
@@ -63,6 +69,7 @@ class NavFrame(ttk.Frame):
                         padding=(10, 15, 10, 5)
                     )
                     header.pack(fill="x")
+                    self.touch_scroller.apply_to(header)
                 else:
                     # Root section
                     header = ttk.Label(
@@ -72,6 +79,7 @@ class NavFrame(ttk.Frame):
                         padding=(10, 15, 10, 5)
                     )
                     header.pack(fill="x")
+                    self.touch_scroller.apply_to(header)
 
             # Create article button
             title = article.get("title", "Untitled")
@@ -91,6 +99,9 @@ class NavFrame(ttk.Frame):
 
             btn.pack(fill="x", padx=5, pady=2)
             self.buttons[article["file_path"]] = btn
+
+            # Apply touch tag to new button
+            self.touch_scroller.apply_to(btn)
 
     def _handle_click(self, article: Dict):
         self.select_article(article["file_path"])
