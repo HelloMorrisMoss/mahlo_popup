@@ -20,6 +20,7 @@ functionality (versioning, publishing) have been migrated to the `mahlo_defect_l
 editor implementation in this project is no longer maintained and will be removed in a future release.
 **Refined**: 2026-08-24 — Added requirements for axis-locked touch screen scrolling and interoperability.
 **Refined**: 2026-08-24 — Added requirement HLP-056 for disabling text selection in Article Viewer to enhance touch UX.
+**Refined**: 2026-08-24 — Polished touch scrolling with kinetic inertia, interruption logic, and boundary handling.
 
 **Input**: User description for a dynamically configurable help window suitable for industrial HMI touchscreens.
 
@@ -245,7 +246,10 @@ automatically without user intervention.
 
 As an operator using a touch screen, I want to scroll through articles and the navigation tree by sliding my finger up
 or down so that I can easily browse content without using the narrow scroll bars. I also want text selection to be
-disabled in articles so that my scroll gestures don't accidentally highlight text or clutter the UI.
+disabled in articles so that my scroll gestures don't accidentally highlight text or clutter the UI. When I flick
+my finger quickly, I want the content to continue scrolling with natural deceleration (kinetic scrolling), and I want
+to be able to stop it instantly by touching the screen again. The scrolling must also respect the top and bottom
+boundaries of the content.
 
 **Why this priority**: Essential for industrial HMI usability.
 **Independent Test**: On a touch-enabled device (or using touch emulation), verify that sliding a finger within the
@@ -408,6 +412,16 @@ controls accidentally. Verify that dragging does not select text.
   movement axis (vertical) for narrow UI components like the navigation tree, preventing unintended horizontal drifting.
 - **HLP-056**: Disabled Text Selection: To prevent interference with touch scrolling gestures and maintain UI
   cleanliness, text selection and highlighting MUST be disabled in the `ArticleViewer`.
+- **HLP-057**: Kinetic/Inertial Scrolling: The touch scroller MUST implement kinetic scrolling. After a fast vertical
+  drag is released, scrolling MUST continue smoothly in the release direction and decelerate naturally to a stop.
+- **HLP-058**: Drift Suppression: Inertial scrolling MUST NOT be initiated for slow drags or deliberate positioning;
+  motion MUST stop promptly upon release in these cases.
+- **HLP-059**: Immediate Interruption: Touching the scrollable area while inertial scrolling is active MUST stop the
+  motion immediately and transfer control to the new touch gesture.
+- **HLP-060**: Content Boundary Enforcement: Inertial scrolling MUST NOT allow content to travel beyond its valid top or
+  bottom bounds.
+- **HLP-061**: Boundary Feedback: Reaching the top or bottom during inertial scrolling MUST result in a deliberate
+  stop (hard stop or subtle resistance).
 
 ## Success Criteria *(mandatory)*
 
@@ -419,8 +433,9 @@ controls accidentally. Verify that dragging does not select text.
 - **SC-006**: Single Instance: Only one Help Window process exists at any given time.
 - **SC-007**: Content synchronization completes without interrupting the operator's use of the current help system.
 - **SC-008**: Rollback to a previous version is completed within < 5 seconds of the subscriber detecting the change.
-- **SC-009**: Touch scrolling is smooth, axis-stable, follows the finger movement with minimal latency, and does not
-  trigger unwanted text selection.
+- **SC-009**: Touch scrolling is smooth, axis-stable, follows the finger movement with minimal latency,
+  implements natural-feeling kinetic inertia with immediate interruption on touch, and does not trigger unwanted text
+  selection.
 
 ## Assumptions
 

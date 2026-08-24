@@ -8,6 +8,7 @@
 **Propagated**: 2026-08-03 — Added tasks for content synchronization, versioning, and headless mode.
 **Propagated**: 2026-08-24 — Added tasks for touch screen scrolling implementation.
 **Propagated**: 2026-08-24 — Added tasks for refining touch scrolling behavior and disabling text selection.
+**Propagated**: 2026-08-24 — Added tasks for kinetic inertia, interruption logic, and boundary handling.
 
 ## Phase 1: Setup & Infrastructure
 
@@ -145,3 +146,9 @@
 - [x] T060 [US11] Perform manual verification on touch-enabled device or using touch emulation (SC-009)
 - [x] T061 [US11] Disable text selection and highlighting in `ArticleViewer` to improve touch UX (HLP-056)
 - [x] T062 [US11] Optimize scrolling gain for `tk.Text` widgets and implement event suppression (HLP-053, SC-009)
+- [ ] T063 [US11] Implement kinetic/inertial scrolling logic in `TouchScroller` with exponential decay (HLP-057)
+- [ ] T064 [US11] Implement drift suppression for slow touch releases (HLP-058)
+- [ ] T065 [US11] Implement immediate interruption of inertial scroll on `ButtonPress` (HLP-059)
+- [ ] T066 [US11] Implement boundary enforcement to prevent scrolling beyond content limits (HLP-060)
+- [ ] T067 [US11] Implement boundary feedback (hard stop or resistance) (HLP-061)
+- [ ] T068 [US11] Verify kinetic scrolling and boundary behavior on touch device (SC-009)

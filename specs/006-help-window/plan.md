@@ -13,6 +13,7 @@ is disabled.
 **Propagated**: 2026-08-24 — Added touch screen scrolling implementation with axis-locking and hysteresis.
 **Propagated**: 2026-08-24 — Refined touch scrolling (gain adjustment, event suppression) and implemented "no selection"
 policy in Article Viewer.
+**Propagated**: 2026-08-24 — Added kinetic inertia, interruption logic, and boundary handling for touch scrolling.
 
 ## Summary
 
@@ -107,6 +108,14 @@ help_window/             # New directory for the help window component
    * **Axis Stability**: Supports vertical axis locking to ensure stable scrolling on narrow displays.
    * **Selection Policy**: Text selection is explicitly disabled in the `ArticleViewer` by setting `exportselection=0`
      and matching `selectbackground` to the widget background color.
+   * **Kinetic Scrolling**:
+       * The `TouchScroller` will be updated to calculate velocity on `ButtonRelease`.
+       * If velocity exceeds a minimum threshold, a recursive `after()` loop will continue scrolling the widget with
+         exponential decay.
+       * **Drift Suppression**: Low velocity drags will not trigger inertia.
+       * **Interruption**: Any `ButtonPress` event will immediately cancel the active inertia loop.
+       * **Boundaries**: Before each inertial scroll step, the widget's scroll position will be checked; movement will
+         stop at 0.0 or 1.0 (hard stop) or apply resistance if elastic behavior is implemented.
    * **Media Scaling**:
        * **Responsive Scaling**: Implement logic to ensure all media fits within the `ArticleViewer` width, overriding
          explicit metadata if necessary to prevent overflow.
