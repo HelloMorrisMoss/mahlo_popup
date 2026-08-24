@@ -10,6 +10,7 @@
 this
 project and migrated to the `mahlo_defect_lookup_table` Management Hub. The "Edit Content" button in the Tk interface
 is disabled.
+**Propagated**: 2026-08-24 — Added touch screen scrolling implementation using native Tkinter scan methods and bindtags.
 
 ## Summary
 
@@ -84,12 +85,19 @@ help_window/             # New directory for the help window component
 4. **Navigation Frame (`nav_frame.py`)**:
     * Uses a `ttk.Treeview` or a custom list of large buttons for touchscreen friendliness.
     * Groups articles by their containing folder (section headers).
+   * **Touch Scrolling**: Implements `scan_mark` and `scan_dragto` on the underlying `tk.Canvas`. Drag events are
+     recursively bound to all child buttons to ensure smooth scrolling regardless of where the finger touches.
 5. **Article Viewer Integration**:
    * Adapts the existing `ArticleViewer` widget to support internal links and embedded videos.
     * Links will use a custom tag in `tk.Text` that triggers a navigation event.
    * Videos will be embedded as a new block type using `tk.Text.window_create`.
    * Initial implementation will use `tkVideoPlayer` for native integration, with a modular design to allow a VLC-based
      backend if needed for performance.
+   * **Touch Scrolling**: Implements `scan_mark` and `scan_dragto` on the `tk.Text` widget.
+   * **Event Interception**: Uses `bindtags` to propagate touch events from embedded widgets (images, video players) to
+     the parent `tk.Text` area.
+   * **Tap vs. Swipe**: Implements a hysteresis threshold (e.g., 5-10 pixels). Button clicks and link navigations
+     are triggered on `ButtonRelease` and only if the total drag distance was below the threshold.
    * **Media Scaling**:
        * **Responsive Scaling**: Implement logic to ensure all media fits within the `ArticleViewer` width, overriding
          explicit metadata if necessary to prevent overflow.

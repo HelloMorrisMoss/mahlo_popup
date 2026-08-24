@@ -6,6 +6,7 @@
 **Propagated**: 2026-07-22 — Added task T030 for title block cleanup and redundancy removal.
 **Propagated**: 2026-07-24 — Added tasks for web-based article editor.
 **Propagated**: 2026-08-03 — Added tasks for content synchronization, versioning, and headless mode.
+**Propagated**: 2026-08-24 — Added tasks for touch screen scrolling implementation.
 
 ## Phase 1: Setup & Infrastructure
 
@@ -131,3 +132,13 @@
 - [x] T053 [US10] Implement regression test `tests/unit/test_sync_hash_bug.py` for manifest hash stability
 - [x] T054 [US10] Implement regression test `tests/unit/test_help_frame_refresh.py` for UI reload persistence
 - [x] T055 [US10] Implement regression test `tests/unit/test_content_manager_bug.py` for file exclusion logic
+
+## Phase 12: Touch Screen Scrolling Support
+
+- [ ] T056 [US11] Implement touch scrolling in `NavFrame` using `scan_mark`/`scan_dragto` (HLP-053)
+- [ ] T057 [US11] Implement touch scrolling in `ArticleViewer` using `scan_mark`/`scan_dragto` and `bindtags` (HLP-053,
+  HLP-054)
+- [ ] T058 [US11] Implement tap vs. swipe threshold logic to distinguish between scrolling and selection/link clicks (
+  HLP-054)
+- [ ] T059 [US11] Verify touch scrolling interoperability with video controls (HLP-054)
+- [ ] T060 [US11] Perform manual verification on touch-enabled device or using touch emulation (SC-009)

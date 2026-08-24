@@ -18,6 +18,7 @@ synchronization and versioning.
 **Refined**: 2026-08-06 — **DEPRECATION NOTICE**: The web-based article editor (User Story 9) and all content management
 functionality (versioning, publishing) have been migrated to the `mahlo_defect_lookup_table` Management Hub. The local
 editor implementation in this project is no longer maintained and will be removed in a future release.
+**Refined**: 2026-08-24 — Added requirements for touch screen scrolling in navigation and articles.
 
 **Input**: User description for a dynamically configurable help window suitable for industrial HMI touchscreens.
 
@@ -237,6 +238,27 @@ automatically without user intervention.
 7. **Given** a selected version, **When** the user clicks "Publish", **Then** that version becomes the 'current' version
    for all subscribers, regardless of whether it is newer or older than previous published versions.
 
+---
+
+### User Story 11 - Touch Screen Scrolling (Priority: P1)
+
+As an operator using a touch screen, I want to scroll through articles and the navigation tree by sliding my finger up
+or down so that I can easily browse content without using the narrow scroll bars.
+
+**Why this priority**: Essential for industrial HMI usability.
+**Independent Test**: On a touch-enabled device (or using touch emulation), verify that sliding a finger within the
+navigation tree or article viewer scrolls the content smoothly without triggering links, navigation items, or video
+controls accidentally.
+
+**Acceptance Scenarios**:
+
+1. **Given** the navigation tree, **When** a finger is pressed and moved up/down, **Then** the list scrolls accordingly.
+2. **Given** the navigation tree, **When** an item is tapped quickly, **Then** the item is selected/navigated to.
+3. **Given** an article with links and videos, **When** a finger is pressed on a neutral area (or even over a
+   link/video) and moved up/down, **Then** the article scrolls without triggering the link or video controls.
+4. **Given** a video player, **When** a finger is tapped on the controls, **Then** the video action is triggered instead
+   of scrolling.
+
 ## Requirements *(mandatory)*
 
 ### UI/UX Requirements
@@ -373,6 +395,11 @@ automatically without user intervention.
 - **HLP-052**: CLI Overrides: The help system MUST allow overriding the default API port, target server URL, and
   instance role (server/subscriber) via command-line arguments to support multiple concurrent instances on a single
   machine for development and testing.
+- **HLP-053**: Touch Scrolling Support: The navigation tree and article viewer MUST support intuitive touch-based
+  scrolling (slide to scroll).
+- **HLP-054**: Scrolling Interoperability: Touch scrolling MUST NOT interfere with tap-based interactions (links,
+  navigation selection, media controls). The system SHOULD distinguish between a "swipe" (scrolling) and a "tap" (
+  action).
 
 ## Success Criteria *(mandatory)*
 
@@ -384,6 +411,7 @@ automatically without user intervention.
 - **SC-006**: Single Instance: Only one Help Window process exists at any given time.
 - **SC-007**: Content synchronization completes without interrupting the operator's use of the current help system.
 - **SC-008**: Rollback to a previous version is completed within < 5 seconds of the subscriber detecting the change.
+- **SC-009**: Touch scrolling is smooth and follows the finger movement with minimal latency.
 
 ## Assumptions
 
