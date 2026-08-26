@@ -1,5 +1,6 @@
 # Implementation Plan: Desktop UI (Tkinter)
 
+**Propagated**: 2026-08-26 — Updated from spec.md refinement (Operator Selection window behavior).
 **Propagated**: 2026-07-21 — Updated from spec.md refinement (Help Window integration and system messaging).
 
 **Branch**: `production` | **Date**: 2026-07-10 | **Spec**: [specs/001-desktop-ui/spec.md]
@@ -67,8 +68,10 @@ msg_window/             # Messaging interface
 7. **Confirmation Logic**: Multi-click countdown for system restart implemented with `after()` for timeout resets.
    System restart is triggered via `SystemRestartError`, allowing centralized handling of context gathering, logging,
    and email notifications.
-8. **Grid Selection**: `OperatorGridWindow` dynamically builds a grid of buttons from the operator list, including
-   alphabetical disabled headers for navigation.
+8. **Grid Selection**: `OperatorGridWindow` dynamically builds a grid of buttons from the operator list.
+   When triggered, the main window switches to its 'button' state (via `hide_hideables`) and positions
+   the grid adjacent to it. If a selection is made, the main window is restored (via `show_hideables`);
+   otherwise, it remains in its shrunken state to prevent occlusion of the HMI.
 9. **Help Window Integration**: "Help" button in `IndependentControlsPanel` launches `run_help.py` as a separate
    subprocess. Communicates status via `set_additional_msg` in case of failure.
 10. **System Messaging**: `set_additional_msg` provides a two-level (short/long) notification system with color-coded

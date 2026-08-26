@@ -589,7 +589,8 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
 
         # grid button for operator selection
         def show_operator_grid():
-            OperatorGridWindow(self, operator_name_list[1:], self.current_operator, self._default_operator)
+            self.parent.hide_hideables()
+            OperatorGridWindow(self.parent, operator_name_list[1:], self.current_operator, self._default_operator)
 
         self.operator_grid_button = ttk.Button(self, text='⣿⣿⣿', width=4, command=show_operator_grid)
         self.operator_grid_button.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
@@ -723,8 +724,17 @@ class OperatorGridWindow(tk.Toplevel):
         self.title("Operator Selection")
         self.current_operator_var = current_operator_var
         self.default_operator = default_operator
+        self.selection_made = False
 
         window_topmost(self)
+
+        # position next to the parent window
+        self.update_idletasks()  # ensure geometry is updated
+        x = parent.winfo_x()
+        y = parent.winfo_y()
+        w = parent.winfo_width()
+        # Offset slightly to the right of the button-sized window
+        self.geometry(f"+{x + w + 5}+{y}")
 
         # style for blue headers
         self.style = ttk.Style(self)
@@ -760,11 +770,16 @@ class OperatorGridWindow(tk.Toplevel):
     def select_operator(self, name):
         """Select the operator and close the window."""
         self.current_operator_var.set(name)
-        # Ensure main window is full sized for subsequent actions
-        toplevel = self.master.winfo_toplevel()
-        if hasattr(toplevel, 'full_sized'):
-            toplevel.full_sized()
+        self.selection_made = True
         self.destroy()
+
+    def destroy(self):
+        """Restore main window if selection was made and destroy this window."""
+        if self.selection_made:
+            toplevel = self.master.winfo_toplevel()
+            if hasattr(toplevel, 'show_hideables'):
+                toplevel.show_hideables()
+        super().destroy()
 
 
 
