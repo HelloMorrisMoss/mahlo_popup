@@ -1,5 +1,6 @@
 # Tasks: Desktop UI (Tkinter)
 
+**Propagated**: 2026-08-26 — Updated from spec.md refinement (Operator Selection occlusion fix).
 **Propagated**: 2026-07-21 — Updated from spec.md refinement (Help Window integration).
 
 **Input**: Design documents from `/specs/001-desktop-ui/`
@@ -32,8 +33,11 @@
 - [x] T013 [US6] Add "Clear Old Records" button with `marked_for_deletion` logic
 - [x] T014 [US7] Implement multi-click system restart button with email notification
 - [x] T015 [US7] Rename original restart button to "Restart Popup"
-- [x] T016 [US8] Create `OperatorGridWindow` with flex-fill grid and headers
-- [x] T017 [US8] Add grid selection trigger to `IndependentControlsPanel`
+- [x] T016 [US8] Create `OperatorGridWindow` with flex-fill grid, headers, and occlusion prevention (auto-shrink main
+  window)
+- [x] T017 [US8] Add grid selection trigger with conditional window restoration logic
+- [x] T022 [US8] Position `OperatorGridWindow` adjacent to button window and implement `hide_hideables`/`show_hideables`
+  integration
 - [x] T018 [US7] Refine system restart to use `SystemRestartError` and top-level context-rich notifications
 
 ## Phase 7: Help Integration (Update 2026-07-21)

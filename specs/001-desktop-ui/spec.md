@@ -4,8 +4,9 @@
 
 **Created**: 2026-07-10
 
-**Status**: Completed (Migrated)
-
+**Status**: Refined
+**Refined**: 2026-08-26 — Updated Operator Selection to switch main window to button mode while grid is open to prevent
+occlusion.
 **Refined**: 2026-07-21 — Added integration for the independent Help Window (HLP-028) in User Story 5 and Requirement
 UI-007.
 **Refined**: 2026-07-16 — Refined "Always on Top" functionality to prevent Windows taskbar from flashing/activating.
@@ -112,14 +113,20 @@ mocked).
 ### User Story 8 - Enhanced Operator Selection (Priority: P2)
 
 As an operator, I want an easier way to find and select my name from a large list.
-**Why this priority**: Improved usability on touchscreens.
-**Independent Test**: Open the operator grid window and select a name.
+**Why this priority**: Improved usability on touchscreens and prevents the grid window from being hidden behind the "
+always-on-top" main window.
+**Independent Test**: Open the operator grid window; verify main window shrinks to button mode. Select a name; verify
+main window returns to normal mode.
 
 **Acceptance Scenarios**:
 
-1. **Given** the operator grid window is open, **When** an operator button is clicked, **Then** that operator is
-   selected in the main dropdown and the grid window closes.
-2. **Given** the operator grid window is open, **Then** operators are displayed in a flex-fill grid with alphabetical
+1. **Given** the operator grid window is triggered, **When** the button is clicked, **Then** the main window switches to
+   its 'hidden' state (e.g., button mode) and the grid window appears next to it.
+2. **Given** the operator grid window is open, **When** an operator button is clicked, **Then** that operator is
+   selected, the main window returns to 'main_window' mode, and the grid window closes.
+3. **Given** the operator grid window is open, **When** it loses focus without a selection, **Then** the grid window
+   closes and the main window remains in its 'hidden' state.
+4. **Given** the operator grid window is open, **Then** operators are displayed in a flex-fill grid with alphabetical
    headers.
 
 ---
@@ -140,7 +147,8 @@ As an operator, I want an easier way to find and select my name from a large lis
 - **UI-004**: Handle thread-safe communication using `collections.deque`.
 - **UI-005**: `IndependentControlsPanel` MUST include "Clear Old Records", "Restart Popup", and "Restart Mahlo HMI"
   buttons.
-- **UI-006**: Operator selection MUST provide both a dropdown and a grid-based selection window.
+- **UI-006**: Operator selection MUST provide both a dropdown and a grid-based selection window. When
+  the grid is open, the main window MUST switch to its 'button' form factor and position the grid adjacent to it.
 - **UI-007**: MainWindow MUST include a "Help" button in the `IndependentControlsPanel` (positioned after the operator
   grid button) to launch the separate help process.
 
