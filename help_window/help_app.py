@@ -28,6 +28,8 @@ class HelpApp(tk.Tk):
         self.title("Mahlo Help System")
         self.geometry("1024x768")
 
+        self.set_window_icon('untracked_config/window_icon.ico')  # window icon
+
         # Initialize Content Manager
         if not content_dir:
             content_dir = os.path.join(os.path.dirname(__file__), "help_content")
@@ -39,6 +41,12 @@ class HelpApp(tk.Tk):
         self.help_frame = HelpFrame(self, self.content_manager, enable_editor=self.enable_editor,
                                     server_url=self.server_url)
         self.help_frame.pack(expand=True, fill="both")
+
+    def set_window_icon(self, ico_path):
+        try:
+            self.wm_iconbitmap(ico_path)
+        except tk.TclError:
+            pass  # icon is not available
 
     def bring_to_front(self):
         """Forces the window to the front and focuses it."""
