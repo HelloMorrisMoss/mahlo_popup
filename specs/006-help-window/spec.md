@@ -21,6 +21,7 @@ editor implementation in this project is no longer maintained and will be remove
 **Refined**: 2026-08-24 — Added requirements for axis-locked touch screen scrolling and interoperability.
 **Refined**: 2026-08-24 — Added requirement HLP-056 for disabling text selection in Article Viewer to enhance touch UX.
 **Refined**: 2026-08-24 — Polished touch scrolling with kinetic inertia, interruption logic, and boundary handling.
+**Refined**: 2026-09-08 — Replaced PyAV with OpenCV for video playback to support 32-bit Windows 7 legacy systems.
 
 **Input**: User description for a dynamically configurable help window suitable for industrial HMI touchscreens.
 
@@ -422,6 +423,9 @@ controls accidentally. Verify that dragging does not select text.
   bottom bounds.
 - **HLP-061**: Boundary Feedback: Reaching the top or bottom during inertial scrolling MUST result in a deliberate
   stop (hard stop or subtle resistance).
+- **HLP-062**: Video Backend (32-bit Windows 7): The video player MUST use `OpenCV` (cv2) as the backend for video
+  decoding and frame extraction to ensure compatibility with 32-bit Windows 7 environments where `PyAV` and 32-bit
+  FFMPEG binaries are unavailable.
 
 ## Success Criteria *(mandatory)*
 
@@ -442,3 +446,4 @@ controls accidentally. Verify that dragging does not select text.
 - Template files are stored in a specific directory (e.g., `help_content/`).
 - Images are stored locally or accessible via local path.
 - The system runs on Windows (consistent with project environment).
+- The system supports 32-bit Windows 7 Compact Edition using Python 3.8.12 and OpenCV for video playback.

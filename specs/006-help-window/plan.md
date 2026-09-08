@@ -14,6 +14,7 @@ is disabled.
 **Propagated**: 2026-08-24 — Refined touch scrolling (gain adjustment, event suppression) and implemented "no selection"
 policy in Article Viewer.
 **Propagated**: 2026-08-24 — Added kinetic inertia, interruption logic, and boundary handling for touch scrolling.
+**Propagated**: 2026-09-08 — Updated from spec.md refinement (OpenCV backend for Win7 32-bit)
 
 ## Summary
 
@@ -30,7 +31,7 @@ loaded, searchable, and cached help content from JSON templates, supporting mixe
 
 **Testing**: unittest (unit tests for article loading and caching logic), Manual verification for UI behavior.
 
-**Target Platform**: Windows Desktop (Industrial PC)
+**Target Platform**: Windows Desktop (Industrial PC) - supports 32-bit Windows 7 Compact Edition
 
 **Project Type**: desktop-app / widget
 
@@ -95,8 +96,9 @@ help_window/             # New directory for the help window component
    * Adapts the existing `ArticleViewer` widget to support internal links and embedded videos.
     * Links will use a custom tag in `tk.Text` that triggers a navigation event.
    * Videos will be embedded as a new block type using `tk.Text.window_create`.
-   * Initial implementation will use `tkVideoPlayer` for native integration, with a modular design to allow a VLC-based
-     backend if needed for performance.
+   * The video player will use an `OpenCV` (cv2) based backend to support 32-bit Windows 7 environments where `PyAV`
+     and 32-bit FFMPEG are unavailable. It provides a modular design to allow switching back to `tkVideoPlayer`
+     or other backends if needed.
    * **Touch Scrolling**: Implements `scan_mark` and `scan_dragto` on the `tk.Text` widget. For `tk.Text`, a direct Tcl
      call with `gain=1` is used to ensure 1:1 finger tracking.
    * **Event Interception**: Uses `bindtags` to propagate touch events from embedded widgets (images, video players) to
@@ -120,7 +122,7 @@ help_window/             # New directory for the help window component
        * **Responsive Scaling**: Implement logic to ensure all media fits within the `ArticleViewer` width, overriding
          explicit metadata if necessary to prevent overflow.
        * Images will be resized using `Pillow` while maintaining the aspect ratio.
-       * Videos will be resized using `tkVideoPlayer.set_size()`.
+     * Videos will be resized to fit the `ArticleViewer` width, maintaining aspect ratio during frame extraction.
        * **Metadata Support**: Parse optional JSON metadata: `size` presets (`thumbnail` to `fill`), static `width`/
          `height`, or `width_pct`.
        * Responsive resizing will be handled via the `<Configure>` event of the `ArticleViewer`.

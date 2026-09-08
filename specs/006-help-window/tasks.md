@@ -9,6 +9,7 @@
 **Propagated**: 2026-08-24 — Added tasks for touch screen scrolling implementation.
 **Propagated**: 2026-08-24 — Added tasks for refining touch scrolling behavior and disabling text selection.
 **Propagated**: 2026-08-24 — Added tasks for kinetic inertia, interruption logic, and boundary handling.
+**Propagated**: 2026-09-08 — Updated from spec.md refinement (OpenCV backend for Win7 32-bit)
 
 ## Phase 1: Setup & Infrastructure
 
@@ -154,3 +155,13 @@
 - [x] T068 [US11] Verify kinetic scrolling and boundary behavior on touch device (SC-009)
 - [x] T069 [US11] Polish touch scrolling: fix 'jump back' by resetting anchor at release and smooth velocity (HLP-057,
   HLP-058)
+
+## Phase 13: OpenCV Video Backend (32-bit Windows 7 Support)
+
+- [x] T070 Implement OpenCV-based frame extraction in `help_window/widgets/video_player.py` (HLP-062)
+- [x] T071 Implement Tkinter integration for displaying OpenCV frames (HLP-062)
+- [x] T072 Implement basic playback controls (Play, Pause, Stop, Seek) using OpenCV (HLP-062, HLP-013)
+- [x] T073 Update `ArticleViewer` to use OpenCV backend when `tkVideoPlayer` is unavailable or on 32-bit Win7 (HLP-062,
+  HLP-014)
+- [x] T074 Verify OpenCV video playback on target 32-bit Windows 7 environment (SC-007)
+- [x] T075 Configure `pyproject.toml` and requirement files with platform markers for contingent dependencies (HLP-062)
