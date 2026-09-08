@@ -97,7 +97,7 @@ class Operator(Resource):
 
 class Operators(Operator):
     defect_parser = reqparse.RequestParser(bundle_errors=True)
-    arg_type_dict = {'lam_number': int, 'records': list[dict[str: any]]}
+    arg_type_dict = {'lam_number': int, 'records': list}
     # todo: ids parameter, get operators with those id numbers - not needed right now
 
     for arg, arg_type in arg_type_dict.items():

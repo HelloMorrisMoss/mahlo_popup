@@ -8,6 +8,7 @@ import requests
 import waitress
 from flask_restful import Api
 
+from flask_server_files.monitors.host_monitor import watchdog_check_printsvr
 from flask_server_files.queuesholder import queues
 from flask_server_files.resources.btn_msg import ButtonMessage
 from flask_server_files.resources.database import Database
@@ -18,7 +19,6 @@ from flask_server_files.resources.signal_popup import Popup
 from flask_server_files.routing import routes_blueprint
 from flask_server_files.sqla_instance import fsa
 from log_and_alert.log_setup import lg
-from monitors.host_monitor import watchdog_check_printsvr
 from untracked_config.configuration_data import DATABASE_URI, host, port, server_threads, \
     printsvr_check_interval_seconds
 
