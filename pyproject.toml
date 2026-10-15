@@ -50,6 +50,7 @@ dependencies = [
 ]
 
 [tool.uv]
+no-build = false
 override-dependencies = [
     "av>=10.0.0",
 ]
