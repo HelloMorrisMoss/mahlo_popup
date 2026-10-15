@@ -11,13 +11,16 @@ from flask_restful import Api
 from flask_server_files.queuesholder import queues
 from flask_server_files.resources.btn_msg import ButtonMessage
 from flask_server_files.resources.database import Database
-from flask_server_files.resources.defect import Defect, DefectList
+from flask_server_files.resources.defect import Defect, DefectList, DefectInsertion
+from flask_server_files.resources.host_monitor import HostMonitor
 from flask_server_files.resources.lam_operator import Operator, Operators
 from flask_server_files.resources.signal_popup import Popup
 from flask_server_files.routing import routes_blueprint
 from flask_server_files.sqla_instance import fsa
 from log_and_alert.log_setup import lg
-from untracked_config.configuration_data import DATABASE_URI, host, port, server_threads
+from monitors.host_monitor import watchdog_check_printsvr
+from untracked_config.configuration_data import DATABASE_URI, host, port, server_threads, \
+    printsvr_check_interval_seconds
 
 # create and config the flask app
 app = flask.Flask(__name__)
@@ -32,10 +35,12 @@ api = Api(app)
 api.add_resource(Defect, '/defect')
 api.add_resource(Popup, '/popup')
 api.add_resource(DefectList, '/defects')
+api.add_resource(DefectInsertion, '/defect/insertion')
 api.add_resource(Database, '/database')
 api.add_resource(Operator, '/operator')
 api.add_resource(Operators, '/operators')
 api.add_resource(ButtonMessage, '/button_msg')
+api.add_resource(HostMonitor, '/host_monitor')
 
 app.register_blueprint(routes_blueprint)
 
@@ -151,6 +156,7 @@ def schedule_queue_watcher(in_message_queue, out_message_queue):
             out_bound_messages.append({'action': 'restart_popup', 'error': restart_signal})
 
     scheduler.add_job(partial(check_that_port_is_mine, out_message_queue), 'interval', seconds=10)
+    scheduler.add_job(watchdog_check_printsvr, 'interval', seconds=printsvr_check_interval_seconds)
     scheduler.start()
 
 

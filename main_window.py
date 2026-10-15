@@ -2,6 +2,9 @@
 
 import datetime
 import json
+import os
+import subprocess
+import sys
 import tkinter
 import tkinter as tk
 from functools import partial
@@ -14,7 +17,7 @@ from flask_server_files.models.lam_operator import OperatorModel
 from log_and_alert.log_setup import lg
 from lot_number_checks import LotChecker
 from msg_window.popup_frame import DefectMessageFrame
-from restart_error import RestartError
+from restart_error import RestartError, SystemRestartError
 from scada_outbound_connections.scada_tag_query import TagHistoryConnector
 from untracked_config.lam_num import LAM_NUM
 
@@ -30,12 +33,13 @@ class MainWindow(tk.Tk):
         :type debugging: bool, whether to execute extra debugging code
         args: positional arguments for the tkinter.Tk main window.
         kwargs: key word arguments for the tkinter.Tk main window.
+            :type termination_queue: collections.deque, to pass info to the shutdown sequence when terminating.
         """
-        termd = kwargs.pop('termination_dict')
+        term_coms: deque = kwargs.pop('termination_queue')  # this needs to out before super init
         super().__init__(*args, **kwargs)
         self.debugging = debugging
         # self.attributes('-toolwindow', True)  # don't show the min/max buttons on the title bar
-        self.termd = termd
+        self.term_coms = term_coms
         self.set_window_icon('untracked_config/window_icon.ico')  # window icon
 
         self.lam_num = LAM_NUM  # the laminator number
@@ -47,7 +51,7 @@ class MainWindow(tk.Tk):
         self._hide_option = tk.StringVar()
         self._hide_option.set('b')  # default to button
         self.message_button_geometry = '150x150'  # used for the message button and referenced by .show_hideables()
-        self.full_window_geometry = '1150x450'
+        self.full_window_geometry = '1250x450'
         self.full_sized()
 
         # whether to automatically hide/show the window
@@ -132,7 +136,7 @@ class MainWindow(tk.Tk):
         self.hideables.append(self.controls_panel)
 
         # move the window to the front
-        window_topmost(self)
+        self.ensure_on_top_check(self)
 
         self._focus_out_func_id = self._set_focus_out_event()
 
@@ -171,7 +175,13 @@ class MainWindow(tk.Tk):
         self.after(1000, self.check_for_inbound_messages)
 
         if self.lam_num:  # don't steal focus on development system
-            self.after(5_000, self.ensure_on_top, True)
+            # the window by design should never be iconified (minimized)
+            # setting and unsetting now makes sure the popup starts on top
+            self.iconify()
+            self.deiconify()
+            self.after(5_000, self.ensure_on_top_check, True)
+        else:
+            lg.debug('Development system detected, "always on top" functionality is NOT enabled.')
 
         self.after(10_000, self.check_shift)
 
@@ -330,7 +340,7 @@ class MainWindow(tk.Tk):
 
             self.number_of_messages_button.grid_remove()  # hide the messages button
             self.full_sized()
-            self.ensure_on_top()
+            self.ensure_on_top_check()
 
     def full_sized(self):
         """Show the full sized window."""
@@ -473,17 +483,28 @@ class MainWindow(tk.Tk):
 
         merr.additional_information = {'operator': self.controls_panel.current_operator.get()}
         self.quit()
-        self.termd.append(merr)
+        self.term_coms.append(merr)
 
-    def ensure_on_top(self, repeat=False):
-        """Check if the window is visible, if not, bring it to the front."""
+    def ensure_on_top_check(self, repeat=False, lift=False):
+        """Check if the window is visible, if not, bring it to the front.
 
-        self.deiconify()
-        window_topmost(self)
-        self.focus_get()
+        Ensures that the window is visible and brought to the top of the window stack. If
+        the `repeat` flag is set, the operation is repeated with a delay. The `lift` flag
+        indicates whether the window should be moved above all other windows.
+        * Warning: 'lift' will show the taskbar where the window's icon will flash.
+
+        :param repeat: Specifies whether this operation should be repeated after 60 seconds.
+            If True, the `ensure_on_top` function will call itself recursively with a delay.
+        :param lift: Determines whether the window should be lifted on top of other
+            windows when this method is invoked. If True, the window will be raised
+            above all others.
+        :return: None
+        """
+
+        window_topmost(self, lift=lift)
 
         if repeat:
-            self.after(60_000, self.ensure_on_top, True)
+            self.after(60_000, self.ensure_on_top_check, True)
 
 
 class IndependentControlsPanel(tk.ttk.LabelFrame):
@@ -491,7 +512,7 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
 
     def __init__(self, parent_container, text='This is the title', lam_num_controls=0, **kwargs):
         super().__init__(parent_container, text=text)
-        self.parent = parent_container
+        self.parent: MainWindow = parent_container
         self._next_column = 0
         self.lam_num = lam_num_controls
         self.current_operator: tk.StringVar = kwargs.pop('current_operator')
@@ -566,6 +587,60 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
         self.operator_selector.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
                                     pady=self.pad['y'])
 
+        # grid button for operator selection
+        def show_operator_grid():
+            self.parent.hide_hideables()
+            OperatorGridWindow(self.parent, operator_name_list[1:], self.current_operator, self._default_operator)
+
+        self.operator_grid_button = ttk.Button(self, text='⣿⣿⣿', width=4, command=show_operator_grid)
+        self.operator_grid_button.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
+                                       pady=self.pad['y'])
+
+
+        # clear old records button
+        def clear_old_records():
+            if self.current_operator.get() == self._default_operator:
+                flash_select_label_on()
+                return
+
+            popup = self.parent.popup_frame
+            # Copy the list to avoid issues when panels are destroyed during iteration
+            panels = list(popup.messages_frames)
+            for panel in panels:
+                panel._removed_toggles.set_all_not_removed()
+                panel.defect_interface.marked_for_deletion = True
+                panel.save_response()
+
+        self.clear_records_button = ttk.Button(self, text='Clear Old Records', command=clear_old_records)
+        self.clear_records_button.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
+                                       pady=self.pad['y'])
+
+        # help window button
+        def launch_help():
+            """Launch the help window as a separate process."""
+
+            try:
+                # Use the same python executable to run the help script
+                script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'run_help.py')
+                if os.path.exists(script_path):
+                    subprocess.Popen([sys.executable, script_path],
+                                     creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0)
+                else:
+                    # Fallback if run_help.py is moved or we're in a different context
+                    # Check current directory
+                    if os.path.exists('run_help.py'):
+                        subprocess.Popen([sys.executable, 'run_help.py'],
+                                         creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0)
+            except Exception as e:
+                lg.error('Error launching help window: %s', e)
+                # send an error message to the operator so they know it is trying but failing
+                self.parent.messages_from_flask.append({'action': 'set_additional_msg',
+                                                        'additional_message_text': 'Error launching help window, inform supervisor/engineering.'})
+
+        self.help_button = ttk.Button(self, text='Help', command=launch_help)
+        self.help_button.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
+                              pady=self.pad['y'])
+
         # in case an operator is not selected, a flashing warning label
         self.select_operator_label = ttk.Label(self, text='Please select an operator.', background='#ffcc00',
                                                foreground='#000000')
@@ -595,18 +670,118 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
 
         toplevel.bind('<<ShiftChange>>', reset_operator_selection)
 
+        # restart buttons container to keep them together on the right
+        self.restart_buttons_container = ttk.Frame(self)
+        self.restart_buttons_container.grid(row=3, column=1000, sticky='e')
+        self.columnconfigure(1000, weight=1)
+
         # restart the program button
         restart_partial = partial(self.parent.terminate_with_cause, RestartError('Restart button pressed (GUI).'))
-        self.restart_button = ttk.Button(self, text='Restart', command=restart_partial)
-        self.columnconfigure(1000, weight=1)
-        self.restart_button.grid(row=3, column=1000, sticky='e', padx=self.pad['x'],  # put it all the way to the right
-                                 pady=self.pad['y'])
+        self.restart_popup_button = ttk.Button(self.restart_buttons_container, text='Restart Popup', command=restart_partial)
+        self.restart_popup_button.grid(row=0, column=0, padx=self.pad['x'],
+                                       pady=self.pad['y'])
+
+        # restart the HMI/PC button
+        self.restart_countdown = 3
+        self.restart_timer_id = None
+
+        def reset_restart_button():
+            self.restart_countdown = 3
+            if self.restart_hmi_button.winfo_exists():
+                self.restart_hmi_button.config(text=f'Restart Mahlo HMI ({self.restart_countdown})')
+            self.restart_timer_id = None
+
+        def restart_system():
+            if self.restart_countdown > 0:
+                self.restart_countdown -= 1
+                self.restart_hmi_button.config(text=f'Restart Mahlo HMI ({self.restart_countdown})')
+
+                if self.restart_timer_id:
+                    self.after_cancel(self.restart_timer_id)
+
+                if self.restart_countdown > 0:
+                    self.restart_timer_id = self.after(10000, reset_restart_button)
+                else:
+                    # at 0, perform restart
+                    self.parent.terminate_with_cause(SystemRestartError('Restart HMI button pressed (GUI).'))
+
+        self.restart_hmi_button = ttk.Button(self.restart_buttons_container, text='Restart Mahlo HMI (3)', command=restart_system)
+        self.restart_hmi_button.grid(row=0, column=1, padx=self.pad['x'],
+                                     pady=self.pad['y'])
 
     def next_column(self):
         """Get an integer representing the next tk grid column to use."""
 
         self._next_column += 10
         return self._next_column
+
+
+class OperatorGridWindow(tk.Toplevel):
+    """A window showing a grid of operators for selection."""
+
+    def __init__(self, parent, operator_names, current_operator_var, default_operator):
+        super().__init__(parent)
+        self.title("Operator Selection")
+        self.current_operator_var = current_operator_var
+        self.default_operator = default_operator
+        self.selection_made = False
+
+        window_topmost(self)
+
+        # position next to the parent window
+        self.update_idletasks()  # ensure geometry is updated
+        x = parent.winfo_x()
+        y = parent.winfo_y()
+        w = parent.winfo_width()
+        # Offset slightly to the right of the button-sized window
+        self.geometry(f"+{x + w + 5}+{y}")
+
+        # style for blue headers
+        self.style = ttk.Style(self)
+        self.style.configure("Header.TButton", font=('Segoe UI', 9, 'bold'))
+        self.style.map("Header.TButton", 
+                       foreground=[('disabled', 'blue')],
+                       font=[('disabled', ('Segoe UI', 9, 'bold'))])
+
+        items = []
+        last_char = ''
+        for name in operator_names:
+            if not name:
+                continue
+            first_char = name[0].upper()
+            if first_char != last_char:
+                items.append((first_char, True))
+                last_char = first_char
+            items.append((name, False))
+
+        rows_per_col = 15
+        for i, (text, is_header) in enumerate(items):
+            col = i // rows_per_col
+            row = i % rows_per_col
+            if is_header:
+                btn = ttk.Button(self, text=text, state='disabled', style="Header.TButton")
+            else:
+                btn = ttk.Button(self, text=text, command=partial(self.select_operator, text))
+            btn.grid(row=row, column=col, sticky='nesw', padx=2, pady=2)
+
+        self.bind("<FocusOut>", lambda e: self.destroy())
+        self.focus_set()
+
+    def select_operator(self, name):
+        """Select the operator and close the window."""
+        self.current_operator_var.set(name)
+        self.selection_made = True
+        self.destroy()
+
+    def destroy(self):
+        """Restore main window if selection was made and destroy this window."""
+        if self.selection_made:
+            toplevel = self.master.winfo_toplevel()
+            if hasattr(toplevel, 'show_hideables'):
+                toplevel.show_hideables()
+        super().destroy()
+
+
 
 
 if __name__ == '__main__':

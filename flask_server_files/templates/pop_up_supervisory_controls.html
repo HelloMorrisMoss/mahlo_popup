@@ -12,6 +12,7 @@
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js" type="text/javascript"></script>
     <![endif]-->
     <!--  TODO: this isn't working  <link href="{{url_for('static', filename='controls_style.css')}}" rel="stylesheet"/>-->
+    <!-- TODO: add an option to change the logging level -->
     <style>
         * {
             position: relative;
@@ -92,6 +93,22 @@
             clear: both;
             font-size: large;
         }
+
+        #logging_level_div {
+            position: relative;
+            top: auto;
+            clear: both;
+            padding: 10px;
+            margin: 0;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-top: #171c8f 2px groove;
+        }
+
+        #logging_level_title_div {
+            font-size: large;
+            font-weight: bold;
+            padding-bottom: 5px;
+        }
     </style>
 </head>
 <body>
@@ -122,6 +139,19 @@
                     {% endfor %}
                 {% endif %}
             {% endfor %}
+        </form>
+    </div>
+
+    <div id="logging_level_div">
+        <div id="logging_level_title_div"><h3>Logging Level</h3></div>
+        <form action="/controls" method="post">
+            <select id="logging_level" name="logging_level" onchange="this.form.submit()">
+                <option value="DEBUG" {% if current_level == 'DEBUG' %}selected{% endif %}>DEBUG</option>
+                <option value="INFO" {% if current_level == 'INFO' %}selected{% endif %}>INFO</option>
+                <option value="WARNING" {% if current_level == 'WARNING' %}selected{% endif %}>WARNING</option>
+                <option value="ERROR" {% if current_level == 'ERROR' %}selected{% endif %}>ERROR</option>
+                <option value="CRITICAL" {% if current_level == 'CRITICAL' %}selected{% endif %}>CRITICAL</option>
+            </select>
         </form>
     </div>
     <!-- FOOTER -->

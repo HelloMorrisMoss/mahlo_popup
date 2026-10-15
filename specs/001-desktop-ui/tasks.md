@@ -1,0 +1,47 @@
+# Tasks: Desktop UI (Tkinter)
+
+**Propagated**: 2026-08-26 — Updated from spec.md refinement (Operator Selection occlusion fix).
+**Propagated**: 2026-07-21 — Updated from spec.md refinement (Help Window integration).
+
+**Input**: Design documents from `/specs/001-desktop-ui/`
+
+## Phase 1: Setup
+- [x] T001 Initialize Tkinter project with Azure theme resources
+
+## Phase 2: Foundational
+- [x] T002 Set up Tkinter main window structure (`main_window.py`)
+- [x] T003 [P] Implement thread-safe queue polling mechanism
+
+## Phase 3: User Story 1 - Defect Logging 🎯 MVP
+- [x] T004 [P] [US1] Develop custom defect logging buttons in `widgets/`
+- [x] T005 [US1] Bind button events to outbound queue
+
+## Phase 4: User Story 2 - Real-time Messaging
+- [x] T006 [US2] Implement message processing from inbound queue
+- [x] T007 [US2] Create system alert display logic in `msg_window/`
+
+## Phase 5: User Story 3 - Window Management
+- [x] T008 [US3] Implement window position persistence
+- [x] T009 [US3] Implement "Always on Top" functionality (refined to prevent taskbar activation via win32gui)
+
+## Phase N: Polish & Gaps
+- [ ] T010 Add unit tests for custom widgets logic
+- [ ] T011 Implement UI integration tests
+- [ ] T012 Document internal queue message format schema
+
+## Phase 6: Extended Controls (Update 2026-07-14)
+- [x] T013 [US6] Add "Clear Old Records" button with `marked_for_deletion` logic
+- [x] T014 [US7] Implement multi-click system restart button with email notification
+- [x] T015 [US7] Rename original restart button to "Restart Popup"
+- [x] T016 [US8] Create `OperatorGridWindow` with flex-fill grid, headers, and occlusion prevention (auto-shrink main
+  window)
+- [x] T017 [US8] Add grid selection trigger with conditional window restoration logic
+- [x] T022 [US8] Position `OperatorGridWindow` adjacent to button window and implement `hide_hideables`/`show_hideables`
+  integration
+- [x] T018 [US7] Refine system restart to use `SystemRestartError` and top-level context-rich notifications
+
+## Phase 7: Help Integration (Update 2026-07-21)
+
+- [x] T019 [US5] Add "Help" button to `IndependentControlsPanel`
+- [x] T020 [US5] Implement `launch_help` subprocess logic with error handling
+- [x] T021 [US5] Refine `set_additional_msg` display and theme logic

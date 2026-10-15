@@ -232,3 +232,13 @@ untracked_config/*
 mahlo_popup.log
 /flask_server_files/static/images/company_logo.png
 /flask_server_files/static/images/company_logo.svg
+/help_window/help_content/*
+/.git_new/
+/QMS12/
+/help_window/help_content/blobs/*
+/.junie/
+/.specify/
+/.idea/
+help_window_*_headless.lock
+/help_window/help_versions.db
+/help_cache.json

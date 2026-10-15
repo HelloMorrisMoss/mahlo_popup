@@ -67,6 +67,11 @@ class RollRemovedToggles(tk.Frame):
                          'sticky': 'nesw'}
         sep.grid(**sep_grid_dict)
 
+    def set_all_not_removed(self):
+        """Set all the toggles to 'NOT removed'."""
+        self.removed_vars['all'].set(self.toggle_button_def_dict['all']['params']['offvalue'])
+        self._set_all_sides(self.not_all_list, False)
+
     def _set_all_sides(self, not_all, state):
         """Set all the side buttons to the same state.
 

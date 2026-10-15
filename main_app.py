@@ -11,7 +11,7 @@ from log_and_alert.email_alert import get_email_cfg_dict, set_up_alert
 from log_and_alert.log_setup import lg, program_unique_id
 from log_and_alert.program_restart_records import record_restart
 from main_window import MainWindow
-from restart_error import RestartError
+from restart_error import RestartError, SystemRestartError
 from untracked_config.configuration_data import ON_DEV_NODE, HOSTNAME
 from untracked_config.lam_num import LAM_NUM
 from untracked_config.testing_this import testing_this
@@ -63,17 +63,40 @@ try:
             flask_thread.start()
 
             # start the popup (tkinter requires the main thread)
-            MainWindow(inbound_queue=f2p_queue, outbound_queue=p2f_queue, termination_dict=termination_queue)
+            MainWindow(inbound_queue=f2p_queue, outbound_queue=p2f_queue, termination_queue=termination_queue)
         elif run_server:
             lg.info('Starting the flask webserver without a popup.')
             start_flask_app(p2f_queue, f2p_queue)
         elif run_popup:
             lg.info('Starting popup without a flask server.')
-            MainWindow(inbound_queue=f2p_queue, outbound_queue=p2f_queue)
+            MainWindow(inbound_queue=f2p_queue, outbound_queue=p2f_queue, termination_queue=termination_queue)
 
         if termination_queue:
             lg.info('termination source returned!')
             raise termination_queue.pop()
+
+except SystemRestartError as sre:
+    lg.info('SystemRestartError found.')
+    try:
+        # Record the restart event
+        record_restart(sre)
+
+        if not ON_DEV_NODE:
+            # Send notification email with context
+            op = getattr(sre, 'additional_information', {}).get('operator', 'Unknown')
+            subject = f'System Restart Notification - Mahlo Popup on lam{LAM_NUM}'
+            context = get_email_body_context(run_popup, run_server, ON_DEV_NODE, HOSTNAME)
+            body = f"The operator {op} is restarting the system.\n\n{context}"
+
+            cfg = get_email_cfg_dict(lam_num=LAM_NUM)
+            set_up_alert(cfg, subject=subject, body=body)
+
+    except Exception as e:
+        lg.exception("An error occurred during the handling of SystemRestartError", e)
+    finally:
+        lg.info(f"System restart initiated by {getattr(sre, 'additional_information', {}).get('operator', 'Unknown')}")
+        os.system("shutdown /r /t 0")  # DO NOT TEST ON DEVELOPMENT SYSTEM - IT WILL RESTART THE IDE PC
+        restart_program(lg, sre)
 
 except RestartError as rse:
     lg.info('RestartError found.')

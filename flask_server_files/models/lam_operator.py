@@ -3,9 +3,9 @@ from sqlalchemy import func
 from typing_extensions import Self
 
 from flask_server_files.helpers import jsonize_sqla_model
+from flask_server_files.models.model_wrapper import ModelWrapper
 from flask_server_files.sqla_instance import Base
 from log_and_alert.log_setup import lg
-from models.model_wrapper import ModelWrapper
 
 
 class OperatorModel(Base):
@@ -110,7 +110,8 @@ class OperatorModel(Base):
 
 
 if __name__ == '__main__':
-    OperatorModel.new_operator(first_name='John', last_name='Doe')
+    # OperatorModel.new_operator(first_name='John', last_name='Doe')
+    OperatorModel.new_operator(first_name='Angelo', last_name='Brazil')
     # print(OperatorModel.query.all())
 
 # from sqlalchemy import create_engine

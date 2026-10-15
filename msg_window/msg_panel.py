@@ -248,6 +248,8 @@ class MessagePanel(tk.ttk.LabelFrame):
 
         if ('NOT' not in removed_str) and len(removed_str):
             setattr(self.defect_interface, col_name, True)
+        elif len(removed_str):
+            setattr(self.defect_interface, col_name, False)
 
 
 if __name__ == '__main__':

@@ -9,6 +9,13 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Type, TypeVar, Union
 
+try:
+    import win32gui
+    import win32con
+except ImportError:
+    win32gui = None
+    win32con = None
+
 from log_and_alert.log_setup import lg
 from log_and_alert.program_restart_records import get_last_restart_record
 from untracked_config.lam_num import LAM_NUM
@@ -246,16 +253,35 @@ def style_component(component, path_override=''):
 tkToplevel = TypeVar('tkToplevel', bound=tkinter.Toplevel)
 
 
-def window_topmost(window: tkToplevel, set_to=True, lift=True):
+def window_topmost(window: tkToplevel, set_to=True, lift=False):
     """Set a tkinter window to remain on top of other windows when losing focus to them and lift to the top.
 
     :param window: tkinter.TopLevel, the window to work on.
     :param set_to: bool, whether to set to stay on top or not to stay on top, default=True.
-    :param lift: bool, whether to lif tthe window above other windows.
+    :param lift: bool, whether to lift the window above other windows, default=False.
     """
 
-    window.attributes('-topmost', set_to)
+    if win32gui:
+        lg.debug('Using win32gui to set topmost')
+        try:
+            # Get the actual frame HWND instead of just the client area ID
+            hwnd = int(window.wm_frame(), 16)
+            if set_to:
+                # SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE
+                # NOACTIVATE is the key to not show taskbar
+                flags = win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOACTIVATE
+                win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, flags)
+            else:
+                flags = win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOACTIVATE
+                win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, 0, 0, flags)
+        except Exception as e:
+            lg.error(f'Error setting topmost via win32gui: {e}')
+            window.attributes('-topmost', set_to)
+    else:
+        window.attributes('-topmost', set_to)
+
     if lift:
+        lg.debug('Lifting window to the top')
         window.lift()
 
 
