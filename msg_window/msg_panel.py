@@ -202,11 +202,13 @@ class MessagePanel(tk.ttk.LabelFrame):
         """
 
         lg.debug('Saving defect record: %s', self.defect_interface)
+
+        # Get the top-level window before any potential destruction
+        top_level_win = self.winfo_toplevel()
+        raw_op_name = top_level_win.current_operator.get()
+
         with OperatorModel.session() as session:
             # get the operator name
-            top_level_win = self.winfo_toplevel()
-            raw_op_name = top_level_win.current_operator.get()
-
             # Check for exact match first to handle special names correctly
             operator_db = OperatorModel.query.filter(
                 (OperatorModel.first_name + ' ' + OperatorModel.last_name) == raw_op_name

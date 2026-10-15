@@ -599,17 +599,19 @@ class IndependentControlsPanel(tk.ttk.LabelFrame):
 
         # clear old records button
         def clear_old_records():
-            if self.current_operator.get() == self._default_operator:
+            current_op = self.current_operator.get()
+            if current_op == self._default_operator:
                 flash_select_label_on()
                 return
 
             popup = self.parent.popup_frame
-            # Copy the list to avoid issues when panels are destroyed during iteration
+            # Copy the list and iterate backwards or use a static list to avoid issues with destruction
             panels = list(popup.messages_frames)
             for panel in panels:
-                panel._removed_toggles.set_all_not_removed()
-                panel.defect_interface.marked_for_deletion = True
-                panel.save_response()
+                if panel.winfo_exists():
+                    panel._removed_toggles.set_all_not_removed()
+                    panel.defect_interface.marked_for_deletion = True
+                    panel.save_response()
 
         self.clear_records_button = ttk.Button(self, text='Clear Old Records', command=clear_old_records)
         self.clear_records_button.grid(row=3, column=self.next_column(), sticky='ns', padx=self.pad['x'],
