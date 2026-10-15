@@ -1,7 +1,7 @@
 [project]
 name = "mahlo-popup"
 version = "0.1.0"
-description = "Add your description here"
+description = "A popup window for operators to record defective material removal."
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
