@@ -193,17 +193,17 @@ class LengthSetFrames(ttk.Frame):
 
                 if missing_value_string == 'length_of_defect_meters':
                     field_names = 'mahlo_end_length', 'mahlo_start_length'
-                    self.reconcile_values(*field_names, sub, missing_value_string)
+                    self.reconcile_values(*field_names, sub, missing_value_string, revert_field_name=this_length)
                 elif missing_value_string == 'mahlo_end_length':
                     field_names = 'mahlo_start_length', 'length_of_defect_meters'
-                    self.reconcile_values(*field_names, add, missing_value_string)
+                    self.reconcile_values(*field_names, add, missing_value_string, revert_field_name=this_length)
                 elif missing_value_string == 'mahlo_start_length':
                     field_names = 'mahlo_end_length', 'length_of_defect_meters'
-                    self.reconcile_values(*field_names, sub, missing_value_string)
+                    self.reconcile_values(*field_names, sub, missing_value_string, revert_field_name=this_length)
         finally:
             self._internal_update_running = False
 
-    def reconcile_values(self, field_name1, field_name2, operation, missing_field_name):
+    def reconcile_values(self, field_name1, field_name2, operation, missing_field_name, revert_field_name=None):
         lg.debug('reconciling values for %s, %s, %s, %s', field_name1, field_name2, operation, missing_field_name)
         # all_field_names = 'mahlo_end_length', 'length_of_defect_meters', 'mahlo_start_length'
         # these_values_dict = {f: self._length_set_frames[f]['StringVar'] for f, _ in self._length_set_tuples}
@@ -221,7 +221,12 @@ class LengthSetFrames(ttk.Frame):
             new_value = str(new_val_float)
             self._length_set_frames[missing_field_name]['StringVar'].set(new_value)
         else:
-            second_var.revert_to_previous_value()
+            lg.warning('Reconciled value is non-positive (%s). Reverting change to %s.',
+                       new_val_float, revert_field_name if revert_field_name else field_name2)
+            if revert_field_name:
+                self._length_set_frames[revert_field_name]['StringVar'].revert_to_previous_value()
+            else:
+                second_var.revert_to_previous_value()
 
     def _hide(self):
         self.grid_remove()

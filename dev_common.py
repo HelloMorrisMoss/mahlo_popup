@@ -156,11 +156,12 @@ class NumStrVar(tk.StringVar):
             callme()
 
     def subscribe_to_alt_min(self, subscriber: object, subscription_callable: callable):
-        if subscriber not in self._alt_min_subscribers.index(subscriber):
-            self._alt_min_subscribers[subscriber] = subscription_callable
+        sub_id = id(subscriber)
+        if sub_id not in self._alt_min_subscribers:
+            self._alt_min_subscribers[sub_id] = subscription_callable
 
     def publish_alt_min(self):
-        for sub, callme in self._alt_min_subscribers:
+        for callme in self._alt_min_subscribers.values():
             callme()
 
     def set_alternative_minimum_variable(self, alt_min):
@@ -203,9 +204,18 @@ class NumStrVar(tk.StringVar):
             pass  # this is going to happen regularly and isn't a problem
 
     def revert_to_previous_value(self):
-        current_value = self._previous_values.pop()
-        lg.debug('Reverting to previous value: %s from: %s', self._previous_values, current_value)
-        self.set(self._previous_values[-1])
+        if len(self._previous_values) > 1:
+            current_value = self._previous_values.pop()
+            lg.debug('%s: Reverting from %s. Remaining history: %s',
+                     self._nsv_name_str, current_value, self._previous_values)
+            # Use super().set to avoid re-adding the same value to history via self.set()
+            super().set(str(self._previous_values[-1]))
+        elif len(self._previous_values) == 1:
+            lg.debug('%s: Only one value in history (%s), cannot revert further.',
+                     self._nsv_name_str, self._previous_values[0])
+            super().set(str(self._previous_values[0]))
+        else:
+            lg.debug('%s: No history to revert.', self._nsv_name_str)
 
     def check_alt_limits(self, new_float):
         # if not self.check_within_dynamic_range(new_float):
