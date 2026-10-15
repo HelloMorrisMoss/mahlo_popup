@@ -205,23 +205,33 @@ class MessagePanel(tk.ttk.LabelFrame):
         with OperatorModel.session() as session:
             # get the operator name
             top_level_win = self.winfo_toplevel()
-            op_name = top_level_win.current_operator.get().split(' ')
+            raw_op_name = top_level_win.current_operator.get()
 
-            # create filters
-            filter_val_first = OperatorModel.first_name == op_name[0]
-            filter_val_last = OperatorModel.last_name == op_name[1]
+            # Check for exact match first to handle special names correctly
+            operator_db = OperatorModel.query.filter(
+                (OperatorModel.first_name + ' ' + OperatorModel.last_name) == raw_op_name
+            ).first()
+
+            if not operator_db:
+                # Fallback to split if exact match fails
+                op_name = raw_op_name.split(' ')
+                if len(op_name) >= 2:
+                    filter_val_first = OperatorModel.first_name == op_name[0]
+                    filter_val_last = OperatorModel.last_name == ' '.join(op_name[1:])
+                    operator_db = OperatorModel.query.filter(filter_val_first).filter(filter_val_last).first()
+
+            if not operator_db:
+                lg.warning('Selected operator name "%s" could not be matched in database.', raw_op_name)
+                top_level_win.event_generate('<<OperatorNotFound>>')
+                return
+
             try:
-                operator_db = OperatorModel.query.filter(filter_val_first).filter(filter_val_last).all()[0]
                 op_initials = operator_db.initials
                 op_id = operator_db.id
                 OperatorModel.session.remove()
             except sqlalchemy.exc.PendingRollbackError:
                 OperatorModel.scoped_session.rollback()
                 lg.error('Rollback error trying to fetch operator data.')
-                return
-            except IndexError:
-                lg.debug('IndexError fetching operator from database. Check selected operator.')
-                top_level_win.event_generate('<<OperatorNotFound>>')
                 return
 
         # update column values
